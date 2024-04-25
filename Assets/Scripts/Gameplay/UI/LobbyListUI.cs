@@ -78,7 +78,7 @@ public class LobbyListUI : MonoBehaviour
         Show();
     }
 
-    private void LobbyManager_OnAuthenticated(object sender, EventArgs e)
+    private void LobbyManager_OnAuthenticated(string _)
     {
         Show();
     }

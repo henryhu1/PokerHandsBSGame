@@ -8,6 +8,11 @@ using UnityEngine;
 public class CardManager : NetworkBehaviour
 {
     public static CardManager Instance {  get; private set; }
+    
+    public const int k_AscendingGameModeStartingCardAmount = 1;
+    public const int k_AscendingGameModeCardLimit = 6;
+    public const int k_DescendingGameModeStartingCardAmount = 5;
+    public const int k_DescendingGameModeCardLimit = 0;
 
     [SerializeField] private List<GameObject> cardPrefabs;
     private Dictionary<string, GameObject> m_cardToPrefabMap;
@@ -15,11 +20,7 @@ public class CardManager : NetworkBehaviour
 
     private float m_cardSpaceWidth = 0.06f;
     private int m_startingCardAmount;
-    public int StartingCardAmount
-    {
-        get { return m_startingCardAmount; }
-        set { m_startingCardAmount = value; }
-    }
+    private int m_endingCardAmount;
 
     private Deck m_deck;
     // private Dictionary<ulong, Hand> m_playerHands = new Dictionary<ulong, Hand>();
@@ -27,194 +28,7 @@ public class CardManager : NetworkBehaviour
     private Dictionary<ulong, int> m_playerNumberOfCardsInHand = new Dictionary<ulong, int>();
     private Dictionary<ulong, List<Card>> m_playerCards = new Dictionary<ulong, List<Card>>();
 
-    public class CardsInPlay
-    {
-        private int m_numberOfCardsInPlay;
-        private Dictionary<Rank, uint> m_rankCount;
-        private Dictionary<Suit, Dictionary<Rank, uint>> m_bySuitRankCount;
-        private SortedSet<PokerHand> m_handsInPlay;
-
-        public CardsInPlay()
-        {
-            ResetCardsInPlay();
-        }
-
-        private Dictionary<Rank, uint> GetEmptyDictionary()
-        {
-            return new Dictionary<Rank, uint> {
-                { Rank.Two, 0 },
-                { Rank.Three, 0 },
-                { Rank.Four, 0 },
-                { Rank.Five, 0 },
-                { Rank.Six, 0 },
-                { Rank.Seven, 0 },
-                { Rank.Eight, 0 },
-                { Rank.Nine, 0 },
-                { Rank.Ten, 0 },
-                { Rank.Jack, 0 },
-                { Rank.Queen, 0 },
-                { Rank.King, 0 },
-                { Rank.Ace, 0 },
-            };
-        }
-
-        public void ResetCardsInPlay()
-        {
-            m_numberOfCardsInPlay = 0;
-            m_rankCount = GetEmptyDictionary();
-            m_bySuitRankCount = new Dictionary<Suit, Dictionary<Rank, uint>>
-            {
-                { Suit.Spade, GetEmptyDictionary() },
-                { Suit.Heart, GetEmptyDictionary() },
-                { Suit.Diamond, GetEmptyDictionary() },
-                { Suit.Club, GetEmptyDictionary() },
-            };
-            m_handsInPlay = new SortedSet<PokerHand>();
-        }
-
-        public void PopulateCardsInPlay(IEnumerable<Card> allCards)
-        {
-            foreach (Card card in allCards)
-            {
-                AddInPlayCard(card);
-            }
-        }
-
-        public void AddInPlayCard(Card card)
-        {
-            m_numberOfCardsInPlay++;
-            m_rankCount[card.Rank]++;
-            m_bySuitRankCount[card.Suit][card.Rank]++;
-        }
-
-        private bool CheckRanks(List<Rank> ranks, Dictionary<Rank, uint> rankCounts)
-        {
-            foreach (Rank rank in ranks)
-            {
-                if (rankCounts[rank] == 0)
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        private bool AreRanksInPlay(List<Rank> ranks)
-        {
-            return CheckRanks(ranks, m_rankCount);
-        }
-        
-        private bool AreSuitedRanksInPlay(List<Rank> ranks, Suit suit)
-        {
-            return CheckRanks(ranks, m_bySuitRankCount[suit]);
-        }
-
-        public void FindExistingHands()
-        {
-            SortedSet<Pair> pairsInPlay = new SortedSet<Pair>();
-            SortedSet<ThreeOfAKind> triplesInPlay = new SortedSet<ThreeOfAKind>();
-            foreach (KeyValuePair<Rank, uint> rankCount in m_rankCount)
-            {
-                if (rankCount.Value >= 1)
-                {
-                    m_handsInPlay.Add(new HighCard(rankCount.Key));
-                }
-                if (rankCount.Value >= 2)
-                {
-                    Pair pairInPlay = new Pair(rankCount.Key);
-                    m_handsInPlay.Add(pairInPlay);
-                    pairsInPlay.Add(pairInPlay);
-                }
-                if (rankCount.Value >= 3)
-                {
-                    ThreeOfAKind tripleInPlay = new ThreeOfAKind(rankCount.Key);
-                    m_handsInPlay.Add(tripleInPlay);
-                    triplesInPlay.Add(tripleInPlay);
-                }
-                if (rankCount.Value >= 4)
-                {
-                    m_handsInPlay.Add(new FourOfAKind(rankCount.Key));
-                }
-            }
-
-            for (int i = 0; i < pairsInPlay.Count; i++)
-            {
-                for (int j = i + 1; j < pairsInPlay.Count; j++)
-                {
-                    m_handsInPlay.Add(new TwoPair(pairsInPlay.ElementAt(j), pairsInPlay.ElementAt(i)));
-                }
-                for (int  k = 0; k < triplesInPlay.Count; k++)
-                {
-                    m_handsInPlay.Add(new FullHouse(triplesInPlay.ElementAt(k), pairsInPlay.ElementAt(i)));
-                }
-            }
-
-            for (Rank highestInStraight = Straight.s_LowestStraight; highestInStraight <= Rank.Ace; highestInStraight += 1)
-            {
-                List<Rank> straight = highestInStraight.GetStraight();
-                if (AreRanksInPlay(straight))
-                {
-                    m_handsInPlay.Add(new Straight(highestInStraight));
-                }
-            }
-
-            foreach (KeyValuePair<Suit, Dictionary<Rank, uint>> suitRanks in m_bySuitRankCount)
-            {
-                Suit checkingSuit = suitRanks.Key;
-
-                if (m_numberOfCardsInPlay <= 15)
-                {
-                    Dictionary<Rank, uint> ranksInPlay = suitRanks.Value;
-                    uint count = 0;
-                    foreach (KeyValuePair<Rank, uint> rankInPlay in ranksInPlay)
-                    {
-                        if (rankInPlay.Value > 0)
-                        {
-                            count += rankInPlay.Value;
-                            if (count >= 5)
-                            {
-                                m_handsInPlay.Add(new Flush(rankInPlay.Key, checkingSuit));
-                            }
-                        }
-                    }
-                }
-
-                for (Rank highestInStraight = Straight.s_LowestStraight; highestInStraight <= Rank.King; highestInStraight += 1)
-                {
-                    List<Rank> straight = highestInStraight.GetStraight();
-                    if (AreSuitedRanksInPlay(straight, checkingSuit))
-                    {
-                        m_handsInPlay.Add(new StraightFlush(highestInStraight, checkingSuit));
-                    }
-                }
-
-                List<Rank> royalFlush = Rank.Ace.GetStraight();
-                if (AreSuitedRanksInPlay(royalFlush, checkingSuit))
-                {
-                    m_handsInPlay.Add(new RoyalFlush(checkingSuit));
-                }
-            }
-
-            //StringBuilder stringBuilder = new StringBuilder();
-            //stringBuilder.AppendLine("Hands in play:");
-            //for (int i = 0; i < m_handsInPlay.Count; i++)
-            //{
-            //    stringBuilder.Append($"{m_handsInPlay.ElementAt(i).GetStringRepresentation()}");
-            //    if (i < m_handsInPlay.Count - 1)
-            //    {
-            //        stringBuilder.Append(", ");
-            //    }
-            //}
-            //Debug.Log(stringBuilder.ToString());
-        }
-
-        public bool IsHandInPlay(PokerHand pokerHand)
-        {
-            return m_handsInPlay.Contains(pokerHand);
-        }
-    }
-
-    private CardsInPlay m_cardsInPlay;
+    private HandsInPlay m_handsInPlay;
 
     private void Awake()
     {
@@ -226,7 +40,7 @@ public class CardManager : NetworkBehaviour
 
         m_cardGameObjects = new List<GameObject>();
 
-        m_cardsInPlay = new CardsInPlay();
+        m_handsInPlay = new HandsInPlay();
 
         foreach (GameObject prefab in cardPrefabs)
         {
@@ -254,6 +68,17 @@ public class CardManager : NetworkBehaviour
             SceneTransitionHandler.Instance.OnClientLoadedScene += InitializePlayerEmptyHand;
             // NetworkManager.OnClientConnectedCallback += InitializePlayerEmptyHand;
             NetworkManager.OnClientDisconnectCallback += RemovePlayer;
+
+            if (PokerHandsBullshitGame.Instance.SelectedGameType == PokerHandsBullshitGame.GameType.Ascending)
+            {
+                m_startingCardAmount = k_AscendingGameModeStartingCardAmount;
+                m_endingCardAmount = k_AscendingGameModeCardLimit;
+            }
+            else
+            {
+                m_startingCardAmount = k_DescendingGameModeStartingCardAmount;
+                m_endingCardAmount = k_DescendingGameModeCardLimit;
+            }
         }
     }
 
@@ -359,10 +184,11 @@ public class CardManager : NetworkBehaviour
                 };
                 SendCardsToPlayerClientRpc(playerCards.ToArray(), clientRpcParams);
             }
-            PokerHandsBullshitGame.Instance.GetTurnOrder();
-            SendCardAmountToPlayersClientRpc(m_playerNumberOfCardsInHand.Keys.ToArray(), m_playerNumberOfCardsInHand.Values.ToArray());
-            m_cardsInPlay.PopulateCardsInPlay(m_playerCards.Values.SelectMany(i => i));
-            m_cardsInPlay.FindExistingHands();
+            // TODO
+            // PokerHandsBullshitGame.Instance.GetTurnOrder();
+            // SendCardAmountToPlayersClientRpc(m_playerNumberOfCardsInHand.Keys.ToArray(), m_playerNumberOfCardsInHand.Values.ToArray());
+            m_handsInPlay.PopulateCardsInPlay(m_playerCards.Values.SelectMany(i => i));
+            m_handsInPlay.FindHandsInPlay();
         }
     }
 
@@ -370,7 +196,7 @@ public class CardManager : NetworkBehaviour
     {
         if (IsServer)
         {
-            return m_cardsInPlay.IsHandInPlay(pokerHand);
+            return m_handsInPlay.IsHandInPlay(pokerHand);
         }
         else return false;
     }
@@ -393,7 +219,7 @@ public class CardManager : NetworkBehaviour
             {
                 playersCards.Clear();
             }
-            m_cardsInPlay.ResetCardsInPlay();
+            m_handsInPlay.ResetHandsInPlay();
             DistributeCards();
         }
     }
@@ -405,14 +231,15 @@ public class CardManager : NetworkBehaviour
         CreateCardGameObjects(playersCards.ToList());
     }
 
-    [ClientRpc]
-    public void SendCardAmountToPlayersClientRpc(ulong[] ids, int[] amountOfCards)
-    {
-        if (NetworkManager.LocalClientId != playerId)
-        {
-            CreateOtherPlayersCardsGameObjects(amountOfCards, playerName, relativeTurnOrder);
-        }
-    }
+    // TODO: for displaying other players' card amounts in clients' game
+    //[ClientRpc]
+    //public void SendCardAmountToPlayersClientRpc(ulong[] ids, int[] amountOfCards)
+    //{
+    //    if (NetworkManager.LocalClientId != playerId)
+    //    {
+    //        CreateOtherPlayersCardsGameObjects(amountOfCards, playerName, relativeTurnOrder);
+    //    }
+    //}
 
     [ClientRpc]
     public void DestroyCardGameObjectsClientRpc()

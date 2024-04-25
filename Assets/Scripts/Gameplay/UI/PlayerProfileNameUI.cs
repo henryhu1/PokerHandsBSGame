@@ -24,7 +24,7 @@ public class PlayerProfileNameUI : MonoBehaviour
         LobbyManager.Instance.OnAuthenticated += LobbyManager_OnAuthenticated;
     }
 
-    private void LobbyManager_OnAuthenticated(object sender, EventArgs e)
+    private void LobbyManager_OnAuthenticated(string _)
     {
         Hide();
     }

@@ -10,8 +10,12 @@ public class InGameUI : TriggerUITransition
     {
         Instance = this;
 
-        CameraRotationLookAtTarget.Instance.OnCameraInPosition += Show;
         // Hide();
+    }
+
+    private void Start()
+    {
+        CameraRotationLookAtTarget.Instance.OnCameraInPosition += Show;
     }
 
     private void Show()

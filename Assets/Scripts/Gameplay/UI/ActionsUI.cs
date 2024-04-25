@@ -35,26 +35,25 @@ public class ActionsUI : TriggerUITransition
 
         m_PlayButton.enabled = PokerHandsBullshitGame.Instance.IsHosting(); // TODO: flimsy how based on host the play button enables, change to actual turn logic?
         m_BullshitButton.enabled = !PokerHandsBullshitGame.Instance.IsBeginningOfRound();
-
-        PokerHandsBullshitGame.Instance.OnInvalidPlay += DoTransition;
     }
 
     private void Start()
     {
-        PokerHandsBullshitGame.Instance.OnNextPlayerTurn += GameManager_NextPlayerTurn;
+        PokerHandsBullshitGame.Instance.OnInvalidPlay += DoTransition;
+        TurnManager.Instance.OnNextPlayerTurn += TurnManager_NextPlayerTurn;
     }
 
     private void OnEnable()
     {
-        PokerHandsBullshitGame.Instance.OnNextPlayerTurn += GameManager_NextPlayerTurn;
+        TurnManager.Instance.OnNextPlayerTurn += TurnManager_NextPlayerTurn;
     }
 
     private void OnDisable()
     {
-        PokerHandsBullshitGame.Instance.OnNextPlayerTurn -= GameManager_NextPlayerTurn;
+        TurnManager.Instance.OnNextPlayerTurn -= TurnManager_NextPlayerTurn;
     }
 
-    private void GameManager_NextPlayerTurn(bool isPlayerTurn, bool wasPlayersTurnPreviously)
+    private void TurnManager_NextPlayerTurn(bool isPlayerTurn, bool wasPlayersTurnPreviously)
     {
         SetTurnActions(isPlayerTurn, wasPlayersTurnPreviously);
     }

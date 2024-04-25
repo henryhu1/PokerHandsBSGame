@@ -22,7 +22,12 @@ public class LobbyManager : MonoBehaviour
     // TODO: maybe refactor events to be delegate (arg type) instead of EventHandler
     public event EventHandler OnLeftLobby;
 
-    public event EventHandler<EventArgs> OnAuthenticated;
+
+    [HideInInspector]
+    public delegate void AuthenticatedDelegateHandler(string authPlayerId);
+    [HideInInspector]
+    public event AuthenticatedDelegateHandler OnAuthenticated;
+
     public event EventHandler<EventArgs> OnGameStarted;
 
     public event EventHandler<CustomGenericEventArgs.EventFailureArgs> OnFailedToJoinLobbyByCode;
@@ -78,7 +83,7 @@ public class LobbyManager : MonoBehaviour
 
             AuthenticationService.Instance.SignedIn += () => {
                 Debug.Log("Signed in! " + AuthenticationService.Instance.PlayerId);
-                OnAuthenticated?.Invoke(this, EventArgs.Empty);
+                OnAuthenticated?.Invoke(AuthenticationService.Instance.PlayerId);
                 RefreshLobbyList();
             };
 
