@@ -24,12 +24,10 @@ public class PlayedHandLogUI : MonoBehaviour
         PokerHandsBullshitGame.Instance.OnClearCardLog += GameManager_ClearCardLog;
     }
 
-    private void GameManager_AddToCardLog(ulong playerId, string playerName, PokerHand playedHand)
+    private void GameManager_AddToCardLog(PlayedHandLogItem playedHandLogItem)
     {
         PlayedHandLogItemUI cardLogItem = Instantiate(m_PlayedHandLogItemPrefab, m_LogContent.transform);
-        cardLogItem.PlayerOwnerID = playerId;
-        cardLogItem.PlayerOwnerName = playerName;
-        cardLogItem.PlayedHand = playedHand.GetStringRepresentation();
+        cardLogItem.GiveLogItem(playedHandLogItem);
 
         m_PlayedHandLogItems.Add(cardLogItem);
     }
@@ -46,10 +44,10 @@ public class PlayedHandLogUI : MonoBehaviour
         m_PlayedHandLogItems.Clear();
     }
 
-    public void HighlightPlayersPlayedHands(ulong playerID)
+    public void HighlightPlayersPlayedHands(ulong clientId, string playerId)
     {
         foreach (PlayedHandLogItemUI playedHandLogItem in m_PlayedHandLogItems) {
-            if (playedHandLogItem.PlayerOwnerID == playerID)
+            if (playedHandLogItem.GetPlayerWhoPlayedHand() == playerId)
             {
                 playedHandLogItem.SetTextColor(s_CardLogItemHighlightedColor);
             }

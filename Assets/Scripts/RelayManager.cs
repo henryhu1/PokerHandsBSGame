@@ -1,7 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
@@ -52,7 +49,7 @@ public class RelayManager : MonoBehaviour
 
             RelayServerData relayServerData = new RelayServerData(joinAllocation, "dtls");
             NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(relayServerData);
-            NetworkManager.Singleton.NetworkConfig.ConnectionData = Encoding.ASCII.GetBytes(LobbyManager.Instance.GetPlayerName());
+            NetworkManager.Singleton.NetworkConfig.ConnectionData = StreamUtils.WritePlayerNameId(LobbyManager.Instance.PlayerName, PokerHandsBullshitGame.Instance.LocalPlayerId);
 
             // TODO: UI indication of 1. connecting 2. game starting 3. LobbyUI disappears 4. Scene transition
             NetworkManager.Singleton.StartClient();

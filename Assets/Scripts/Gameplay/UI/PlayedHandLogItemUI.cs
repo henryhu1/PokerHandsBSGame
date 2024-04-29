@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -7,34 +5,40 @@ using UnityEngine.UI;
 public class PlayedHandLogItemUI : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI m_LogText;
-    private ulong m_PlayerOwnerID;
-    public ulong PlayerOwnerID
+    [SerializeField] private Image m_CorrectIcon;
+    [SerializeField] private Image m_WrongIcon;
+    private PlayedHandLogItem m_LogItem;
+
+    private void Awake()
     {
-        get { return m_PlayerOwnerID; }
-        set { m_PlayerOwnerID = value; }
+        ResetIcons();
     }
-    private string m_PlayerOwnerName;
-    public string PlayerOwnerName
+
+    public void ResetIcons()
     {
-        get { return m_PlayerOwnerName; }
-        set {
-            m_PlayerOwnerName = value;
-            m_LogText.text = m_PlayerOwnerName + ": " + m_PlayedHand;
-        }
+        m_CorrectIcon.enabled = false;
+        m_WrongIcon.enabled = false;
     }
-    private string m_PlayedHand;
-    public string PlayedHand
+
+    public void GiveLogItem(PlayedHandLogItem playedHandLogItem)
     {
-        get { return m_PlayedHand; }
-        set
-        {
-            m_PlayedHand = value;
-            m_LogText.text = m_PlayerOwnerName + ": " + m_PlayedHand;
-        }
+        m_LogItem = playedHandLogItem;
+        m_LogText.text = playedHandLogItem.m_playerName + ": " + playedHandLogItem.m_playedHand.GetStringRepresentation();
+    }
+
+    public string GetPlayerWhoPlayedHand()
+    {
+        return m_LogItem.m_playerId;
     }
 
     public void SetTextColor(Color color)
     {
         m_LogText.color = color;
+    }
+
+    public void ShowHandPresentIcon(bool isCorrect)
+    {
+        m_CorrectIcon.enabled = isCorrect;
+        m_WrongIcon.enabled = !isCorrect;
     }
 }

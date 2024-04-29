@@ -14,6 +14,10 @@ public class SceneTransitionHandler : MonoBehaviour
     [HideInInspector]
     public event ClientLoadedSceneDelegateHandler OnClientLoadedScene;
     [HideInInspector]
+    public delegate void AllClientsLoadedSceneDelegateHandler();
+    [HideInInspector]
+    public event AllClientsLoadedSceneDelegateHandler OnAllClientsLoadedScene;
+    [HideInInspector]
     public delegate void SceneStateChangedDelegateHandler(SceneStates newState);
     [HideInInspector]
     public event SceneStateChangedDelegateHandler OnSceneStateChanged;
@@ -21,7 +25,8 @@ public class SceneTransitionHandler : MonoBehaviour
     private int m_numberOfClientLoaded;
     private int m_numberOfClientsExpected;
 
-    [SerializeField] private string m_StartMainMenuScene = "MainMenuScene";
+    private const string k_StartMainMenuScene = "MainMenuScene";
+    private const string k_InGameSceneName = "GameScene";
 
     public enum SceneStates
     {
@@ -53,7 +58,7 @@ public class SceneTransitionHandler : MonoBehaviour
         OnSceneStateChanged?.Invoke(m_SceneState);
     }
 
-    public void SwitchScene(string sceneName)
+    private void SwitchScene(string sceneName)
     {
         if (NetworkManager.Singleton.IsListening)
         {
@@ -66,11 +71,17 @@ public class SceneTransitionHandler : MonoBehaviour
         }
     }
 
+    public void SwitchToGameScene() { SwitchScene(k_InGameSceneName); }
+
     private void OnLoadComplete(ulong clientId, string sceneName, LoadSceneMode loadSceneMode)
     {
         Debug.Log("Client has loaded scene");
-        m_numberOfClientLoaded += 1;
         OnClientLoadedScene?.Invoke(clientId);
+        m_numberOfClientLoaded += 1;
+        if (m_numberOfClientLoaded == NetworkManager.Singleton.ConnectedClients.Count)
+        {
+            OnAllClientsLoadedScene?.Invoke();
+        }
     }
 
     public bool AllClientsAreLoaded()
@@ -88,6 +99,6 @@ public class SceneTransitionHandler : MonoBehaviour
         NetworkManager.Singleton.SceneManager.OnLoadComplete -= OnLoadComplete;
         OnClientLoadedScene = null;
         SetSceneState(SceneStates.Start);
-        SceneManager.LoadScene(m_StartMainMenuScene);
+        SceneManager.LoadScene(k_StartMainMenuScene);
     }
 }

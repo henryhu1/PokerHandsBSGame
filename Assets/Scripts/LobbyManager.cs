@@ -58,6 +58,11 @@ public class LobbyManager : MonoBehaviour
     private float m_refreshLobbyListTimer = 5f;
     private Lobby m_joinedLobby;
     private string m_playerName;
+    public string PlayerName
+    {
+        get { return m_playerName; }
+        private set { m_playerName = value; }
+    }
 
     private void Awake()
     {
@@ -193,13 +198,8 @@ public class LobbyManager : MonoBehaviour
     private Player GetPlayer()
     {
         return new Player(AuthenticationService.Instance.PlayerId, null, new Dictionary<string, PlayerDataObject> {
-            { KEY_PLAYER_NAME, new PlayerDataObject(PlayerDataObject.VisibilityOptions.Public, m_playerName) },
+            { KEY_PLAYER_NAME, new PlayerDataObject(PlayerDataObject.VisibilityOptions.Public, PlayerName) },
         });
-    }
-
-    public string GetPlayerName()
-    {
-        return m_playerName;
     }
 
     public void ChangeGameType()
@@ -337,7 +337,7 @@ public class LobbyManager : MonoBehaviour
 
     public async void UpdatePlayerName(string playerName)
     {
-        m_playerName = playerName;
+        PlayerName = playerName;
 
         if (m_joinedLobby != null)
         {

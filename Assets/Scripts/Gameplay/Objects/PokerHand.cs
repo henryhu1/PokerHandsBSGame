@@ -273,7 +273,7 @@ public class StraightFlush : RankSuitHand
 
     public override string GetStringRepresentation()
     {
-        return base.GetStringRepresentation() + $" to {m_rankPrimary} {m_suit}";
+        return base.GetStringRepresentation() + $" {m_suit} to {m_rankPrimary}";
     }
 }
 

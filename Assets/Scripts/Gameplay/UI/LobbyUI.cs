@@ -162,7 +162,7 @@ public class LobbyUI : MonoBehaviour
         m_changeGameModeButton.gameObject.SetActive(LobbyManager.Instance.IsLobbyHost());
         m_changeGameModeButton.gameObject.SetActive(LobbyManager.Instance.IsLobbyHost());
         m_startGameButton.gameObject.SetActive(LobbyManager.Instance.IsLobbyHost());
-        m_startGameButton.enabled = lobby.Players.Count >= 2;
+        // m_startGameButton.enabled = lobby.Players.Count >= 2;
 
         m_gameModeText.gameObject.SetActive(!LobbyManager.Instance.IsLobbyHost());
 

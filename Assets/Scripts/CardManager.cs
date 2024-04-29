@@ -4,16 +4,18 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
+using WebSocketSharp;
 
 public class CardManager : NetworkBehaviour
 {
-    public static CardManager Instance {  get; private set; }
+    public static CardManager Instance { get; private set; }
     
     public const int k_AscendingGameModeStartingCardAmount = 1;
     public const int k_AscendingGameModeCardLimit = 6;
     public const int k_DescendingGameModeStartingCardAmount = 5;
     public const int k_DescendingGameModeCardLimit = 0;
 
+    [SerializeField] private AllOpponentCards allOpponentCards;
     [SerializeField] private List<GameObject> cardPrefabs;
     private Dictionary<string, GameObject> m_cardToPrefabMap;
     private List<GameObject> m_cardGameObjects;
@@ -25,8 +27,8 @@ public class CardManager : NetworkBehaviour
     private Deck m_deck;
     // private Dictionary<ulong, Hand> m_playerHands = new Dictionary<ulong, Hand>();
     // private Dictionary<ulong, PlayerController> m_playerControllers = new Dictionary<ulong, PlayerController>();
-    private Dictionary<ulong, int> m_playerNumberOfCardsInHand = new Dictionary<ulong, int>();
-    private Dictionary<ulong, List<Card>> m_playerCards = new Dictionary<ulong, List<Card>>();
+    private Dictionary<ulong, int> m_clientNumberOfCardsInHand = new Dictionary<ulong, int>();
+    private Dictionary<ulong, List<Card>> m_clientCards = new Dictionary<ulong, List<Card>>();
 
     private HandsInPlay m_handsInPlay;
 
@@ -66,6 +68,7 @@ public class CardManager : NetworkBehaviour
 
             // InitializePlayerEmptyHand(NetworkManager.Singleton.LocalClientId);
             SceneTransitionHandler.Instance.OnClientLoadedScene += InitializePlayerEmptyHand;
+            SceneTransitionHandler.Instance.OnAllClientsLoadedScene += DistributeCards;
             // NetworkManager.OnClientConnectedCallback += InitializePlayerEmptyHand;
             NetworkManager.OnClientDisconnectCallback += RemovePlayer;
 
@@ -85,9 +88,11 @@ public class CardManager : NetworkBehaviour
     public override void OnNetworkDespawn()
     {
         base.OnNetworkDespawn();
+
         if (IsServer)
         {
             SceneTransitionHandler.Instance.OnClientLoadedScene -= InitializePlayerEmptyHand;
+            SceneTransitionHandler.Instance.OnAllClientsLoadedScene -= DistributeCards;
             // NetworkManager.OnClientConnectedCallback -= InitializePlayerEmptyHand;
             NetworkManager.OnClientDisconnectCallback -= RemovePlayer;
         }
@@ -112,9 +117,15 @@ public class CardManager : NetworkBehaviour
         }
     }
 
-    public void CreateOtherPlayersCardsGameObjects(int amountOfCards, string playerName, int turnIndex)
+    public void CreateOtherPlayersCardsGameObjects(Dictionary<ulong, int> clientNumberOfCardsInHand, ulong[] clientOrder)
     {
-
+        // TODO: why not do this server-side? Giving client work to do
+        List<int> opponentCardAmounts = new List<int>();
+        foreach (ulong clientId in clientOrder)
+        {
+            opponentCardAmounts.Add(clientNumberOfCardsInHand[clientId]);
+        }
+        allOpponentCards.DisplayOpponentCards(opponentCardAmounts);
     }
 
     //public void UpdateCardVisual(Card card)
@@ -133,18 +144,14 @@ public class CardManager : NetworkBehaviour
     {
         if (IsServer)
         {
-            Debug.Log($"Giving client #{clientId} cards");
-            if (!m_playerNumberOfCardsInHand.ContainsKey(clientId))
+            Debug.Log($"Giving client #{clientId} empty hand");
+            if (!m_clientNumberOfCardsInHand.ContainsKey(clientId))
             {
-                m_playerNumberOfCardsInHand.Add(clientId, m_startingCardAmount);
+                m_clientNumberOfCardsInHand.Add(clientId, m_startingCardAmount);
             }
-            if (!m_playerCards.ContainsKey(clientId))
+            if (!m_clientCards.ContainsKey(clientId))
             {
-                m_playerCards.Add(clientId, new List<Card>());
-            }
-            if (SceneTransitionHandler.Instance.AllClientsAreLoaded())
-            {
-                DistributeCards();
+                m_clientCards.Add(clientId, new List<Card>());
             }
         }
     }
@@ -153,9 +160,9 @@ public class CardManager : NetworkBehaviour
     {
         if (IsServer)
         {
-            if (m_playerCards.ContainsKey(clientId))
+            if (m_clientCards.ContainsKey(clientId))
             {
-                m_playerCards.Remove(clientId);
+                m_clientCards.Remove(clientId);
             }
         }
     }
@@ -166,28 +173,31 @@ public class CardManager : NetworkBehaviour
         {
             m_deck.ResetDeck();
             m_deck.Shuffle();
-            foreach (KeyValuePair<ulong, List<Card>> playerIdAndCards in m_playerCards)
+            foreach (KeyValuePair<ulong, List<Card>> clientIdAndCards in m_clientCards)
             {
-                ulong playerId = playerIdAndCards.Key;
-                List<Card> playerCards = playerIdAndCards.Value;
-                for (int i = 0; i < m_playerNumberOfCardsInHand[playerId]; i++)
+                ulong clientId = clientIdAndCards.Key;
+                List<Card> clientsCards = clientIdAndCards.Value;
+                for (int i = 0; i < m_clientNumberOfCardsInHand[clientId]; i++)
                 {
                     Card card = m_deck.TakeCard();
-                    playerCards.Add(card);
+                    clientsCards.Add(card);
                 }
                 ClientRpcParams clientRpcParams = new ClientRpcParams
                 {
                     Send = new ClientRpcSendParams
                     {
-                        TargetClientIds = new ulong[] { playerId }
+                        TargetClientIds = new ulong[] { clientId }
                     }
                 };
-                SendCardsToPlayerClientRpc(playerCards.ToArray(), clientRpcParams);
+                SendCardsToPlayerClientRpc(
+                    clientsCards.ToArray(),
+                    m_clientNumberOfCardsInHand.Keys.ToArray(),
+                    m_clientNumberOfCardsInHand.Values.ToArray(),
+                    TurnManager.Instance.GetTurnOrderStartingAtClient(clientId).ToArray(),
+                    clientRpcParams
+                );
             }
-            // TODO
-            // PokerHandsBullshitGame.Instance.GetTurnOrder();
-            // SendCardAmountToPlayersClientRpc(m_playerNumberOfCardsInHand.Keys.ToArray(), m_playerNumberOfCardsInHand.Values.ToArray());
-            m_handsInPlay.PopulateCardsInPlay(m_playerCards.Values.SelectMany(i => i));
+            m_handsInPlay.PopulateCardsInPlay(m_clientCards.Values.SelectMany(i => i));
             m_handsInPlay.FindHandsInPlay();
         }
     }
@@ -201,23 +211,23 @@ public class CardManager : NetworkBehaviour
         else return false;
     }
 
-    private void ChangePlayerCardAmount(ulong playerID, int cardAmonutChange)
+    private void ChangeClientCardAmount(ulong clientId, int cardAmonutChange)
     {
         if (IsServer)
         {
-            m_playerNumberOfCardsInHand[playerID] += cardAmonutChange;
+            m_clientNumberOfCardsInHand[clientId] += cardAmonutChange;
         }
     }
 
-    public void EndOfRound(ulong losingPlayerID, int cardAmonutChange)
+    public void EndOfRound(ulong losingClientId, int cardAmonutChange)
     {
         if (IsServer)
         {
             DestroyCardGameObjectsClientRpc();
-            ChangePlayerCardAmount(losingPlayerID, cardAmonutChange);
-            foreach (List<Card> playersCards in m_playerCards.Values)
+            ChangeClientCardAmount(losingClientId, cardAmonutChange);
+            foreach (List<Card> clientsCards in m_clientCards.Values)
             {
-                playersCards.Clear();
+                clientsCards.Clear();
             }
             m_handsInPlay.ResetHandsInPlay();
             DistributeCards();
@@ -225,21 +235,27 @@ public class CardManager : NetworkBehaviour
     }
 
     [ClientRpc]
-    public void SendCardsToPlayerClientRpc(Card[] playersCards, ClientRpcParams clientRpcParams = default)
+    public void SendCardsToPlayerClientRpc(
+        Card[] clientsCards,
+        ulong[] allClientIds,
+        int[] allClientCardAmounts,
+        ulong[] clientOrder,
+        ClientRpcParams clientRpcParams = default
+    )
     {
-        Debug.Log($"Received list of cards {playersCards.Length}");
-        CreateCardGameObjects(playersCards.ToList());
-    }
+        Debug.Log($"Received list of cards {clientsCards.Length}");
+        CreateCardGameObjects(clientsCards.ToList());
 
-    // TODO: for displaying other players' card amounts in clients' game
-    //[ClientRpc]
-    //public void SendCardAmountToPlayersClientRpc(ulong[] ids, int[] amountOfCards)
-    //{
-    //    if (NetworkManager.LocalClientId != playerId)
-    //    {
-    //        CreateOtherPlayersCardsGameObjects(amountOfCards, playerName, relativeTurnOrder);
-    //    }
-    //}
+        Dictionary<ulong, int> otherClientsNumberOfCardsInHand = new Dictionary<ulong, int>();
+        for (int i = 0; i < allClientIds.Length; i++)
+        {
+            if (NetworkManager.Singleton.LocalClientId != allClientIds[i])
+            {
+                otherClientsNumberOfCardsInHand.Add(allClientIds[i], allClientCardAmounts[i]);
+            }
+        }
+        CreateOtherPlayersCardsGameObjects(otherClientsNumberOfCardsInHand, clientOrder.SubArray(1, clientOrder.Length - 1));
+    }
 
     [ClientRpc]
     public void DestroyCardGameObjectsClientRpc()
@@ -247,5 +263,6 @@ public class CardManager : NetworkBehaviour
         Debug.Log($"Destroying the card game objects");
         foreach (GameObject cardGameObject in m_cardGameObjects) Destroy(cardGameObject);
         m_cardGameObjects.Clear();
+        allOpponentCards.HideOpponentHands();
     }
 }

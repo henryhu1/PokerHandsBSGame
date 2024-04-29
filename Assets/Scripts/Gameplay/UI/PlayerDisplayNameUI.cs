@@ -68,7 +68,7 @@ public class PlayerDisplayNameUI : MonoBehaviour
 
     private void Show()
     {
-        m_playerDisplayNameInputField.text = LobbyManager.Instance.GetPlayerName();
+        m_playerDisplayNameInputField.text = LobbyManager.Instance.PlayerName;
         gameObject.SetActive(true);
     }
 }

@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Text;
 using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
@@ -15,8 +14,6 @@ public class PokerHandsBullshitGame : NetworkBehaviour
         Ascending,
         Descending
     }
-
-    private const string k_InGameSceneName = "GameScene";
 
     // Game settings
     private GameType m_selectedGameType;
@@ -38,13 +35,20 @@ public class PokerHandsBullshitGame : NetworkBehaviour
     public struct PlayerData
     {
         public bool IsConnected { get; set; }
-        public ulong ClientID { get; set; }
+        public ulong LastUsedClientID { get; set; }
         public string Name { get; set; }
+        public bool InPlay { get; set; }
+        public int CardAmount { get; set; }
     }
     private string m_localPlayerId;
+    public string LocalPlayerId
+    {
+        get { return m_localPlayerId; }
+        private set { m_localPlayerId = value; }
+    }
     private Dictionary<string, PlayerData> m_playerData;
-    private Dictionary<ulong, string> m_connectedPlayerIds;
-    private List<ulong> m_notInPlayPlayerIds;
+    private Dictionary<ulong, string> m_connectedClientIds;
+    private List<string> m_notInPlayPlayerIds;
     // public NetworkVariable<List<Turn>> turns = new NetworkVariable<List<Turn>>();
     //private bool m_IsPlayerTurn;
     //public bool IsPlayerTurn
@@ -54,26 +58,6 @@ public class PokerHandsBullshitGame : NetworkBehaviour
 
     // private NetworkVariable<List<PokerHand>> m_playedHandLog;
     private List<PlayedHandLogItem> m_playedHandLog;
-    public class PlayedHandLogItem
-    {
-        public readonly PokerHand m_playedHand;
-        public readonly ulong m_playerID;
-        public readonly string m_name;
-
-        public PlayedHandLogItem(PokerHand playedHand, ulong playerID, string name)
-        {
-            m_playedHand = playedHand;
-            m_playerID = playerID;
-            m_name = name;
-        }
-
-        public bool IsPokerHandBetter(PokerHand pokerHand)
-        {
-            return m_playedHand.CompareTo(pokerHand) < 0;
-        }
-    }
-
-    // public NetworkVariable<bool> m_allPlayersConnected { get; } = new NetworkVariable<bool>(false);
     public NetworkVariable<bool> m_hasGameStarted { get; } = new NetworkVariable<bool>(false);
     public NetworkVariable<bool> m_isGameOver { get; } = new NetworkVariable<bool>(false);
 
@@ -96,7 +80,7 @@ public class PokerHandsBullshitGame : NetworkBehaviour
     public event UpdatePlayableHandsDelegateHandler OnUpdatePlayableHands;
 
     [HideInInspector]
-    public delegate void AddToCardLogDelegateHandler(ulong playerId, string playerName, PokerHand playedHand);
+    public delegate void AddToCardLogDelegateHandler(PlayedHandLogItem playedHandLogItem);
     [HideInInspector]
     public event AddToCardLogDelegateHandler OnAddToCardLog;
 
@@ -117,13 +101,16 @@ public class PokerHandsBullshitGame : NetworkBehaviour
 
         // Additional connection data defined by user code
         byte[] connectionData = request.Payload;
-
-        string playerName = Encoding.ASCII.GetString(connectionData);
-        if (string.IsNullOrEmpty(playerName)) // Host is joining first and does not send connection data
+        if (connectionData == null || connectionData.Length == 0)
         {
-            playerName = LobbyManager.Instance.GetPlayerName();
+            PlayerJoining(NetworkManager.LocalClientId, LobbyManager.Instance.PlayerName, LocalPlayerId);
         }
-        PlayerJoining(clientId, playerName, m_localPlayerId);
+        else
+        {
+            (string playerName, string playerId) = StreamUtils.ReadPlayerNameId(connectionData);
+            Debug.Log($"client {clientId} info: {playerName}, {playerId}");
+            PlayerJoining(clientId, playerName, playerId);
+        }
 
         // Your approval logic determines the following values
         response.Approved = true;
@@ -152,32 +139,20 @@ public class PokerHandsBullshitGame : NetworkBehaviour
         PlayerData playerData;
         if (m_playerData.TryGetValue(playerId, out playerData))
         {
-
+            playerData.LastUsedClientID = clientId;
         }
         else
         {
             playerData = new PlayerData();
-            playerData.ClientID = clientId;
+            playerData.LastUsedClientID = clientId;
             playerData.Name = clientName;
             playerData.IsConnected = true;
-            // TODO: use playerId
-            if (Debug.isDebugBuild)
-            {
-                m_playerData.Add(clientName, playerData);
-            }
-            else
-            {
-                m_playerData.Add(playerId, playerData);
-            }
+            // playerData.InPlay = 
+            // playerData.CardAmount = 
+
+            m_playerData.Add(playerId, playerData);
         }
-        if (Debug.isDebugBuild)
-        {
-            m_connectedPlayerIds.Add(clientId, clientName);
-        }
-        else
-        {
-            m_connectedPlayerIds.Add(clientId, playerId);
-        }
+        m_connectedClientIds.Add(clientId, playerId);
 
         Debug.Log($"Player with ID {clientId}, Unity auth ID {playerId}, name {clientName} joined");
     }
@@ -187,7 +162,7 @@ public class PokerHandsBullshitGame : NetworkBehaviour
         if (IsServer)
         {
             // m_connectedPlayerIds.Add(clientId);
-            Debug.Log($"connected players: {m_connectedPlayerIds.Count}");
+            Debug.Log($"connected players: {m_connectedClientIds.Count}");
 
             if (NetworkManager.Singleton.ConnectedClients.Count == m_numberOfPlayers)
             {
@@ -195,7 +170,7 @@ public class PokerHandsBullshitGame : NetworkBehaviour
 
                 SceneTransitionHandler.Instance.SetSceneState(SceneTransitionHandler.SceneStates.InGame);
 
-                SceneTransitionHandler.Instance.SwitchScene(k_InGameSceneName);
+                SceneTransitionHandler.Instance.SwitchToGameScene();
             }
             // m_allPlayersConnected.Value = m_connectedPlayerIds.Count == m_numberOfPlayers;
         }
@@ -205,13 +180,32 @@ public class PokerHandsBullshitGame : NetworkBehaviour
     {
         if (IsServer)
         {
-            PlayerData playerData = m_playerData[m_connectedPlayerIds[clientId]];
+            PlayerData playerData = m_playerData[m_connectedClientIds[clientId]];
             playerData.IsConnected = false;
-            m_connectedPlayerIds.Remove(clientId);
+            m_connectedClientIds.Remove(clientId);
 
             // m_playerIDToNames.Remove(clientId);
             // m_allPlayersConnected.Value = false;
             // TODO: in-game handling when a player disconnects
+        }
+    }
+
+    public PlayerData GetPlayerData(ulong clientId)
+    {
+        if (IsServer)
+        {
+            if (m_playerData.TryGetValue(m_connectedClientIds[clientId], out PlayerData playerData))
+            {
+                return playerData;
+            }
+            else
+            {
+                throw new Exception($"Player with client ID {clientId} does not exist");
+            }
+        }
+        else
+        {
+            throw new Exception("Only server can get player data");
         }
     }
 
@@ -324,14 +318,14 @@ public class PokerHandsBullshitGame : NetworkBehaviour
         DontDestroyOnLoad(gameObject);
 
         m_playerData = new Dictionary<string, PlayerData>();
-        m_connectedPlayerIds = new Dictionary<ulong, string>();
-        m_notInPlayPlayerIds = new List<ulong>();
+        m_connectedClientIds = new Dictionary<ulong, string>();
+        m_notInPlayPlayerIds = new List<string>();
         m_playedHandLog = new List<PlayedHandLogItem>();
     }
 
     public void LobbyManager_Authenticated(string authPlayerId)
     {
-        m_localPlayerId = authPlayerId;
+        LocalPlayerId = authPlayerId;
     }
 
     private void Start()
@@ -368,15 +362,16 @@ public class PokerHandsBullshitGame : NetworkBehaviour
         PokerHand hand = PokerHandFactory.InferPokerHandType(playedHand);
         Debug.Log($"Server received play #{m_playedHandLog.Count}: {hand.GetStringRepresentation()}");
 
-        ulong playingPlayer = serverRpcParams.Receive.SenderClientId;
+        ulong senderClientId = serverRpcParams.Receive.SenderClientId;
         if (m_playedHandLog.Count == 0 || m_playedHandLog.Last().IsPokerHandBetter(hand))
         {
-            PlayedHandClientRpc(playingPlayer, m_playerData[m_connectedPlayerIds[playingPlayer]].Name, hand);
+            string playerId = m_connectedClientIds[senderClientId];
+            PlayedHandClientRpc(playerId, m_playerData[playerId].Name, hand);
             TurnManager.Instance.AdvanceTurn();
         }
         else
         {
-            PlayedInvalidHandClientRpc(playingPlayer);
+            PlayedInvalidHandClientRpc(senderClientId);
         }
     }
 
@@ -390,29 +385,30 @@ public class PokerHandsBullshitGame : NetworkBehaviour
     }
 
     [ClientRpc]
-    public void PlayedHandClientRpc(ulong playerId, string playerName, PokerHand playedHand)
+    public void PlayedHandClientRpc(string playerId, string playerName, PokerHand playedHand)
     {
         PokerHand hand = PokerHandFactory.InferPokerHandType(playedHand);
         Debug.Log($"Client updated with play #{m_playedHandLog.Count}: {hand.GetStringRepresentation()}");
 
-        m_playedHandLog.Add(new PlayedHandLogItem(hand, playerId, playerName));
-        OnAddToCardLog?.Invoke(playerId, playerName, hand);
+        PlayedHandLogItem playedHandLogItem = new PlayedHandLogItem(hand, playerId, playerName);
+        m_playedHandLog.Add(playedHandLogItem);
+        OnAddToCardLog?.Invoke(playedHandLogItem);
     }
 
     [ServerRpc(RequireOwnership = false)]
     public void EvaluateLastPlayedHandServerRpc(ServerRpcParams serverRpcParams = default)
     {
-        ulong playerCallingBullshit = serverRpcParams.Receive.SenderClientId;
+        ulong callingBullshitClientId = serverRpcParams.Receive.SenderClientId;
 
         PlayedHandLogItem lastLoggedHand = m_playedHandLog.Last();
-        ulong lastPlayerToPlayHand = lastLoggedHand.m_playerID;
+        string lastPlayerToPlayHand = lastLoggedHand.m_playerId;
         PokerHand lastPlayedHand = lastLoggedHand.m_playedHand;
 
         bool isHandInPlay = CardManager.Instance.IsHandInPlay(lastPlayedHand);
         Debug.Log($"{lastPlayedHand.GetStringRepresentation()} is in play => {isHandInPlay}");
 
         // TODO: visual display of bullshit result
-        ulong losingPlayer = isHandInPlay ? playerCallingBullshit : lastPlayerToPlayHand;
+        ulong losingPlayer = isHandInPlay ? callingBullshitClientId : m_playerData[lastPlayerToPlayHand].LastUsedClientID;
         EndOfRoundClientRpc();
         TurnManager.Instance.EndOfRound(losingPlayer);
         CardManager.Instance.EndOfRound(losingPlayer, m_playerCardAmountChange);
