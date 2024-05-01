@@ -99,7 +99,7 @@ public class TurnManager : NetworkBehaviour
         }
     }
 
-    public void EndOfRound(ulong losingClientId)
+    public void NextRound(ulong losingClientId)
     {
         if (IsServer)
         {
@@ -107,12 +107,12 @@ public class TurnManager : NetworkBehaviour
             //   will invoke the OnNextPlayerTurn event correctly by setting wasPlayersTurnPreviously always to false. Fix.
             m_currentTurnClientId.Value = losingClientId;
             m_currentTurnClientIndex = m_turnOrder.IndexOf(losingClientId);
-            EndOfRoundClientRpc(losingClientId);
+            NextRoundClientRpc(losingClientId);
         }
     }
 
     [ClientRpc]
-    public void EndOfRoundClientRpc(ulong losingClientId)
+    public void NextRoundClientRpc(ulong losingClientId)
     {
         OnNextPlayerTurn?.Invoke(NetworkManager.LocalClientId == losingClientId);
     }

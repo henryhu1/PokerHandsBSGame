@@ -4,15 +4,5 @@ using UnityEngine;
 
 public class SessionManager : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    // TODO: to keep track of clients that joined the game
 }

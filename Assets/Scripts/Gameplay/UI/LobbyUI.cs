@@ -38,6 +38,8 @@ public class LobbyUI : MonoBehaviour
         m_lobbyJoinCodeText.gameObject.SetActive(false);
         m_gameStartingText.gameObject.SetActive(false);
 
+        m_changeGameModeButton.enabled = true;
+
         m_leaveLobbyButton.onClick.AddListener(() => {
             LobbyManager.Instance.LeaveLobby();
         });
@@ -47,6 +49,7 @@ public class LobbyUI : MonoBehaviour
         });
 
         m_startGameButton.onClick.AddListener(() => {
+            m_changeGameModeButton.enabled = false;
             LobbyManager.Instance.StartGame();
         });
     }
@@ -162,7 +165,7 @@ public class LobbyUI : MonoBehaviour
         m_changeGameModeButton.gameObject.SetActive(LobbyManager.Instance.IsLobbyHost());
         m_changeGameModeButton.gameObject.SetActive(LobbyManager.Instance.IsLobbyHost());
         m_startGameButton.gameObject.SetActive(LobbyManager.Instance.IsLobbyHost());
-        // m_startGameButton.enabled = lobby.Players.Count >= 2;
+        m_startGameButton.enabled = lobby.Players.Count >= 2;
 
         m_gameModeText.gameObject.SetActive(!LobbyManager.Instance.IsLobbyHost());
 

@@ -137,17 +137,17 @@ public class CardRankChoicesUI : SelectionUI<Rank>
         if (s_HandRankLowerBounds.TryGetValue(ChoosingRankFor, out Rank rankBound)) {
             EnableTogglesToAtLeast(RankToToggleIndex(rankBound));
         }
-        else if (ChoosingRankFor == Hand.TwoPair)
-        {
-            if (m_isPrimaryRankChoice)
-            {
-                EnableTogglesToAtLeast(RankToToggleIndex(m_ToggleDictionary[ThreeToggle]));
-            }
-            else
-            {
-                EnableTogglesToAtMost(RankToToggleIndex(m_ToggleDictionary[KingToggle]));
-            }
-        }
+        //else if (ChoosingRankFor == Hand.TwoPair)
+        //{
+        //    if (m_isPrimaryRankChoice)
+        //    {
+        //        EnableTogglesToAtLeast(RankToToggleIndex(m_ToggleDictionary[ThreeToggle]));
+        //    }
+        //    else
+        //    {
+        //        EnableTogglesToAtMost(RankToToggleIndex(m_ToggleDictionary[KingToggle]));
+        //    }
+        //}
         else
         {
             EnableTogglesToAtLeast();

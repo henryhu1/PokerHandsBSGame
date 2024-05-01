@@ -211,6 +211,15 @@ public class CardManager : NetworkBehaviour
         else return false;
     }
 
+    public List<PokerHand> GetAllHandsInPlay()
+    {
+        if (IsServer)
+        {
+            return m_handsInPlay.GetHandsInPlay();
+        }
+        return new List<PokerHand>();
+    }
+
     private void ChangeClientCardAmount(ulong clientId, int cardAmonutChange)
     {
         if (IsServer)
@@ -219,7 +228,7 @@ public class CardManager : NetworkBehaviour
         }
     }
 
-    public void EndOfRound(ulong losingClientId, int cardAmonutChange)
+    public void NextRound(ulong losingClientId, int cardAmonutChange)
     {
         if (IsServer)
         {

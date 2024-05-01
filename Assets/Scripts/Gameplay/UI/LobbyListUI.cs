@@ -9,7 +9,6 @@ using UnityEngine.UI;
 [DefaultExecutionOrder(1000)]
 public class LobbyListUI : MonoBehaviour
 {
-
     public static LobbyListUI Instance { get; private set; }
 
     // TODO: maybe refactor events to be delegate (arg type) instead of EventHandler

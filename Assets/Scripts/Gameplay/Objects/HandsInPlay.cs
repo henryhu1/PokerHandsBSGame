@@ -120,7 +120,10 @@ public class HandsInPlay
             }
             for (int  k = 0; k < triplesInPlay.Count; k++)
             {
-                m_handsInPlay.Add(new FullHouse(triplesInPlay.ElementAt(k), pairsInPlay.ElementAt(i)));
+                if (triplesInPlay.ElementAt(k).RankPrimary != pairsInPlay.ElementAt(i).RankPrimary)
+                {
+                    m_handsInPlay.Add(new FullHouse(triplesInPlay.ElementAt(k), pairsInPlay.ElementAt(i)));
+                }
             }
         }
 
@@ -186,5 +189,10 @@ public class HandsInPlay
     public bool IsHandInPlay(PokerHand pokerHand)
     {
         return m_handsInPlay.Contains(pokerHand);
+    }
+
+    public List<PokerHand> GetHandsInPlay()
+    {
+        return m_handsInPlay.ToList();
     }
 }

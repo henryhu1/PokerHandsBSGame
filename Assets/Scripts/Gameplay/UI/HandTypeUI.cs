@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -111,6 +110,8 @@ public class HandTypeUI : SelectionUI<Hand>
                 }
             });
         }
+
+        PokerHandsBullshitGame.Instance.OnEndOfRound += GameManager_EndOfRound;
     }
 
     private void Start()
@@ -121,6 +122,12 @@ public class HandTypeUI : SelectionUI<Hand>
     private void GameManager_UpdatePlayableHands(PokerHand playedHand)
     {
         EnableTogglesToAtLeast();
+    }
+
+    private void GameManager_EndOfRound(List<bool> _, List<PokerHand> __)
+    {
+        ResetSelection();
+        InvokeNoSelectionMade();
     }
 
     //private static int RankToToggleIndex(Rank rank)

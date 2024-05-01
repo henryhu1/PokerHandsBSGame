@@ -930,7 +930,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 07400eb5c01b450408b8d9417ded81a7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_StartMainMenuScene: MainMenuScene
 --- !u!4 &155604538
 Transform:
   m_ObjectHideFlags: 0
@@ -3053,7 +3052,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: bedcd867ce9e74a499291cf719ed5a3b, type: 3}
+  m_Sprite: {fileID: 21300000, guid: cb1aea02796fbf3458460a3ebe99d24a, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1

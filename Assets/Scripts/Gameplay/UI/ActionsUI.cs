@@ -24,6 +24,7 @@ public class ActionsUI : TriggerUITransition
             PokerHand playingPokerHand = HandSelectionUI.Instance.GetSelection();
             if (playingPokerHand != null)
             {
+                // TODO: clients have the last played hand, playable hand check can be done client side?
                 PokerHandsBullshitGame.Instance.TryPlayingHandServerRpc(playingPokerHand);
             }
         });

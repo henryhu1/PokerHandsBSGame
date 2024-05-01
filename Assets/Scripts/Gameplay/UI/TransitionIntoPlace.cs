@@ -5,48 +5,67 @@ using UnityEngine;
 [DefaultExecutionOrder(1000)]
 public class TransitionIntoPlace : MonoBehaviour
 {
-    public enum MoveFromDirection { Left, Right, Up, Down }
-    public static Dictionary<MoveFromDirection, Vector3> s_MoveDistances = new Dictionary<MoveFromDirection, Vector3>
-    {
-        { MoveFromDirection.Left, Vector3.left },
-        { MoveFromDirection.Right, Vector3.right },
-        { MoveFromDirection.Up, Vector3.up },
-        { MoveFromDirection.Down, Vector3.down },
-    };
+    public enum InDirection { Left, Right, Up, Down }
+    // public static Dictionary<InDirection, Vector3> s_DirectionToMove = new Dictionary<InDirection, Vector3>
+    // {
+        // { InDirection.Left, Vector3.left },
+        // { InDirection.Right, Vector3.right },
+        // { InDirection.Up, Vector3.up },
+        // { InDirection.Down, Vector3.down },
+    // };
 
-    private Vector3 m_finalPosition;
-    [SerializeField] private MoveFromDirection m_fromDirection;
+    [SerializeField] private RectTransform rectTransform;
+    [SerializeField] private InDirection m_inDirection;
     [SerializeField] private AnimationCurve movementCurve;
     [SerializeField] private float m_movementDuration;
-    [SerializeField] private TriggerUITransition m_triggerUITransition;
+    [SerializeField] private List<TriggerUITransition> m_triggeringSubjects;
+    [SerializeField] private bool m_startOffScreen = true;
+    private Vector3 m_originalPosition;
 
     private void Awake()
     {
-        m_finalPosition = transform.position;
+        m_originalPosition = transform.position;
+        if (m_startOffScreen)
+        {
+            transform.position = GetOffScreenPosition();
+        }
 
-        SetPositionToStarting();
-        m_triggerUITransition.RegisterCallback(StartDoTransition);
+        foreach (TriggerUITransition triggerUITransition in m_triggeringSubjects) triggerUITransition.RegisterCallback(StartDoTransition);
         // InGameUI.Instance.OnShowUI += StartDoTransition;
-    }
-
-    private void SetPositionToStarting()
-    {
-        RectTransform rectTransform = GetComponent<RectTransform>();
-        float width = rectTransform.sizeDelta.x;
-        float height = rectTransform.sizeDelta.y;
-        Vector3 distance = new Vector3(width * 1.2f, height * 1.2f, 0);
-        transform.position += Vector3.Scale(s_MoveDistances[m_fromDirection], distance);
     }
 
     private void StartDoTransition()
     {
-        SetPositionToStarting();
         StartCoroutine(DoTransition());
+    }
+
+    private Vector3 GetOffScreenPosition()
+    {
+        float width = rectTransform.sizeDelta.x;
+        float height = rectTransform.sizeDelta.y;
+        switch (m_inDirection)
+        {
+            case InDirection.Left:
+                return new Vector3(Screen.width + width / 2, transform.position.y, 0);
+            case InDirection.Right:
+                return new Vector3(-width / 2, transform.position.y, 0);
+            case InDirection.Up:
+                return new Vector3(transform.position.x, -height / 2, 0);
+            case InDirection.Down:
+                return new Vector3(transform.position.x, Screen.height + height / 2, 0);
+            default:
+                return m_originalPosition;
+        }
     }
 
     private IEnumerator DoTransition()
     {
         Vector3 startPosition = transform.position;
+        Vector3 finalPosition = m_originalPosition;
+        if (transform.position == m_originalPosition)
+        {
+            finalPosition = GetOffScreenPosition();
+        }
         float time = 0f;
 
         while (time < m_movementDuration)
@@ -55,12 +74,12 @@ public class TransitionIntoPlace : MonoBehaviour
 
             float step = time / m_movementDuration;
             float curveStep = movementCurve.Evaluate(step);
-            transform.position = Vector3.Lerp(startPosition, m_finalPosition, curveStep);
+            transform.position = Vector3.Lerp(startPosition, finalPosition, curveStep);
 
             yield return null;
         }
 
-        transform.position = m_finalPosition;
+        transform.position = finalPosition;
     }
 
 }

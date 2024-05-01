@@ -96,36 +96,36 @@ public class HandSelectionUI : MonoBehaviour
     private void RankChoice_SelectRank(bool isPrimary, Rank selectedRank)
     {
         Debug.Log($"rank selected, primary={isPrimary} rank={selectedRank}");
-        bool isTwoPairSelection = m_selectedHand != null && m_selectedHand.Equals(Hand.TwoPair);
+        // bool isTwoPairSelection = m_selectedHand != null && m_selectedHand.Equals(Hand.TwoPair);
         if (isPrimary)
         {
             m_selectedPrimaryRank = selectedRank;
-            if (selectedRank == m_selectedSecondaryRank || (isTwoPairSelection && selectedRank < m_selectedSecondaryRank))
+            if (selectedRank == m_selectedSecondaryRank) // || (isTwoPairSelection && selectedRank < m_selectedSecondaryRank))
             {
                 Debug.Log("must reset secondary rank selection");
                 m_CardRankChoicesSecondary.ResetSelection();
-                m_CardRankChoicesPrimary.EnableRankToggles();
+                // m_CardRankChoicesPrimary.EnableRankToggles();
                 m_selectedSecondaryRank = null;
             }
-            if (m_selectedHand != null && m_selectedHand.Equals(Hand.TwoPair))
-            {
-                m_CardRankChoicesSecondary.DarkenDownTo(selectedRank);
-            }
+            // if (isTwoPairSelection)
+            // {
+            //     m_CardRankChoicesSecondary.DarkenDownTo(selectedRank);
+            // }
         }
         else
         {
             m_selectedSecondaryRank = selectedRank;
-            if (selectedRank == m_selectedPrimaryRank || (isTwoPairSelection && selectedRank > m_selectedPrimaryRank))
+            if (selectedRank == m_selectedPrimaryRank) // || (isTwoPairSelection && selectedRank > m_selectedPrimaryRank))
             {
                 Debug.Log("must reset primary rank selection");
                 m_CardRankChoicesPrimary.ResetSelection();
-                m_CardRankChoicesSecondary.EnableRankToggles();
+                // m_CardRankChoicesSecondary.EnableRankToggles();
                 m_selectedPrimaryRank = null;
             }
-            if (m_selectedHand != null && m_selectedHand.Equals(Hand.TwoPair))
-            {
-                m_CardRankChoicesPrimary.DarkenUpTo(selectedRank);
-            }
+            // if (isTwoPairSelection)
+            // {
+            //     m_CardRankChoicesPrimary.DarkenUpTo(selectedRank);
+            // }
         }
     }
 
