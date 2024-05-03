@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.Netcode;
 using Unity.Services.Authentication;
 using Unity.Services.Core;
@@ -17,7 +18,7 @@ public class LobbyManager : MonoBehaviour
     public const string KEY_GAME_MODE = "GameType";
     public const string KEY_START_GAME = "Start";
 
-    public static string k_DefaultLobbyName = "MyLobby";
+    public static string k_DefaultLobbyName = "Lobby";
 
     // TODO: maybe refactor events to be delegate (arg type) instead of EventHandler
     public event EventHandler OnLeftLobby;
@@ -240,7 +241,14 @@ public class LobbyManager : MonoBehaviour
         {
             if (string.IsNullOrEmpty(lobbyName))
             {
-                lobbyName = k_DefaultLobbyName;
+                if (m_playerName.Last() == 's')
+                {
+                    lobbyName = $"{m_playerName}' {k_DefaultLobbyName}";
+                }
+                else
+                {
+                    lobbyName = $"{m_playerName}'s {k_DefaultLobbyName}";
+                }
             }
             Lobby lobby = await LobbyService.Instance.CreateLobbyAsync(lobbyName, maxPlayers, options);
 

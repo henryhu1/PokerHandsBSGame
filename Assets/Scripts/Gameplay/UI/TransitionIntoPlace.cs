@@ -18,6 +18,7 @@ public class TransitionIntoPlace : MonoBehaviour
     [SerializeField] private InDirection m_inDirection;
     [SerializeField] private AnimationCurve movementCurve;
     [SerializeField] private float m_movementDuration;
+    [SerializeField] private float m_startDelay = 0f;
     [SerializeField] private List<TriggerUITransition> m_triggeringSubjects;
     [SerializeField] private bool m_startOffScreen = true;
     private Vector3 m_originalPosition;
@@ -65,6 +66,10 @@ public class TransitionIntoPlace : MonoBehaviour
         if (transform.position == m_originalPosition)
         {
             finalPosition = GetOffScreenPosition();
+        }
+        else
+        {
+            yield return new WaitForSeconds(m_startDelay);
         }
         float time = 0f;
 

@@ -9,7 +9,7 @@ using UnityEngine.UI;
 public class InputFieldModalUI : MonoBehaviour
 {
 
-    public static InputFieldModalUI Instance;
+    public static InputFieldModalUI Instance { get; private set; }
 
     [SerializeField] private Button m_enterButton;
     [SerializeField] private Button m_cancelButton;

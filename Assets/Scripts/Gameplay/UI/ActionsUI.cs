@@ -9,11 +9,15 @@ public class ActionsUI : TriggerUITransition
     //   game object and have this control when the 
     //   fade animation plays. Delete TriggerUITransition.
     //   Can also stop the fading from here whenever Play is clicked
+    //
+    // Or instead, keep TriggerUITransition to keep a subject/observer
+    //   pattern for triggering transitions and UI elements that are animated
 {
-    public static ActionsUI Instance;
+    public static ActionsUI Instance { get; private set; }
 
     [SerializeField] private Button m_PlayButton;
     [SerializeField] private Button m_BullshitButton;
+    [SerializeField] private Outline m_Outline;
 
     private void Awake()
     {
@@ -36,6 +40,7 @@ public class ActionsUI : TriggerUITransition
 
         m_PlayButton.enabled = PokerHandsBullshitGame.Instance.IsHosting(); // TODO: flimsy how based on host the play button enables, change to actual turn logic?
         m_BullshitButton.enabled = !PokerHandsBullshitGame.Instance.IsBeginningOfRound();
+        m_Outline.enabled = m_PlayButton.enabled;
     }
 
     private void Start()
@@ -61,7 +66,9 @@ public class ActionsUI : TriggerUITransition
 
     private void SetTurnActions(bool isPlayerTurn, bool wasPlayersTurnPreviously)
     {
-        m_PlayButton.enabled = isPlayerTurn;
-        m_BullshitButton.enabled = !PokerHandsBullshitGame.Instance.IsBeginningOfRound() && !wasPlayersTurnPreviously;
+        bool isPlayerNotOut = PokerHandsBullshitGame.Instance.IsNotOut();
+        m_PlayButton.enabled = isPlayerNotOut && isPlayerTurn;
+        m_BullshitButton.enabled = isPlayerNotOut && !PokerHandsBullshitGame.Instance.IsBeginningOfRound() && !wasPlayersTurnPreviously;
+        m_Outline.enabled = m_PlayButton.enabled;
     }
 }

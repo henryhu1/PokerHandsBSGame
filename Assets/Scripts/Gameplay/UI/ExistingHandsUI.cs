@@ -26,7 +26,8 @@ public class ExistingHandsUI : MonoBehaviour
         {
             ExistingHandItemUI existingHandItem = Instantiate(m_ExistingHandItemUIPrefab, m_LogContent.transform);
             PokerHand hand = allHandsInPlay[i];
-            existingHandItem.GiveExistingHandItem(hand); //, PlayedHandLogUI.Instance.GetPlayerThatPlayedHand(hand));
+            (string, int) playedHandInfo = PlayedHandLogUI.Instance.GetPlayerAndRoundOfPlayedHand(hand);
+            existingHandItem.GiveExistingHandItem(hand, playedHandInfo.Item1, playedHandInfo.Item2);
             m_ExistingHandItems.Add(existingHandItem);
         }
     }

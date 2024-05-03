@@ -9,8 +9,11 @@ public static class StreamUtils
         {
             using (BinaryWriter writer = new BinaryWriter(stream))
             {
-                writer.Write(LobbyManager.Instance.PlayerName);
-                writer.Write(PokerHandsBullshitGame.Instance.LocalPlayerId);
+                writer.Write(playerName);
+                if (playerId != null)
+                {
+                    writer.Write(playerId);
+                }
                 return stream.ToArray();
             }
         }

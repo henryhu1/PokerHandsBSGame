@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class CameraRotationLookAtTarget : MonoBehaviour
 {
-    public static CameraRotationLookAtTarget Instance;
+    public static CameraRotationLookAtTarget Instance { get; private set; }
     public Transform target;
     [SerializeField] private AnimationCurve movementCurve;
     [SerializeField] private float m_movementDuration;

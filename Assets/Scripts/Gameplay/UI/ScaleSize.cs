@@ -25,8 +25,6 @@ public class ScaleSize : MonoBehaviour
     {
         m_originalSize = rectTransform.sizeDelta;
         m_scaleSize = Vector2.Scale(s_DirectionToScale[m_sideToScale], m_scale);
-        Debug.Log(rectTransform.sizeDelta);
-        Debug.Log(m_scaleSize);
 
         m_triggerUITransition.RegisterCallback(StartDoScale);
     }

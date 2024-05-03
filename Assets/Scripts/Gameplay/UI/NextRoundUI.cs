@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 public class NextRoundUI : MonoBehaviour
 {
-    public static NextRoundUI Instance;
+    public static NextRoundUI Instance { get; private set; }
 
     [SerializeField] private Toggle m_readyForNextRoundButton;
     [SerializeField] private TextMeshProUGUI m_playersReadyText;
@@ -14,14 +14,14 @@ public class NextRoundUI : MonoBehaviour
     private const string k_readyText = "Ready";
     private const string k_unreadyText = "Unready";
 
-    private int m_totalPlayers;
+    private int m_totalPlayersToBeReady;
 
     private void Awake()
     {
         Instance = this;
 
-        m_totalPlayers = PokerHandsBullshitGame.Instance.m_numberOfPlayers.Value;
-        m_playersReadyText.text = "0/" + m_totalPlayers;
+        m_totalPlayersToBeReady = PokerHandsBullshitGame.Instance.m_inPlayClientIds.Count;
+        m_playersReadyText.text = $"0/{m_totalPlayersToBeReady}";
         m_toggleText.text = k_readyText;
 
         m_readyForNextRoundButton.onValueChanged.AddListener((bool isOn) =>
@@ -34,6 +34,7 @@ public class NextRoundUI : MonoBehaviour
             }
         });
 
+        PokerHandsBullshitGame.Instance.RegisterNextRoundUIObservers();
         PokerHandsBullshitGame.Instance.OnNextRoundStarting += GameManager_NextRoundStarting;
     }
 
@@ -46,7 +47,18 @@ public class NextRoundUI : MonoBehaviour
 
     public void SetNumberOfPlayersReadyText(int numberOfPlayersReady)
     {
-        m_playersReadyText.text = numberOfPlayersReady.ToString() + "/" + m_totalPlayers;
+        m_playersReadyText.text = $"{numberOfPlayersReady}/{m_totalPlayersToBeReady}";
+    }
+
+    public void SetTotalNumberOfPlayersToBeReady(int numberOfPlayersToBeReady)
+    {
+        m_totalPlayersToBeReady = numberOfPlayersToBeReady;
+        m_playersReadyText.text = $"0/{m_totalPlayersToBeReady}";
+    }
+
+    public void SetToggleEnabled(bool enabled)
+    {
+        m_readyForNextRoundButton.enabled = enabled;
     }
 
     public void Show()

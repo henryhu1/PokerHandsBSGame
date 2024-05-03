@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class InGameUI : TriggerUITransition
 {
-    public static InGameUI Instance;
+    public static InGameUI Instance { get; private set; }
 
     private void Awake()
     {

@@ -7,7 +7,7 @@ using UnityEngine;
 [Serializable]
 public class Deck// : MonoBehaviour, UIMainScene.IUIInfoContent
 {
-    private List<Card> _deck;
+    public List<Card> m_deck { get; private set; }
 
     public static readonly IList<Card> fullDeck = new ReadOnlyCollection<Card>(new List<Card> {
         new Card(Suit.Spade, Rank.Ace), new Card(Suit.Spade, Rank.Two), new Card(Suit.Spade, Rank.Three), new Card(Suit.Spade, Rank.Four), new Card(Suit.Spade, Rank.Five), new Card(Suit.Spade, Rank.Six), new Card(Suit.Spade, Rank.Seven), new Card(Suit.Spade, Rank.Eight), new Card(Suit.Spade, Rank.Nine), new Card(Suit.Spade, Rank.Ten), new Card(Suit.Spade, Rank.Jack), new Card(Suit.Spade, Rank.Queen), new Card(Suit.Spade, Rank.King), 
@@ -19,41 +19,41 @@ public class Deck// : MonoBehaviour, UIMainScene.IUIInfoContent
 
     public Deck()
     {
-        _deck = new List<Card>(fullDeck);
+        m_deck = new List<Card>(fullDeck);
     }
 
     public void Shuffle()
     {
-        if (_deck == null) return;
+        if (m_deck == null) return;
 
-        var count = _deck.Count;
+        var count = m_deck.Count;
         var last = count - 1;
         for (var i = 0; i < last; ++i)
         {
             var r = UnityEngine.Random.Range(i, count);
-            var tmp = _deck[i];
-            _deck[i] = _deck[r];
-            _deck[r] = tmp;
+            var tmp = m_deck[i];
+            m_deck[i] = m_deck[r];
+            m_deck[r] = tmp;
         }
     }
 
     public bool IsDeckEmpty()
     {
-        return _deck.Count == 0;
+        return m_deck.Count == 0;
     }
 
     public Card TakeCard()
     {
         if (IsDeckEmpty()) return null;
 
-        Card card = _deck[0];
-        _deck.RemoveAt(0);
+        Card card = m_deck[0];
+        m_deck.RemoveAt(0);
 
         return card;
     }
 
     public void ResetDeck()
     {
-        _deck = new List<Card>(fullDeck);
+        m_deck = new List<Card>(fullDeck);
     }
 }

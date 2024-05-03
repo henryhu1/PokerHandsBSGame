@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class HandSelectionUI : MonoBehaviour
 {
-    public static HandSelectionUI Instance;
+    public static HandSelectionUI Instance { get; private set; }
 
     [SerializeField] private CardRankChoicesUI m_CardRankChoicesPrimary;
     [SerializeField] private CardRankChoicesUI m_CardRankChoicesSecondary;

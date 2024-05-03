@@ -23,10 +23,11 @@ public class PokerHandsBullshitGame : NetworkBehaviour
         private set { m_selectedGameType = value; }
     }
     private int m_playerCardAmountChange;
-    public NetworkVariable<int> m_numberOfPlayers { get; } = new NetworkVariable<int>(0);
+    private int m_numberOfPlayers;
+    public int NumberOfPlayers { get { return m_numberOfPlayers; } }
     private float m_timeForTurn;
 
-    // Player and client data
+    // Player and client data, TODO: player manager? ^ also look at m_numberOfPlayers ^
     public struct PlayerData
     {
         public bool IsConnected { get; set; }
@@ -43,7 +44,11 @@ public class PokerHandsBullshitGame : NetworkBehaviour
     }
     private Dictionary<string, PlayerData> m_playerData;
     private Dictionary<ulong, string> m_connectedClientIds;
-    private List<string> m_notInPlayPlayerIds;
+    //private HashSet<string> m_inPlayPlayerIds;
+    //private HashSet<string> m_notInPlayPlayerIds;
+    public NetworkList<ulong> m_inPlayClientIds { get; private set; }
+    public NetworkList<ulong> m_notInPlayClientIds { get; private set; }
+
     // public NetworkVariable<List<Turn>> turns = new NetworkVariable<List<Turn>>();
     //private bool m_IsPlayerTurn;
     //public bool IsPlayerTurn
@@ -55,7 +60,6 @@ public class PokerHandsBullshitGame : NetworkBehaviour
     // TODO: add a RoundManager? Played hands, next round ready, round events
     private List<PlayedHandLogItem> m_playedHandLog;
     public NetworkVariable<int> m_playersReadyForNextRound { get; } = new NetworkVariable<int>(0);
-    private ulong m_lastRoundLosingClientId;
     public NetworkVariable<bool> m_hasGameStarted { get; } = new NetworkVariable<bool>(false);
     public NetworkVariable<bool> m_isGameOver { get; } = new NetworkVariable<bool>(false);
 
@@ -101,6 +105,11 @@ public class PokerHandsBullshitGame : NetworkBehaviour
     public delegate void InvalidPlayDelegateHandler();
     [HideInInspector]
     public event InvalidPlayDelegateHandler OnInvalidPlay;
+
+    [HideInInspector]
+    public delegate void GameWonDelegateHandler(ulong winnerClientId, string winnerName);
+    [HideInInspector]
+    public event GameWonDelegateHandler OnGameWon;
 
     private void ApprovalCheck(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response)
     {
@@ -171,8 +180,18 @@ public class PokerHandsBullshitGame : NetworkBehaviour
         {
             // m_connectedPlayerIds.Add(clientId);
             Debug.Log($"connected players: {m_connectedClientIds.Count}");
+            if (SceneTransitionHandler.Instance.IsInGameScene())
+            {
+                // m_notInPlayPlayerIds.Add(playerId);
+                m_notInPlayClientIds.Add(clientId);
+            }
+            else
+            {
+                // m_inPlayPlayerIds.Add(playerId);
+                m_inPlayClientIds.Add(clientId);
+            }
 
-            if (NetworkManager.Singleton.ConnectedClients.Count == m_numberOfPlayers.Value)
+            if (NetworkManager.Singleton.ConnectedClients.Count == m_numberOfPlayers)
             {
                 SceneTransitionHandler.Instance.RegisterCallbacks();
 
@@ -188,9 +207,17 @@ public class PokerHandsBullshitGame : NetworkBehaviour
     {
         if (IsServer)
         {
-            PlayerData playerData = m_playerData[m_connectedClientIds[clientId]];
+            string playerId = m_connectedClientIds[clientId];
+            PlayerData playerData = m_playerData[playerId];
             playerData.IsConnected = false;
+            playerData.InPlay = false;
             m_connectedClientIds.Remove(clientId);
+            // m_inPlayPlayerIds.Remove(playerId);
+            m_inPlayClientIds.Remove(clientId);
+            // m_numberOfPlayersPlaying.Value = m_inPlayPlayerIds.Count;
+            // m_notInPlayPlayerIds.Add(playerId);
+            m_notInPlayClientIds.Remove(clientId);
+            m_numberOfPlayers -= 1;
 
             // m_playerIDToNames.Remove(clientId);
             // m_allPlayersConnected.Value = false;
@@ -223,8 +250,8 @@ public class PokerHandsBullshitGame : NetworkBehaviour
     //    {
     //        if (SceneTransitionHandler.Instance.IsInGameScene())
     //        {
-    //            CardManager.Instance.StartingCardAmount = m_selectedGameType == GameType.Ascending ? 1 : 5;
-    //            // m_currentTurnPlayer.Value = m_connectedPlayerIds[m_currentTurnPlayerIndex];
+    //        // CardManager.Instance.StartingCardAmount = m_selectedGameType == GameType.Ascending ? 1 : 5;
+    //        // m_currentTurnPlayer.Value = m_connectedPlayerIds[m_currentTurnPlayerIndex];
     //        }
     //    }
     //}
@@ -270,11 +297,6 @@ public class PokerHandsBullshitGame : NetworkBehaviour
             };
         }
 
-        m_playersReadyForNextRound.OnValueChanged += (oldValue, newValue) =>
-        {
-            NextRoundUI.Instance.SetNumberOfPlayersReadyText(newValue);
-        };
-
         if (IsServer)
         {
             m_hasGameStarted.Value = false;
@@ -294,15 +316,67 @@ public class PokerHandsBullshitGame : NetworkBehaviour
         // TurnManager.Instance.
     }
 
-    // TODO: when player gets out, move player to m_notInPlayPlayerIds and do other logic
     public void RegisterCardManagerCallbacks()
     {
-        // CardManager.Instance.OnPlayerLoses += 
+        CardManager.Instance.OnPlayerOut += CardManager_PlayerOut;
+    }
+
+    public void UnregisterCardManagerCallbacks()
+    {
+        CardManager.Instance.OnPlayerOut -= CardManager_PlayerOut;
+    }
+
+    private void CardManager_PlayerOut(ulong losingClientId)
+    {
+        if (IsServer)
+        {
+            //string losingPlayerId = m_connectedClientIds[losingClientId];
+            //m_inPlayPlayerIds.Remove(losingPlayerId);
+            //m_notInPlayPlayerIds.Add(losingPlayerId);
+            m_inPlayClientIds.Remove(losingClientId);
+            m_notInPlayClientIds.Remove(losingClientId);
+        }
+    }
+
+    public void RegisterNextRoundUIObservers()
+    {
+        m_playersReadyForNextRound.OnValueChanged += (oldValue, newValue) =>
+        {
+            NextRoundUI.Instance.SetNumberOfPlayersReadyText(newValue);
+        };
+
+        m_inPlayClientIds.OnListChanged += (NetworkListEvent<ulong> changeEvent) =>
+        {
+            NextRoundUI.Instance.SetTotalNumberOfPlayersToBeReady(m_inPlayClientIds.Count);
+            if (changeEvent.Type == NetworkListEvent<ulong>.EventType.Remove)
+            {
+                NextRoundUI.Instance.SetToggleEnabled(changeEvent.Value != NetworkManager.LocalClientId);
+            }
+        };
     }
 
     public bool IsHosting()
     {
         return IsHost;
+    }
+
+    public bool IsNotOut(ulong clientId)
+    {
+        return m_inPlayClientIds.Contains(clientId);
+    }
+
+    public bool IsNotOut()
+    {
+        return m_inPlayClientIds.Contains(NetworkManager.LocalClientId);
+    }
+
+    public string GetClientName(ulong clientId)
+    {
+        if (IsServer)
+        {
+            return m_playerData[m_connectedClientIds[clientId]].Name;
+        }
+        return null;
     }
 
     public bool IsBeginningOfRound()
@@ -320,7 +394,7 @@ public class PokerHandsBullshitGame : NetworkBehaviour
     {
         SelectedGameType = gameType;
         m_playerCardAmountChange = gameType == GameType.Ascending ? 1 : -1;
-        m_numberOfPlayers.Value = numberOfPlayers;
+        m_numberOfPlayers = numberOfPlayers;
         m_timeForTurn = timeForTurn;
     }
 
@@ -332,7 +406,10 @@ public class PokerHandsBullshitGame : NetworkBehaviour
 
         m_playerData = new Dictionary<string, PlayerData>();
         m_connectedClientIds = new Dictionary<ulong, string>();
-        m_notInPlayPlayerIds = new List<string>();
+        //m_inPlayPlayerIds = new HashSet<string>();
+        //m_notInPlayPlayerIds = new HashSet<string>();
+        m_inPlayClientIds = new NetworkList<ulong>();
+        m_notInPlayClientIds = new NetworkList<ulong>();
         m_playedHandLog = new List<PlayedHandLogItem>();
     }
 
@@ -379,7 +456,7 @@ public class PokerHandsBullshitGame : NetworkBehaviour
         if (m_playedHandLog.Count == 0 || m_playedHandLog.Last().IsPokerHandBetter(hand))
         {
             string playerId = m_connectedClientIds[senderClientId];
-            PlayedHandClientRpc(playerId, m_playerData[playerId].Name, hand);
+            PlayedHandClientRpc(senderClientId, playerId, m_playerData[playerId].Name, hand);
             TurnManager.Instance.AdvanceTurn();
         }
         else
@@ -398,12 +475,12 @@ public class PokerHandsBullshitGame : NetworkBehaviour
     }
 
     [ClientRpc]
-    public void PlayedHandClientRpc(string playerId, string playerName, PokerHand playedHand)
+    public void PlayedHandClientRpc(ulong playedHandClientId, string playedHandPlayerId, string playerName, PokerHand playedHand)
     {
         PokerHand hand = PokerHandFactory.InferPokerHandType(playedHand);
         Debug.Log($"Client updated with play #{m_playedHandLog.Count}: {hand.GetStringRepresentation()}");
 
-        PlayedHandLogItem playedHandLogItem = new PlayedHandLogItem(hand, playerId, playerName);
+        PlayedHandLogItem playedHandLogItem = new PlayedHandLogItem(hand, playedHandClientId, playedHandPlayerId, playerName);
         m_playedHandLog.Add(playedHandLogItem);
         OnAddToCardLog?.Invoke(playedHandLogItem);
     }
@@ -421,19 +498,18 @@ public class PokerHandsBullshitGame : NetworkBehaviour
         Debug.Log($"{lastPlayedHand.GetStringRepresentation()} is in play => {isHandInPlay}");
 
         // TODO: visual display of bullshit result
-        m_lastRoundLosingClientId = isHandInPlay ? callingBullshitClientId : m_playerData[lastPlayerToPlayHand].LastUsedClientID;
+        ulong m_lastRoundLosingClientId = isHandInPlay ? callingBullshitClientId : m_playerData[lastPlayerToPlayHand].LastUsedClientID;
         IEnumerable<bool> playedHandsPresent = m_playedHandLog.Select(i => i.m_existsInRound);
         EndOfRoundClientRpc(playedHandsPresent.ToArray(), CardManager.Instance.GetAllHandsInPlay().ToArray());
-        //NextRoundClientRpc();
-        //TurnManager.Instance.NextRound(losingPlayer);
-        //CardManager.Instance.NextRound(losingPlayer, m_playerCardAmountChange);
+        CardManager.Instance.EndOfRound(m_lastRoundLosingClientId, m_playerCardAmountChange);
+        TurnManager.Instance.EndOfRound(m_lastRoundLosingClientId);
     }
 
     [ClientRpc]
     public void EndOfRoundClientRpc(bool[] playedHandsPresent, PokerHand[] allHandsInPlay)
     {
-        List<PokerHand> detailedHandsInPlay = allHandsInPlay.Select(i => PokerHandFactory.InferPokerHandType(i)).ToList();
-        OnEndOfRound?.Invoke(playedHandsPresent.ToList(), detailedHandsInPlay);
+        List<PokerHand> pokerHandsInPlay = allHandsInPlay.Select(i => PokerHandFactory.InferPokerHandType(i)).ToList();
+        OnEndOfRound?.Invoke(playedHandsPresent.ToList(), pokerHandsInPlay);
     }
 
     [ServerRpc(RequireOwnership = false)]
@@ -441,12 +517,39 @@ public class PokerHandsBullshitGame : NetworkBehaviour
     {
         int change = isPlayerReady ? 1 : -1;
         m_playersReadyForNextRound.Value += change;
-        if (m_playersReadyForNextRound.Value == m_numberOfPlayers.Value)
+        if (m_playersReadyForNextRound.Value == m_inPlayClientIds.Count)
         {
-            m_playersReadyForNextRound.Value = 0;
-            NextRoundClientRpc();
-            TurnManager.Instance.NextRound(m_lastRoundLosingClientId);
-            CardManager.Instance.NextRound(m_lastRoundLosingClientId, m_playerCardAmountChange);
+            if (m_inPlayClientIds.Count == 1) // if (m_inPlayPlayerIds.Count == 1) // m_notInPlayPlayerIds.Count + 1 == m_numberOfPlayersNetworkVariable.Value)
+            {
+                // string winner = m_inPlayPlayerIds.First();
+                ulong winnerClientId = m_inPlayClientIds[0];
+                string winner = m_connectedClientIds[winnerClientId];
+                PlayerData winnerPlayerData = m_playerData[winner];
+                GameWinnerClientRpc(winnerPlayerData.LastUsedClientID, winnerPlayerData.Name);
+            }
+            else
+            {
+                m_playersReadyForNextRound.Value = 0;
+                NextRoundClientRpc();
+                //ClientRpcParams playingClientRpcParams = new ClientRpcParams
+                //{
+                //    Send = new ClientRpcSendParams
+                //    {
+                //        TargetClientIds = m_inPlayPlayerIds.Select(i => m_playerData[i].LastUsedClientID).ToArray()
+                //    }
+                //};
+                //TurnManager.Instance.PlayingNextRoundClientRpc(playingClientRpcParams);
+                //ClientRpcParams notPlayingClientRpcParams = new ClientRpcParams
+                //{
+                //    Send = new ClientRpcSendParams
+                //    {
+                //        TargetClientIds = m_notInPlayPlayerIds.Select(i => m_playerData[i].LastUsedClientID).ToArray()
+                //    }
+                //};
+                //TurnManager.Instance.NotPlayingNextRoundClientRpc(notPlayingClientRpcParams);
+                TurnManager.Instance.NextRoundClientRpc();
+                CardManager.Instance.NextRound();
+            }
         }
     }
 
@@ -457,5 +560,11 @@ public class PokerHandsBullshitGame : NetworkBehaviour
         // TODO: should played hand log be a network list?
         m_playedHandLog.Clear();
         OnClearCardLog?.Invoke();
+    }
+
+    [ClientRpc]
+    public void GameWinnerClientRpc(ulong winnerClientId, string winnerName)
+    {
+        OnGameWon?.Invoke(winnerClientId, winnerName);
     }
 }

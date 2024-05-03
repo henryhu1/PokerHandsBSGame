@@ -52,6 +52,7 @@ public class FadeInFadeOutText : MonoBehaviour
         {
             StopCoroutine(m_fadeCoroutine);
         }
+        m_fadeCoroutine = null;
     }
 
     private IEnumerator DoFade()

@@ -7,17 +7,12 @@ public class ExistingHandItemUI : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI m_existingHandText;
     [SerializeField] private TextMeshProUGUI m_playerThatPlayedHandText;
+    [SerializeField] private TextMeshProUGUI m_roundHandWasPlayedText;
 
-    private void Awake()
-    {
-        m_playerThatPlayedHandText.text = "";
-    }
-
-    // TODO: if existing hand was played, have the player's name displayed
-    //   Also change existing hand text wrapping to enabled and adjust size for items
-    public void GiveExistingHandItem(PokerHand hand) // , string playerName)
+    public void GiveExistingHandItem(PokerHand hand, string playerName, int roundPlayed)
     {
         m_existingHandText.text = hand.GetStringRepresentation();
-        // m_playerThatPlayedHandText.text = playerName;
+        m_playerThatPlayedHandText.text = playerName;
+        m_roundHandWasPlayedText.text = roundPlayed == -1 ? "" : $"({roundPlayed})";
     }
 }

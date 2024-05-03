@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 public class HandTypeUI : SelectionUI<Hand>
 {
-    public static new HandTypeUI Instance;
+    public static new HandTypeUI Instance { get; private set; }
 
     // [SerializeField] private ToggleGroup m_HandTypeToggleGroup;
     [SerializeField] private Toggle m_HighCardToggle;

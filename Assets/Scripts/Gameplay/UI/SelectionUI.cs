@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 public class SelectionUI<T> : MonoBehaviour
 {
-    public static SelectionUI<T> Instance;
+    public static SelectionUI<T> Instance { get; protected set; }
 
     private ToggleColors m_ToggleColors = new ToggleColors();
 
