@@ -54,14 +54,15 @@ public class TurnManager : NetworkBehaviour
 
         m_currentTurnClientId.OnValueChanged += (oldValue, newValue) =>
         {
-            OnNextPlayerTurn?.Invoke(NetworkManager.LocalClientId == newValue, NetworkManager.LocalClientId == oldValue);
+            OnNextPlayerTurn?.Invoke(NetworkManager.Singleton.LocalClientId == newValue, NetworkManager.Singleton.LocalClientId == oldValue);
         };
 
         if (IsServer)
         {
-            m_currentTurnClientId.Value = NetworkManager.LocalClientId;
+            m_currentTurnClientId.Value = NetworkManager.Singleton.LocalClientId;
 
             SceneTransitionHandler.Instance.OnClientLoadedScene += AddClientToTurnOrder;
+            NetworkManager.OnClientDisconnectCallback += RemovePlayer;
         }
     }
 
@@ -72,6 +73,7 @@ public class TurnManager : NetworkBehaviour
         if (IsServer)
         {
             SceneTransitionHandler.Instance.OnClientLoadedScene -= AddClientToTurnOrder;
+            NetworkManager.OnClientDisconnectCallback -= RemovePlayer;
         }
     }
 
@@ -122,6 +124,16 @@ public class TurnManager : NetworkBehaviour
         }
     }
 
+    public void RemovePlayer(ulong clientId)
+    {
+        if (IsServer)
+        {
+            m_playerTurns[clientId].inPlay = false;
+            m_playerTurns[clientId].previous.next = m_playerTurns[clientId].next;
+            m_playerTurns[clientId].next.previous = m_playerTurns[clientId].previous;
+        }
+    }
+
     public List<ulong> GetTurnOrderStartingAtClient(ulong clientId)
     {
         if (IsServer)
@@ -158,10 +170,23 @@ public class TurnManager : NetworkBehaviour
         }
     }
 
+    public void NewGamePlayerTurns(List<ulong> inPlayClientIds)
+    {
+        if (IsServer)
+        {
+            m_turnPositions.Clear();
+            m_playerTurns.Clear();
+            foreach (ulong clientId in inPlayClientIds)
+            {
+                AddClientToTurnOrder(clientId);
+            }
+        }
+    }
+
     [ClientRpc]
     public void NextRoundClientRpc()
     {
-        OnNextPlayerTurn?.Invoke(NetworkManager.LocalClientId == m_currentTurnClientId.Value);
+        OnNextPlayerTurn?.Invoke(NetworkManager.Singleton.LocalClientId == m_currentTurnClientId.Value);
     }
 
     //[ClientRpc]

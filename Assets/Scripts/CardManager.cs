@@ -105,20 +105,12 @@ public class CardManager : NetworkBehaviour
             // NetworkManager.OnClientConnectedCallback += InitializePlayerEmptyHand;
             NetworkManager.OnClientDisconnectCallback += RemovePlayer;
 
-            PokerHandsBullshitGame.Instance.RegisterCardManagerCallbacks();
-            TurnManager.Instance.RegisterCardManagerCallbacks();
-
-            if (PokerHandsBullshitGame.Instance.SelectedGameType == PokerHandsBullshitGame.GameType.Ascending)
-            {
-                m_startingCardAmount = k_AscendingGameModeStartingCardAmount;
-                m_endingCardAmount = k_AscendingGameModeCardLimit;
-            }
-            else
-            {
-                m_startingCardAmount = k_DescendingGameModeStartingCardAmount;
-                m_endingCardAmount = k_DescendingGameModeCardLimit;
-            }
+            SetAmountOfCardsFromGameSetting();
         }
+
+        PokerHandsBullshitGame.Instance.RegisterCardManagerCallbacks();
+        TurnManager.Instance.RegisterCardManagerCallbacks();
+
     }
 
     public override void OnNetworkDespawn()
@@ -133,6 +125,23 @@ public class CardManager : NetworkBehaviour
 
             PokerHandsBullshitGame.Instance.UnregisterCardManagerCallbacks();
             TurnManager.Instance.UnregisterCardManagerCallbacks();
+        }
+    }
+
+    public void SetAmountOfCardsFromGameSetting()
+    {
+        if (IsServer)
+        {
+            if (PokerHandsBullshitGame.Instance.SelectedGameType == PokerHandsBullshitGame.GameType.Ascending)
+            {
+                m_startingCardAmount = k_AscendingGameModeStartingCardAmount;
+                m_endingCardAmount = k_AscendingGameModeCardLimit;
+            }
+            else
+            {
+                m_startingCardAmount = k_DescendingGameModeStartingCardAmount;
+                m_endingCardAmount = k_DescendingGameModeCardLimit;
+            }
         }
     }
 
@@ -311,24 +320,39 @@ public class CardManager : NetworkBehaviour
         }
     }
 
-    public void EndOfRound(ulong losingClientId, int cardAmonutChange)
+    //public void EndOfRound(ulong losingClientId, int cardAmonutChange)
+    //{
+    //    if (IsServer)
+    //    {
+    //        ChangeClientCardAmount(losingClientId, cardAmonutChange);
+    //    }
+    //}
+
+    public void NextRound(ulong losingClientId, int cardAmonutChange)
     {
         if (IsServer)
         {
             ChangeClientCardAmount(losingClientId, cardAmonutChange);
-        }
-    }
-
-    public void NextRound()
-    {
-        if (IsServer)
-        {
             DestroyCardGameObjectsClientRpc();
             foreach (PlayerCardInfo clientCardInfo in m_clientCardInfo.Values)
             {
                 clientCardInfo.cards.Clear();
             }
             m_handsInPlay.ResetHandsInPlay();
+            DistributeCards();
+        }
+    }
+
+    public void NewGamePlayerCards(List<ulong> inPlayClientIds)
+    {
+        if (IsServer)
+        {
+            SetAmountOfCardsFromGameSetting();
+            m_clientCardInfo.Clear();
+            foreach (ulong clientId in inPlayClientIds)
+            {
+                InitializePlayerEmptyHand(clientId);
+            }
             DistributeCards();
         }
     }

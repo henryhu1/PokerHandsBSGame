@@ -18,6 +18,7 @@ public class ExistingHandsUI : MonoBehaviour
     {
         PokerHandsBullshitGame.Instance.OnEndOfRound += GameManager_EndOfRound;
         PokerHandsBullshitGame.Instance.OnNextRoundStarting += GameManager_NextRoundStarting;
+        PokerHandsBullshitGame.Instance.OnRestartGame += GameManager_RestartGame;
     }
 
     private void GameManager_EndOfRound(List<bool> _, List<PokerHand> allHandsInPlay)
@@ -27,14 +28,24 @@ public class ExistingHandsUI : MonoBehaviour
             ExistingHandItemUI existingHandItem = Instantiate(m_ExistingHandItemUIPrefab, m_LogContent.transform);
             PokerHand hand = allHandsInPlay[i];
             (string, int) playedHandInfo = PlayedHandLogUI.Instance.GetPlayerAndRoundOfPlayedHand(hand);
-            existingHandItem.GiveExistingHandItem(hand, playedHandInfo.Item1, playedHandInfo.Item2);
+            existingHandItem.GiveExistingHandItem(hand, playedHandInfo.Item1, playedHandInfo.Item2 + 1);
             m_ExistingHandItems.Add(existingHandItem);
         }
     }
 
-    private void GameManager_NextRoundStarting()
+    private void ClearContent()
     {
         foreach (ExistingHandItemUI existingHandItem in m_ExistingHandItems) Destroy(existingHandItem.gameObject);
         m_ExistingHandItems.Clear();
+    }
+
+    private void GameManager_NextRoundStarting()
+    {
+        ClearContent();
+    }
+
+    private void GameManager_RestartGame()
+    {
+        ClearContent();
     }
 }

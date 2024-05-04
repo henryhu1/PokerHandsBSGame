@@ -13,6 +13,6 @@ public class ExistingHandItemUI : MonoBehaviour
     {
         m_existingHandText.text = hand.GetStringRepresentation();
         m_playerThatPlayedHandText.text = playerName;
-        m_roundHandWasPlayedText.text = roundPlayed == -1 ? "" : $"({roundPlayed})";
+        m_roundHandWasPlayedText.text = roundPlayed == 0 ? "" : $"({roundPlayed})";
     }
 }

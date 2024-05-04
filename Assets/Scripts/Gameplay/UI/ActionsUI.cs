@@ -38,7 +38,7 @@ public class ActionsUI : TriggerUITransition
             PokerHandsBullshitGame.Instance.EvaluateLastPlayedHandServerRpc();
         });
 
-        m_PlayButton.enabled = PokerHandsBullshitGame.Instance.IsHosting(); // TODO: flimsy how based on host the play button enables, change to actual turn logic?
+        m_PlayButton.enabled = PokerHandsBullshitGame.Instance.IsHost; // TODO: flimsy how based on host the play button enables, change to actual turn logic?
         m_BullshitButton.enabled = !PokerHandsBullshitGame.Instance.IsBeginningOfRound();
         m_Outline.enabled = m_PlayButton.enabled;
     }
