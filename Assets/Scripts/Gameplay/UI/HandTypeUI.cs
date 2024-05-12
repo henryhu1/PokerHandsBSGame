@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class HandTypeUI : SelectionUI<Hand>
+public class HandTypeUI : ToggleSelectionableTransitionableUIBase<Hand>
 {
-    public static new HandTypeUI Instance { get; private set; }
+    public static HandTypeUI Instance { get; private set; }
 
     // [SerializeField] private ToggleGroup m_HandTypeToggleGroup;
     [SerializeField] private Toggle m_HighCardToggle;
@@ -42,14 +42,14 @@ public class HandTypeUI : SelectionUI<Hand>
     [HideInInspector]
     public event NeedRoyalFlushChoicesDelegateHandler OnNeedRoyalFlushChoices;
 
-    // TODO: use overrides for subclass?
-    public override void Somthing()
+    protected override void Awake()
     {
-        base.Somthing();
-    }
+        base.Awake();
 
-    private void Awake()
-    {
+        if (Instance != this && Instance != null)
+        {
+            Destroy(Instance.gameObject);
+        }
         Instance = this;
 
         m_ToggleDictionary = new Dictionary<Toggle, Hand>
@@ -110,24 +110,85 @@ public class HandTypeUI : SelectionUI<Hand>
                 }
             });
         }
-
-        PokerHandsBullshitGame.Instance.OnEndOfRound += GameManager_EndOfRound;
     }
 
-    private void Start()
+    protected override void RegisterForEvents()
     {
-        // PokerHandsBullshitGame.Instance.OnUpdatePlayableHands += GameManager_UpdatePlayableHands;
+        // GameManager.Instance.OnUpdatePlayableHands += GameManager_UpdatePlayableHands;
+        CameraRotationLookAtTarget.Instance.OnCameraInPosition += CameraRotationLookAtTarget_CameraInPosition;
+        PlayUI.Instance.OnShowPlayUI += PlayUI_ShowPlayUI;
+        CardManager.Instance.OnAreFlushesAllowed += CardManager_AreFlushesAllowed;
+        GameManager.Instance.OnEndOfRound += GameManager_EndOfRound;
+        GameManager.Instance.OnPlayerLeft += GameManager_PlayerLeft;
+        GameManager.Instance.OnNextRoundStarting += GameManager_NextRoundStarting;
+        GameManager.Instance.OnRestartGame += GameManager_RestartGame;
+    }
+    private void UnregisterFromEvents()
+    {
+        CameraRotationLookAtTarget.Instance.OnCameraInPosition -= CameraRotationLookAtTarget_CameraInPosition;
+        PlayUI.Instance.OnShowPlayUI -= PlayUI_ShowPlayUI;
+        CardManager.Instance.OnAreFlushesAllowed -= CardManager_AreFlushesAllowed;
+        GameManager.Instance.OnEndOfRound -= GameManager_EndOfRound;
+        GameManager.Instance.OnPlayerLeft -= GameManager_PlayerLeft;
+        GameManager.Instance.OnNextRoundStarting -= GameManager_NextRoundStarting;
+        GameManager.Instance.OnRestartGame -= GameManager_RestartGame;
     }
 
-    private void GameManager_UpdatePlayableHands(PokerHand playedHand)
+    private void Start() { RegisterForEvents(); }
+
+    private void OnDestroy() { UnregisterFromEvents(); }
+
+    // TODO: disabling all hands lower than last played hand
+    //private void GameManager_UpdatePlayableHands(PokerHand playedHand)
+    //{
+    //    EnableTogglesToAtLeast();
+    //}
+
+    private void CameraRotationLookAtTarget_CameraInPosition()
     {
-        EnableTogglesToAtLeast();
+        if (gameObject.activeInHierarchy) StartAnimation();
+    }
+
+    private void PlayUI_ShowPlayUI()
+    {
+        StartAnimation();
+    }
+
+    private void CardManager_AreFlushesAllowed(bool flushesAllowed)
+    {
+        m_FlushToggle.enabled = flushesAllowed;
+        m_FlushToggle.image.color = flushesAllowed ? Color.white : ToggleColors.k_DisabledColor;
     }
 
     private void GameManager_EndOfRound(List<bool> _, List<PokerHand> __)
     {
-        ResetSelection();
-        InvokeNoSelectionMade();
+        if (gameObject.activeInHierarchy)
+        {
+            ResetSelection();
+            InvokeNoSelectionMade();
+            StartAnimation();
+        }
+    }
+
+    private void GameManager_PlayerLeft(string _, List<bool> __, List<PokerHand> ___)
+    {
+        if (gameObject.activeInHierarchy)
+        {
+            ResetSelection();
+            InvokeNoSelectionMade();
+            StartAnimation();
+        }
+    }
+
+    private void GameManager_RestartGame()
+    {
+        gameObject.SetActive(true);
+        StartAnimation();
+    }
+
+    private void GameManager_NextRoundStarting()
+    {
+        if (gameObject.activeInHierarchy) StartAnimation();
     }
 
     //private static int RankToToggleIndex(Rank rank)

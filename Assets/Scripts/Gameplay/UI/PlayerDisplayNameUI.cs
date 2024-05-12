@@ -12,8 +12,11 @@ public class PlayerDisplayNameUI : MonoBehaviour
 
     private void Awake()
     {
+        m_playerDisplayNameInputField.text = GameManager.Instance.LocalPlayerName;
+
         m_playerDisplayNameInputField.onDeselect.AddListener((string playerName) =>
         {
+            GameManager.Instance.SetLocalPlayerName(playerName);
             LobbyManager.Instance.UpdatePlayerName(playerName);
         });
     }
@@ -23,12 +26,21 @@ public class PlayerDisplayNameUI : MonoBehaviour
         LobbyListUI.Instance.OnCreatingNewLobby += LobbyListUI_OnCreatingNewLobby;
         LobbyCreateUI.Instance.OnCloseCreation += LobbyCreateUI_OnCloseCreation;
         LobbyManager.Instance.OnJoinedLobby += LobbyManager_OnJoinedLobby;
-        LobbyManager.Instance.OnAuthenticated += LobbyManager_OnAuthenticated;
-        // LobbyManager.Instance.OnGameStarted += LobbyManager_OnGameStarted;
+        LobbyManager.Instance.OnGameStarted += LobbyManager_GameStarted;
+        LobbyManager.Instance.OnGameFailedToStart += LobbyManager_GameFailedToStart;
         SceneTransitionHandler.Instance.OnSceneStateChanged += SceneTransitionHandler_OnSceneStateChanged;
-
-        Hide();
     }
+
+    private void OnDestroy()
+    {
+        LobbyListUI.Instance.OnCreatingNewLobby -= LobbyListUI_OnCreatingNewLobby;
+        LobbyCreateUI.Instance.OnCloseCreation -= LobbyCreateUI_OnCloseCreation;
+        LobbyManager.Instance.OnJoinedLobby -= LobbyManager_OnJoinedLobby;
+        LobbyManager.Instance.OnGameStarted -= LobbyManager_GameStarted;
+        LobbyManager.Instance.OnGameFailedToStart -= LobbyManager_GameFailedToStart;
+        SceneTransitionHandler.Instance.OnSceneStateChanged -= SceneTransitionHandler_OnSceneStateChanged;
+    }
+
     private void LobbyListUI_OnCreatingNewLobby(object sender, EventArgs e)
     {
         Hide();
@@ -39,26 +51,25 @@ public class PlayerDisplayNameUI : MonoBehaviour
         Show();
     }
 
-    private void LobbyManager_OnAuthenticated(string _)
-    {
-        Show();
-    }
-
     private void LobbyManager_OnJoinedLobby(object sender, EventArgs e)
     {
         Show();
     }
 
-    private void SceneTransitionHandler_OnSceneStateChanged(SceneTransitionHandler.SceneStates newState)
+    private void LobbyManager_GameStarted(object sender, EventArgs e)
     {
-        // TODO: investigate what happens when game finishes and returns to menu scene
         Hide();
     }
-    // private void LobbyManager_OnGameStarted(object sender, EventArgs e)
-    // {
-    //     // TODO: investigate what happens when game finishes and returns to menu scene
-    //     Hide();
-    // }
+
+    private void LobbyManager_GameFailedToStart()
+    {
+        Show();
+    }
+
+    private void SceneTransitionHandler_OnSceneStateChanged(SceneStates newState)
+    {
+        Hide();
+    }
 
 
     private void Hide()
@@ -68,7 +79,6 @@ public class PlayerDisplayNameUI : MonoBehaviour
 
     private void Show()
     {
-        m_playerDisplayNameInputField.text = LobbyManager.Instance.PlayerName;
         gameObject.SetActive(true);
     }
 }

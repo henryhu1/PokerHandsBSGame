@@ -20,6 +20,10 @@ public class InputFieldModalUI : MonoBehaviour
 
     private void Awake()
     {
+        if (Instance != this && Instance != null)
+        {
+            Destroy(Instance.gameObject);
+        }
         Instance = this;
 
         Hide();

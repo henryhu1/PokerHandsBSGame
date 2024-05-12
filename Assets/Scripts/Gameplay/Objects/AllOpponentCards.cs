@@ -34,6 +34,10 @@ public class AllOpponentCards : MonoBehaviour
 
     private void Awake()
     {
+        if (Instance != this && Instance != null)
+        {
+            Destroy(Instance.gameObject);
+        }
         Instance = this;
 
         HideOpponentHands();
@@ -67,7 +71,7 @@ public class AllOpponentCards : MonoBehaviour
     {
         for (int i = 0; i < opponentCardsGameObjects.Count; i++)
         {
-            if (i < opponentCardAmounts.Count)
+            if (i < opponentCardAmounts.Count && opponentCardAmounts[i] > 0)
             {
                 opponentCardsGameObjects[i].gameObject.SetActive(true);
                 opponentCardsGameObjects[i].DisplayCards(opponentCardAmounts[i], opponentNames[i], clientIds[i]);

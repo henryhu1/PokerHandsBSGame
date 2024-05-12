@@ -13,6 +13,10 @@ public class RelayManager : MonoBehaviour
 
     private void Awake()
     {
+        if (Instance != this && Instance != null)
+        {
+            Destroy(Instance.gameObject);
+        }
         Instance = this;
     }
 
@@ -35,29 +39,28 @@ public class RelayManager : MonoBehaviour
         }
         catch (Exception e)
         {
-            Debug.LogError(e.Message);
-
-            return null;
+            throw new Exception($"Failed to create relay: {e.Message}");
         }
     }
 
     public async void JoinRelay(string joinCode)
     {
+        if (joinCode == null) { return; }
         try
         {
             JoinAllocation joinAllocation = await RelayService.Instance.JoinAllocationAsync(joinCode);
 
             RelayServerData relayServerData = new RelayServerData(joinAllocation, "dtls");
             NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(relayServerData);
-            NetworkManager.Singleton.NetworkConfig.ConnectionData = StreamUtils.WritePlayerNameId(LobbyManager.Instance.PlayerName, PokerHandsBullshitGame.Instance.LocalPlayerId);
+            NetworkManager.Singleton.NetworkConfig.ConnectionData = StreamUtils.WritePlayerNameId(GameManager.Instance.LocalPlayerName, GameManager.Instance.LocalPlayerId);
 
-            // TODO: UI indication of 1. connecting 2. game starting 3. LobbyUI disappears 4. Scene transition
             NetworkManager.Singleton.StartClient();
-            Debug.Log("Client connected");
         }
         catch (RelayServiceException e)
         {
+#if UNITY_EDITOR
             Debug.LogError(e.Message);
+#endif
         }
     }
 

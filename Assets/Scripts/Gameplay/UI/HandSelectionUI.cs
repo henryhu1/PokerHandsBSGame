@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class HandSelectionUI : MonoBehaviour
+public class HandSelectionUI : TransitionableUIBase
 {
     public static HandSelectionUI Instance { get; private set; }
 
@@ -17,14 +17,20 @@ public class HandSelectionUI : MonoBehaviour
     private Suit? m_selectedSuit;
     private Hand? m_selectedHand;
 
-    private void Awake()
+    protected override void Awake()
     {
+        base.Awake();
+
+        if (Instance != this && Instance != null)
+        {
+            Destroy(Instance.gameObject);
+        }
         Instance = this;
 
         ResetAllSelections();
     }
 
-    private void Start()
+    protected override void RegisterForEvents()
     {
         HandTypeUI.Instance.OnNeedCardRankChoicesPrimary += HandTypeUI_NeedCardRankChoicesPrimary;
         HandTypeUI.Instance.OnNeedCardRankChoicesSecondary += HandTypeUI_NeedCardRankChoicesSecondary;
@@ -40,6 +46,73 @@ public class HandSelectionUI : MonoBehaviour
         m_CardSuitChoices.OnNoSelectionMade += SuitChoice_NoSelectionMade;
         m_RoyalFlushChoices.OnSelectSuit += RoyalFlushChoice_SelectSuit;
         m_RoyalFlushChoices.OnNoSelectionMade += RoyalFlushChoice_NoSelectionMade;
+
+        CameraRotationLookAtTarget.Instance.OnCameraInPosition += CameraRotationLookAtTarget_CameraInPosition;
+        PlayUI.Instance.OnShowPlayUI += PlayUI_ShowPlayUI;
+        GameManager.Instance.OnEndOfRound += GameManager_EndOfRound;
+        GameManager.Instance.OnPlayerLeft += GameManager_PlayerLeft;
+        GameManager.Instance.OnNextRoundStarting += GameManager_NextRoundStarting;
+        GameManager.Instance.OnRestartGame += GameManager_RestartGame;
+    }
+
+    private void UnregisterFromEvents()
+    {
+        HandTypeUI.Instance.OnNeedCardRankChoicesPrimary -= HandTypeUI_NeedCardRankChoicesPrimary;
+        HandTypeUI.Instance.OnNeedCardRankChoicesSecondary -= HandTypeUI_NeedCardRankChoicesSecondary;
+        HandTypeUI.Instance.OnNeedCardSuitChoices -= HandTypeUI_NeedCardSuitChoices;
+        HandTypeUI.Instance.OnNeedRoyalFlushChoices -= HandTypeUI_NeedRoyalFlushChoices;
+        HandTypeUI.Instance.OnNoSelectionMade -= HandTypeUI_NoSelectionMade;
+
+        m_CardRankChoicesPrimary.OnSelectRank -= RankChoice_SelectRank;
+        m_CardRankChoicesPrimary.OnNoSelectionMade -= PrimaryRankChoice_NoSelectionMade;
+        m_CardRankChoicesSecondary.OnSelectRank -= RankChoice_SelectRank;
+        m_CardRankChoicesSecondary.OnNoSelectionMade -= SecondaryRankChoice_NoSelectionMade;
+        m_CardSuitChoices.OnSelectSuit -= SuitChoice_SelectSuit;
+        m_CardSuitChoices.OnNoSelectionMade -= SuitChoice_NoSelectionMade;
+        m_RoyalFlushChoices.OnSelectSuit -= RoyalFlushChoice_SelectSuit;
+        m_RoyalFlushChoices.OnNoSelectionMade -= RoyalFlushChoice_NoSelectionMade;
+
+        CameraRotationLookAtTarget.Instance.OnCameraInPosition -= CameraRotationLookAtTarget_CameraInPosition;
+        PlayUI.Instance.OnShowPlayUI -= PlayUI_ShowPlayUI;
+        GameManager.Instance.OnEndOfRound -= GameManager_EndOfRound;
+        GameManager.Instance.OnPlayerLeft -= GameManager_PlayerLeft;
+        GameManager.Instance.OnNextRoundStarting -= GameManager_NextRoundStarting;
+        GameManager.Instance.OnRestartGame -= GameManager_RestartGame;
+    }
+
+    private void Start() { RegisterForEvents(); }
+
+    private void OnDestroy() { UnregisterFromEvents(); }
+
+    private void CameraRotationLookAtTarget_CameraInPosition()
+    {
+        if (gameObject.activeInHierarchy) StartAnimation();
+    }
+
+    private void PlayUI_ShowPlayUI()
+    {
+        StartAnimation();
+    }
+
+    private void GameManager_EndOfRound(List<bool> _, List<PokerHand> __)
+    {
+        if (gameObject.activeInHierarchy) StartAnimation();
+    }
+
+    private void GameManager_PlayerLeft(string _, List<bool> __, List<PokerHand> ___)
+    {
+        if (gameObject.activeInHierarchy) StartAnimation();
+    }
+
+    private void GameManager_NextRoundStarting()
+    {
+        if (gameObject.activeInHierarchy) StartAnimation();
+    }
+
+    private void GameManager_RestartGame()
+    {
+        gameObject.SetActive(true);
+        StartAnimation();
     }
 
     private void HandTypeUI_NeedCardRankChoicesPrimary(Hand selectedHand)
@@ -95,14 +168,18 @@ public class HandSelectionUI : MonoBehaviour
 
     private void RankChoice_SelectRank(bool isPrimary, Rank selectedRank)
     {
+#if UNITY_EDITOR
         Debug.Log($"rank selected, primary={isPrimary} rank={selectedRank}");
+#endif
         // bool isTwoPairSelection = m_selectedHand != null && m_selectedHand.Equals(Hand.TwoPair);
         if (isPrimary)
         {
             m_selectedPrimaryRank = selectedRank;
             if (selectedRank == m_selectedSecondaryRank) // || (isTwoPairSelection && selectedRank < m_selectedSecondaryRank))
             {
+#if UNITY_EDITOR
                 Debug.Log("must reset secondary rank selection");
+#endif
                 m_CardRankChoicesSecondary.ResetSelection();
                 // m_CardRankChoicesPrimary.EnableRankToggles();
                 m_selectedSecondaryRank = null;
@@ -117,7 +194,9 @@ public class HandSelectionUI : MonoBehaviour
             m_selectedSecondaryRank = selectedRank;
             if (selectedRank == m_selectedPrimaryRank) // || (isTwoPairSelection && selectedRank > m_selectedPrimaryRank))
             {
+#if UNITY_EDITOR
                 Debug.Log("must reset primary rank selection");
+#endif
                 m_CardRankChoicesPrimary.ResetSelection();
                 // m_CardRankChoicesSecondary.EnableRankToggles();
                 m_selectedPrimaryRank = null;
@@ -177,10 +256,14 @@ public class HandSelectionUI : MonoBehaviour
         bool? selectionsMade = m_selectedHand?.IsSelectionCorrect(m_selectedPrimaryRank, m_selectedSecondaryRank, m_selectedSuit);
         if (selectionsMade.HasValue && selectionsMade.Value)
         {
+#if UNITY_EDITOR
             Debug.Log($"Hand={m_selectedHand} PRank={m_selectedPrimaryRank} SRank={m_selectedSecondaryRank} Suit={m_selectedSuit}: This hand is allowed to be played");
+#endif
             return PokerHandFactory.CreatePokerHand((Hand)m_selectedHand, m_selectedPrimaryRank, m_selectedSecondaryRank, m_selectedSuit);
         }
+#if UNITY_EDITOR
         Debug.Log($"Hand={m_selectedHand} PRank={m_selectedPrimaryRank} SRank={m_selectedSecondaryRank} Suit={m_selectedSuit}: Not a valid hand");
+#endif
         return null;
     }
 }

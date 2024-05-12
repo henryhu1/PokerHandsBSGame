@@ -3,25 +3,26 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class ActionsUI : TriggerUITransition
-    // TODO: TriggerUITransition may not be necessary.
-    //   Instead, give this class the invalid message
-    //   game object and have this control when the 
-    //   fade animation plays. Delete TriggerUITransition.
-    //   Can also stop the fading from here whenever Play is clicked
-    //
-    // Or instead, keep TriggerUITransition to keep a subject/observer
-    //   pattern for triggering transitions and UI elements that are animated
+public class ActionsUI : TransitionableUIBase
 {
     public static ActionsUI Instance { get; private set; }
 
     [SerializeField] private Button m_PlayButton;
     [SerializeField] private Button m_BullshitButton;
     [SerializeField] private Outline m_Outline;
+    [SerializeField] private InvalidPlayMessageUI m_InvalidPlayNotif;
+    private bool m_isPlayerOut;
 
-    private void Awake()
+    protected override void Awake()
     {
+        base.Awake();
+
+        if (Instance != this && Instance != null)
+        {
+            Destroy(Instance.gameObject);
+        }
         Instance = this;
+
 
         m_PlayButton.onClick.AddListener(() =>
         {
@@ -29,34 +30,69 @@ public class ActionsUI : TriggerUITransition
             if (playingPokerHand != null)
             {
                 // TODO: clients have the last played hand, playable hand check can be done client side?
-                PokerHandsBullshitGame.Instance.TryPlayingHandServerRpc(playingPokerHand);
+                GameManager.Instance.TryPlayingHandServerRpc(playingPokerHand);
             }
         });
 
         m_BullshitButton.onClick.AddListener(() =>
         {
-            PokerHandsBullshitGame.Instance.EvaluateLastPlayedHandServerRpc();
+            GameManager.Instance.EvaluateLastPlayedHandServerRpc();
         });
 
-        m_PlayButton.enabled = PokerHandsBullshitGame.Instance.IsHost; // TODO: flimsy how based on host the play button enables, change to actual turn logic?
-        m_BullshitButton.enabled = !PokerHandsBullshitGame.Instance.IsBeginningOfRound();
+        m_isPlayerOut = false;
+
+        m_PlayButton.enabled = GameManager.Instance.IsHost; // TODO: flimsy how based on host the play button enables, change to actual turn logic?
+        m_BullshitButton.enabled = !GameManager.Instance.IsBeginningOfRound();
         m_Outline.enabled = m_PlayButton.enabled;
+    }
+
+    //private void Start()
+    //{
+    //    // GameManager.Instance.OnInvalidPlay += GameManager_OnInvalidPlay;
+    //    TurnManager.Instance.OnNextPlayerTurn += TurnManager_NextPlayerTurn;
+    //}
+
+    protected override void RegisterForEvents()
+    {
+        CameraRotationLookAtTarget.Instance.OnCameraInPosition += CameraRotationLookAtTarget_CameraInPosition;
+        PlayUI.Instance.OnShowPlayUI += PlayUI_ShowPlayUI;
+        TurnManager.Instance.OnNextPlayerTurn += TurnManager_NextPlayerTurn;
+        GameManager.Instance.OnEndOfRound += GameManager_EndOfRound;
+        GameManager.Instance.OnPlayerLeft += GameManager_PlayerLeft;
+        GameManager.Instance.OnNextRoundStarting += GameManager_NextRoundStarting;
+        GameManager.Instance.OnRestartGame += GameManager_RestartGame;
+    }
+
+    private void UnregisterFromEvents()
+    {
+        CameraRotationLookAtTarget.Instance.OnCameraInPosition -= CameraRotationLookAtTarget_CameraInPosition;
+        PlayUI.Instance.OnShowPlayUI -= PlayUI_ShowPlayUI;
+        TurnManager.Instance.OnNextPlayerTurn -= TurnManager_NextPlayerTurn;
+        GameManager.Instance.OnEndOfRound -= GameManager_EndOfRound;
+        GameManager.Instance.OnPlayerLeft -= GameManager_PlayerLeft;
+        GameManager.Instance.OnNextRoundStarting -= GameManager_NextRoundStarting;
+        GameManager.Instance.OnRestartGame -= GameManager_RestartGame;
     }
 
     private void Start()
     {
-        PokerHandsBullshitGame.Instance.OnInvalidPlay += DoTransition;
-        TurnManager.Instance.OnNextPlayerTurn += TurnManager_NextPlayerTurn;
+        RegisterForEvents();
+        GameManager.Instance.RegisterActionsUIObservers();
     }
 
-    private void OnEnable()
+    private void OnDestroy()
     {
-        TurnManager.Instance.OnNextPlayerTurn += TurnManager_NextPlayerTurn;
+        UnregisterFromEvents();
     }
 
-    private void OnDisable()
+    private void CameraRotationLookAtTarget_CameraInPosition()
     {
-        TurnManager.Instance.OnNextPlayerTurn -= TurnManager_NextPlayerTurn;
+        if (gameObject.activeInHierarchy) StartAnimation();
+    }
+
+    private void PlayUI_ShowPlayUI()
+    {
+        StartAnimation();
     }
 
     private void TurnManager_NextPlayerTurn(bool isPlayerTurn, bool wasPlayersTurnPreviously)
@@ -64,11 +100,40 @@ public class ActionsUI : TriggerUITransition
         SetTurnActions(isPlayerTurn, wasPlayersTurnPreviously);
     }
 
+    private void GameManager_EndOfRound(List<bool> _, List<PokerHand> __)
+    {
+        if (gameObject.activeInHierarchy) { StartAnimation(); }
+    }
+
+    private void GameManager_PlayerLeft(string _, List<bool> __, List<PokerHand> ___)
+    {
+        if (gameObject.activeInHierarchy) { StartAnimation(); }
+    }
+
+    private void GameManager_NextRoundStarting()
+    {
+        if (gameObject.activeInHierarchy) StartAnimation();
+    }
+    private void GameManager_RestartGame()
+    {
+        gameObject.SetActive(true);
+        StartAnimation();
+    }
+
+    public void SetPlayerOut()
+    {
+        m_isPlayerOut = true;
+    }
+
+    public void SetPlayerIn()
+    {
+        m_isPlayerOut = false;
+    }
+
     private void SetTurnActions(bool isPlayerTurn, bool wasPlayersTurnPreviously)
     {
-        bool isPlayerNotOut = PokerHandsBullshitGame.Instance.IsNotOut();
-        m_PlayButton.enabled = isPlayerNotOut && isPlayerTurn;
-        m_BullshitButton.enabled = isPlayerNotOut && !PokerHandsBullshitGame.Instance.IsBeginningOfRound() && !wasPlayersTurnPreviously;
+        m_PlayButton.enabled = !m_isPlayerOut && isPlayerTurn;
+        m_BullshitButton.enabled = !m_isPlayerOut && !GameManager.Instance.IsBeginningOfRound() && !wasPlayersTurnPreviously;
         m_Outline.enabled = m_PlayButton.enabled;
     }
 }

@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using TMPro;
 using Unity.Services.Lobbies.Models;
 using UnityEngine;
 using UnityEngine.UI;
@@ -23,6 +22,10 @@ public class LobbyListUI : MonoBehaviour
 
     private void Awake()
     {
+        if (Instance != this && Instance != null)
+        {
+            Destroy(Instance.gameObject);
+        }
         Instance = this;
 
         m_lobbyListItemTemplate.gameObject.SetActive(false);
@@ -43,41 +46,24 @@ public class LobbyListUI : MonoBehaviour
     private void Start()
     {
         LobbyCreateUI.Instance.OnCloseCreation += LobbyCreateUI_OnCloseCreation;
-        LobbyManager.Instance.OnAuthenticated += LobbyManager_OnAuthenticated;
         LobbyManager.Instance.OnLobbyListChanged += LobbyManager_OnLobbyListChanged;
         LobbyManager.Instance.OnJoinedLobby += LobbyManager_OnJoinedLobby;
         LobbyManager.Instance.OnLeftLobby += LobbyManager_OnLeftLobby;
         LobbyManager.Instance.OnKickedFromLobby += LobbyManager_OnKickedFromLobby;
         // InputFieldFocusHandler.Instance.OnTextChanged += InputFieldFocusHandler_OnTextChanged;
-
-        Hide();
     }
 
-    /*
-    private void OnEnable()
+    private void OnDestroy()
     {
-        LobbyCreateUI.Instance.OnCloseCreation += LobbyCreateUI_OnCloseCreation;
-        LobbyManager.Instance.OnLobbyListChanged += LobbyManager_OnLobbyListChanged;
-        LobbyManager.Instance.OnJoinedLobby += LobbyManager_OnJoinedLobby;
-        LobbyManager.Instance.OnLeftLobby += LobbyManager_OnLeftLobby;
-        LobbyManager.Instance.OnKickedFromLobby += LobbyManager_OnKickedFromLobby;
-    }
-
-    private void OnDisable()
-    {
+        LobbyCreateUI.Instance.OnCloseCreation -= LobbyCreateUI_OnCloseCreation;
         LobbyManager.Instance.OnLobbyListChanged -= LobbyManager_OnLobbyListChanged;
         LobbyManager.Instance.OnJoinedLobby -= LobbyManager_OnJoinedLobby;
         LobbyManager.Instance.OnLeftLobby -= LobbyManager_OnLeftLobby;
         LobbyManager.Instance.OnKickedFromLobby -= LobbyManager_OnKickedFromLobby;
+        // InputFieldFocusHandler.Instance.OnTextChanged += InputFieldFocusHandler_OnTextChanged;
     }
-    */
 
     private void LobbyCreateUI_OnCloseCreation(object sender, EventArgs e)
-    {
-        Show();
-    }
-
-    private void LobbyManager_OnAuthenticated(string _)
     {
         Show();
     }
@@ -140,5 +126,4 @@ public class LobbyListUI : MonoBehaviour
     {
         gameObject.SetActive(true);
     }
-
 }

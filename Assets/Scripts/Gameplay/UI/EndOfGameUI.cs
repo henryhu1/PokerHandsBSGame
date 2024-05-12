@@ -4,41 +4,55 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class EndOfGameUI : MonoBehaviour
+public class EndOfGameUI : TransitionableUIBase
 {
     public static EndOfGameUI Instance { get; private set; }
 
     [SerializeField] private ResultItemUI m_resultItemUIPrefab;
     [SerializeField] private GameObject m_resultContent;
-    [SerializeField] private GameObject m_restartGameUI;
+    [SerializeField] private GameObject m_optionsUI;
+    [SerializeField] private GameObject m_restartGameOption;
     [SerializeField] private Button m_gameModeButton;
     [SerializeField] private TextMeshProUGUI m_gameModeText;
     [SerializeField] private Button m_restartButton;
-    private PokerHandsBullshitGame.GameType m_selectedGameType;
+    [SerializeField] private Button m_exitButton;
+    private GameType m_selectedGameType;
     private List<ResultItemUI> m_resultItems;
 
     [HideInInspector]
-    public delegate void RestartGameDelegateHandler(PokerHandsBullshitGame.GameType gameType);
+    public delegate void RestartGameDelegateHandler(GameType gameType);
     [HideInInspector]
     public event RestartGameDelegateHandler OnRestartGame;
 
-    private void Awake()
+    [HideInInspector]
+    public delegate void ExitGameDelegateHandler();
+    [HideInInspector]
+    public event ExitGameDelegateHandler OnExitGame;
+
+    protected override void Awake()
     {
+        base.Awake();
+
+        if (Instance != this && Instance != null)
+        {
+            Destroy(Instance.gameObject);
+        }
         Instance = this;
 
-        m_selectedGameType = PokerHandsBullshitGame.Instance.SelectedGameType;
+        m_selectedGameType = GameManager.Instance.SelectedGameType;
+        m_resultItems = new List<ResultItemUI>();
 
         m_gameModeButton.onClick.AddListener(() =>
         {
             switch (m_selectedGameType)
             {
-                case PokerHandsBullshitGame.GameType.Ascending:
-                    m_selectedGameType = PokerHandsBullshitGame.GameType.Descending;
-                    m_gameModeText.text = PokerHandsBullshitGame.GameType.Descending.ToString();
+                case GameType.Ascending:
+                    m_selectedGameType = GameType.Descending;
+                    m_gameModeText.text = GameType.Descending.ToString();
                     break;
-                case PokerHandsBullshitGame.GameType.Descending:
-                    m_selectedGameType = PokerHandsBullshitGame.GameType.Ascending;
-                    m_gameModeText.text = PokerHandsBullshitGame.GameType.Ascending.ToString();
+                case GameType.Descending:
+                    m_selectedGameType = GameType.Ascending;
+                    m_gameModeText.text = GameType.Ascending.ToString();
                     break;
             }
         });
@@ -48,41 +62,53 @@ public class EndOfGameUI : MonoBehaviour
             OnRestartGame?.Invoke(m_selectedGameType);
         });
 
-        m_restartGameUI.gameObject.SetActive(PokerHandsBullshitGame.Instance.IsHost);
+        m_exitButton.onClick.AddListener(() =>
+        {
+            OnExitGame?.Invoke();
+        });
+
+        m_optionsUI.gameObject.SetActive(GameManager.Instance.IsHost);
     }
 
-    private void Start()
+    protected override void RegisterForEvents()
     {
-        PokerHandsBullshitGame.Instance.OnGameWon += GameManager_GameWon;
-        PokerHandsBullshitGame.Instance.OnRestartGame += GameManager_RestartGame;
+        GameManager.Instance.RegisterEndOfGameUICallbacks();
+        GameManager.Instance.OnGameWon += GameManager_GameWon;
+        GameManager.Instance.OnRestartGame += GameManager_RestartGame;
     }
 
-    private void OnDisable()
+    private void Start() { RegisterForEvents(); }
+
+    private void OnDestroy()
     {
-        PokerHandsBullshitGame.Instance.OnGameWon -= GameManager_GameWon;
-        PokerHandsBullshitGame.Instance.OnRestartGame -= GameManager_RestartGame;
+        GameManager.Instance.UnregisterEndOfGameUICallbacks();
+        GameManager.Instance.OnGameWon -= GameManager_GameWon;
+        GameManager.Instance.OnRestartGame -= GameManager_RestartGame;
     }
 
-    public void GameManager_GameWon(int myPosition, List<PokerHandsBullshitGame.PlayerData> eliminationOrder)
+    public void GameManager_GameWon(int myPosition, List<GameManager.PlayerData> eliminationOrder)
     {
+        m_restartGameOption.gameObject.SetActive(GameManager.Instance.m_connectedClientIds.Count != 1);
         for (int i = 0; i < eliminationOrder.Count; i++)
         {
-            PokerHandsBullshitGame.PlayerData playerData = eliminationOrder[i];
+            GameManager.PlayerData playerData = eliminationOrder[i];
             string playerName = playerData.Name;
-            if (i == myPosition)
+            if (i + 1 == myPosition)
             {
                 playerName += " (you)";
             }
             ResultItemUI resultItemUI = Instantiate(m_resultItemUIPrefab, m_resultContent.transform);
-            resultItemUI.GivePlacementItem(i, playerName);
+            resultItemUI.GivePlacementItem(eliminationOrder.Count - i, playerName);
 
             m_resultItems.Add(resultItemUI);
         }
+        StartAnimation();
     }
 
     public void GameManager_RestartGame()
     {
         foreach (ResultItemUI resultItemUI in m_resultItems) Destroy(resultItemUI.gameObject);
         m_resultItems.Clear();
+        StartAnimation();
     }
 }

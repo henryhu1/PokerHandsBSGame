@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class OpponentCardToolTipUI : MonoBehaviour
 {
-    private static Vector2 s_offset = new Vector2(0f, -30.0f);
+    private static Vector2 s_offset = new Vector2(0f, -35.0f);
     [SerializeField] private Canvas m_canvas;
     [SerializeField] private TextMeshProUGUI m_playerNameText;
     [SerializeField] private TextMeshProUGUI m_cardAmountText;

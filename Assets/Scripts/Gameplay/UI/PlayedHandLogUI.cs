@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class PlayedHandLogUI : MonoBehaviour
+public class PlayedHandLogUI : TransitionableUIBase
 {
     public static PlayedHandLogUI Instance { get; private set; }
 
@@ -17,22 +17,64 @@ public class PlayedHandLogUI : MonoBehaviour
     private const float k_pulseCycle = 0.5f;
     private Coroutine m_PulsingCoroutine;
 
-    private void Awake()
+    protected override void Awake()
     {
+        base.Awake();
+
+        if (Instance != this && Instance != null)
+        {
+            Destroy(Instance.gameObject);
+        }
         Instance = this;
 
         m_PlayedHandLogItems = new List<PlayedHandLogItemUI>();
     }
 
-    private void Start()
+    protected override void RegisterForEvents()
     {
+        CameraRotationLookAtTarget.Instance.OnCameraInPosition += CameraRotationLookAtTarget_CameraInPosition;
         AllOpponentCards.Instance.OnSelectOpponentHand += AllOpponentCards_SelectOpponentHand;
         AllOpponentCards.Instance.OnUnselectAllOpponentHand += AllOpponentCards_UnselectAllOpponentHand;
         AllOpponentCards.Instance.OnMouseEnterOpponentHand += AllOpponentCards_MouseEnterOpponentHand;
         AllOpponentCards.Instance.OnMouseExitOpponentHand += AllOpponentCards_MouseExitOpponentHand;
-        PokerHandsBullshitGame.Instance.OnAddToCardLog += GameManager_AddToCardLog;
-        PokerHandsBullshitGame.Instance.OnEndOfRound += GameManager_EndOfRound;
-        PokerHandsBullshitGame.Instance.OnClearCardLog += GameManager_ClearCardLog;
+        GameManager.Instance.OnAddToCardLog += GameManager_AddToCardLog;
+        GameManager.Instance.OnEndOfRound += GameManager_EndOfRound;
+        GameManager.Instance.OnPlayerLeft += GameManager_PlayerLeft;
+        GameManager.Instance.OnClearCardLog += GameManager_ClearCardLog;
+        GameManager.Instance.OnGameWon += GameManager_GameWon;
+        GameManager.Instance.OnRestartGame += GameManager_RestartGame;
+    }
+
+    private void UnregisterForEvents()
+    {
+        CameraRotationLookAtTarget.Instance.OnCameraInPosition -= CameraRotationLookAtTarget_CameraInPosition;
+        AllOpponentCards.Instance.OnSelectOpponentHand -= AllOpponentCards_SelectOpponentHand;
+        AllOpponentCards.Instance.OnUnselectAllOpponentHand -= AllOpponentCards_UnselectAllOpponentHand;
+        AllOpponentCards.Instance.OnMouseEnterOpponentHand -= AllOpponentCards_MouseEnterOpponentHand;
+        AllOpponentCards.Instance.OnMouseExitOpponentHand -= AllOpponentCards_MouseExitOpponentHand;
+        GameManager.Instance.OnAddToCardLog -= GameManager_AddToCardLog;
+        GameManager.Instance.OnEndOfRound -= GameManager_EndOfRound;
+        GameManager.Instance.OnPlayerLeft -= GameManager_PlayerLeft;
+        GameManager.Instance.OnClearCardLog -= GameManager_ClearCardLog;
+        GameManager.Instance.OnGameWon -= GameManager_GameWon;
+        GameManager.Instance.OnRestartGame -= GameManager_RestartGame;
+    }
+
+    private void Start() { RegisterForEvents(); }
+
+    private void OnDestroy() { UnregisterForEvents(); }
+
+    private void DisplayWhichPlayedHandsPresent(List<bool> playedHandsPresent)
+    {
+        for (int i = 0; i < playedHandsPresent.Count; i++)
+        {
+            m_PlayedHandLogItems[i].ShowHandPresentIcon(playedHandsPresent[i]);
+        }
+    }
+
+    private void CameraRotationLookAtTarget_CameraInPosition()
+    {
+        StartAnimation();
     }
 
     private void AllOpponentCards_SelectOpponentHand(ulong clientId)
@@ -72,16 +114,28 @@ public class PlayedHandLogUI : MonoBehaviour
 
     private void GameManager_EndOfRound(List<bool> playedHandsPresent, List<PokerHand> _)
     {
-        for (int i = 0; i < playedHandsPresent.Count; i++)
-        {
-            m_PlayedHandLogItems[i].ShowHandPresentIcon(playedHandsPresent[i]);
-        }
+        DisplayWhichPlayedHandsPresent(playedHandsPresent);
+    }
+
+    private void GameManager_PlayerLeft(string _, List<bool> playedHandsPresent, List<PokerHand> __)
+    {
+        DisplayWhichPlayedHandsPresent(playedHandsPresent);
     }
 
     private void GameManager_ClearCardLog()
     {
         foreach (PlayedHandLogItemUI playedHandLogItemUI in m_PlayedHandLogItems) Destroy(playedHandLogItemUI.gameObject);
         m_PlayedHandLogItems.Clear();
+    }
+
+    private void GameManager_GameWon(int _, List<GameManager.PlayerData> __)
+    {
+        StartAnimation();
+    }
+
+    private void GameManager_RestartGame()
+    {
+        StartAnimation();
     }
 
     public (string, int) GetPlayerAndRoundOfPlayedHand(PokerHand hand)

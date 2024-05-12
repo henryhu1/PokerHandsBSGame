@@ -28,12 +28,19 @@ public class LobbyUI : MonoBehaviour
     [SerializeField] private Button m_changeGameModeButton;
     [SerializeField] private Button m_startGameButton;
     [SerializeField] private Button m_leaveLobbyButton;
+    private bool m_isCreatingGame;
+    private Coroutine m_startingTextCoroutine;
 
 
     private void Awake()
     {
+        if (Instance != this && Instance != null)
+        {
+            Destroy(Instance.gameObject);
+        }
         Instance = this;
 
+        m_isCreatingGame = false;
         m_playerListItemTemplate.gameObject.SetActive(false);
         m_lobbyJoinCodeText.gameObject.SetActive(false);
         m_gameStartingText.gameObject.SetActive(false);
@@ -50,6 +57,8 @@ public class LobbyUI : MonoBehaviour
 
         m_startGameButton.onClick.AddListener(() => {
             m_changeGameModeButton.enabled = false;
+            m_startGameButton.enabled = false;
+            m_isCreatingGame = true;
             LobbyManager.Instance.StartGame();
         });
     }
@@ -62,31 +71,21 @@ public class LobbyUI : MonoBehaviour
         LobbyManager.Instance.OnLeftLobby += LobbyManager_OnLeftLobby;
         LobbyManager.Instance.OnKickedFromLobby += LobbyManager_OnLeftLobby;
         LobbyManager.Instance.OnGameStarted += LobbyManager_OnGameStarted;
-        SceneTransitionHandler.Instance.OnSceneStateChanged += SceneTransitionHandler_OnSceneStateChanged;
+        LobbyManager.Instance.OnGameFailedToStart += LobbyManager_OnGameFailedToStart;
 
         Hide();
     }
 
-    /*
-    private void OnEnable()
-    {
-        LobbyManager.Instance.OnJoinedLobby += UpdateLobby_Event;
-        LobbyManager.Instance.OnJoinedLobbyUpdate += UpdateLobby_Event;
-        LobbyManager.Instance.OnLobbyGameModeChanged += UpdateLobby_Event;
-        LobbyManager.Instance.OnLeftLobby += LobbyManager_OnLeftLobby;
-        LobbyManager.Instance.OnKickedFromLobby += LobbyManager_OnLeftLobby;
-        LobbyManager.Instance.OnGameStarted += LobbyManager_OnGameStarted;
-    }
-
-    private void OnDisable()
+    private void OnDestroy()
     {
         LobbyManager.Instance.OnJoinedLobby -= UpdateLobby_Event;
         LobbyManager.Instance.OnJoinedLobbyUpdate -= UpdateLobby_Event;
-        LobbyManager.Instance.OnLobbyGameModeChanged -= UpdateLobby_Event;
+        LobbyManager.Instance.OnLobbyGameTypeChanged -= UpdateLobby_Event;
         LobbyManager.Instance.OnLeftLobby -= LobbyManager_OnLeftLobby;
         LobbyManager.Instance.OnKickedFromLobby -= LobbyManager_OnLeftLobby;
+        LobbyManager.Instance.OnGameStarted -= LobbyManager_OnGameStarted;
+        LobbyManager.Instance.OnGameFailedToStart -= LobbyManager_OnGameFailedToStart;
     }
-    */
 
     private IEnumerator UpdateStartingGameUI()
     {
@@ -110,18 +109,22 @@ public class LobbyUI : MonoBehaviour
             yield return null;
         }
         m_gameStartingText.text = k_GameStartingPrefixText;
-    }
-
-    private void SceneTransitionHandler_OnSceneStateChanged(SceneTransitionHandler.SceneStates newState)
-    {
-        Hide();
+        m_gameStartingText.gameObject.SetActive(false);
     }
 
     private void LobbyManager_OnGameStarted(object sender, EventArgs e)
     {
-        // TODO: investigate what happens when game finishes and returns to menu scene
         m_gameStartingText.gameObject.SetActive(true);
-        StartCoroutine(UpdateStartingGameUI());
+        m_startingTextCoroutine = StartCoroutine(UpdateStartingGameUI());
+    }
+
+    private void LobbyManager_OnGameFailedToStart()
+    {
+        StopCoroutine(m_startingTextCoroutine);
+        m_isCreatingGame = false;
+        m_startingTextCoroutine = null;
+        m_gameStartingText.gameObject.SetActive(false);
+        m_startGameButton.enabled = true;
     }
 
     private void LobbyManager_OnLeftLobby(object sender, EventArgs e)
@@ -162,12 +165,11 @@ public class LobbyUI : MonoBehaviour
             }
         }
 
-        m_changeGameModeButton.gameObject.SetActive(LobbyManager.Instance.IsLobbyHost());
+        m_gameModeText.gameObject.SetActive(!LobbyManager.Instance.IsLobbyHost());
+
         m_changeGameModeButton.gameObject.SetActive(LobbyManager.Instance.IsLobbyHost());
         m_startGameButton.gameObject.SetActive(LobbyManager.Instance.IsLobbyHost());
-        m_startGameButton.enabled = lobby.Players.Count >= 2;
-
-        m_gameModeText.gameObject.SetActive(!LobbyManager.Instance.IsLobbyHost());
+        m_startGameButton.enabled = !m_isCreatingGame && lobby.Players.Count >= 2;
 
         m_lobbyNameText.text = lobby.Name;
         m_playerCountText.text = lobby.Players.Count + "/" + lobby.MaxPlayers;
@@ -209,5 +211,4 @@ public class LobbyUI : MonoBehaviour
     {
         gameObject.SetActive(true);
     }
-
 }

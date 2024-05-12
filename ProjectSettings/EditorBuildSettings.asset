@@ -9,6 +9,9 @@ EditorBuildSettings:
     path: Assets/Playing Cards/Scenes/Demo_Scene/Demo_Scene.unity
     guid: b12ec72ba09c9564ebbce5f52ca56e61
   - enabled: 1
+    path: Assets/Scenes/StartScene.unity
+    guid: 442250b26f0357647a637d6f2d0040f6
+  - enabled: 1
     path: Assets/Scenes/MainMenuScene.unity
     guid: 9fc0d4010bbf28b4594072e72b8655ab
   - enabled: 1

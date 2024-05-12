@@ -23,16 +23,9 @@ public class SceneTransitionHandler : MonoBehaviour
     public event SceneStateChangedDelegateHandler OnSceneStateChanged;
     
     private int m_numberOfClientLoaded;
-    private int m_numberOfClientsExpected;
 
-    private const string k_StartMainMenuScene = "MainMenuScene";
-    private const string k_InGameSceneName = "GameScene";
-
-    public enum SceneStates
-    {
-        Start,
-        InGame
-    }
+    public const string k_MainMenuScene = "MainMenuScene";
+    public const string k_InGameSceneName = "GameScene";
 
     private SceneStates m_SceneState;
 
@@ -50,6 +43,11 @@ public class SceneTransitionHandler : MonoBehaviour
     public void RegisterCallbacks()
     {
         NetworkManager.Singleton.SceneManager.OnLoadComplete += OnLoadComplete;
+    }
+
+    public void UnregisterCallbacks()
+    {
+        NetworkManager.Singleton.SceneManager.OnLoadComplete -= OnLoadComplete;
     }
 
     public void SetSceneState(SceneStates sceneState)
@@ -71,11 +69,15 @@ public class SceneTransitionHandler : MonoBehaviour
         }
     }
 
+    public void SwitchToMainMenuScene() { SwitchScene(k_MainMenuScene); }
+
     public void SwitchToGameScene() { SwitchScene(k_InGameSceneName); }
 
     private void OnLoadComplete(ulong clientId, string sceneName, LoadSceneMode loadSceneMode)
     {
-        Debug.Log("Client has loaded scene");
+#if UNITY_EDITOR
+        Debug.Log($"client #{clientId} has loaded scene {sceneName}");
+#endif
         OnClientLoadedScene?.Invoke(clientId);
         m_numberOfClientLoaded += 1;
         if (m_numberOfClientLoaded == NetworkManager.Singleton.ConnectedClients.Count)
@@ -89,6 +91,11 @@ public class SceneTransitionHandler : MonoBehaviour
         return m_numberOfClientLoaded == NetworkManager.Singleton.ConnectedClients.Count;
     }
 
+    public bool IsInMainMenuScene()
+    {
+        return m_SceneState == SceneStates.MainMenu;
+    }
+
     public bool IsInGameScene()
     {
         return m_SceneState == SceneStates.InGame;
@@ -96,9 +103,8 @@ public class SceneTransitionHandler : MonoBehaviour
 
     public void ExitAndLoadStartMenu()
     {
-        NetworkManager.Singleton.SceneManager.OnLoadComplete -= OnLoadComplete;
         OnClientLoadedScene = null;
-        SetSceneState(SceneStates.Start);
-        SceneManager.LoadScene(k_StartMainMenuScene);
+        SetSceneState(SceneStates.MainMenu);
+        SceneManager.LoadScene(k_MainMenuScene);
     }
 }

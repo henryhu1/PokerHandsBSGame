@@ -2,26 +2,46 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ExistingHandsUI : MonoBehaviour
+public class ExistingHandsUI : TransitionableUIBase
 {
     [SerializeField] private ExistingHandItemUI m_ExistingHandItemUIPrefab;
     [SerializeField] private GameObject m_LogContent;
 
     private List<ExistingHandItemUI> m_ExistingHandItems;
 
-    private void Awake()
+    protected override void Awake()
     {
+        base.Awake();
+
         m_ExistingHandItems = new List<ExistingHandItemUI>();
     }
 
-    private void Start()
+    protected override void RegisterForEvents()
     {
-        PokerHandsBullshitGame.Instance.OnEndOfRound += GameManager_EndOfRound;
-        PokerHandsBullshitGame.Instance.OnNextRoundStarting += GameManager_NextRoundStarting;
-        PokerHandsBullshitGame.Instance.OnRestartGame += GameManager_RestartGame;
+        GameManager.Instance.OnEndOfRound += GameManager_EndOfRound;
+        GameManager.Instance.OnPlayerLeft += GameManager_PlayerLeft;
+        GameManager.Instance.OnNextRoundStarting += GameManager_NextRoundStarting;
+        GameManager.Instance.OnGameWon += GameManager_GameWon;
+        GameManager.Instance.OnRestartGame += GameManager_RestartGame;
     }
 
-    private void GameManager_EndOfRound(List<bool> _, List<PokerHand> allHandsInPlay)
+    private void UnregisterFromEvents()
+    {
+        GameManager.Instance.OnEndOfRound -= GameManager_EndOfRound;
+        GameManager.Instance.OnPlayerLeft -= GameManager_PlayerLeft;
+        GameManager.Instance.OnNextRoundStarting -= GameManager_NextRoundStarting;
+        GameManager.Instance.OnGameWon -= GameManager_GameWon;
+        GameManager.Instance.OnRestartGame -= GameManager_RestartGame;
+    }
+
+    private void Start() { RegisterForEvents(); }
+
+    private void OnDestroy()
+    {
+        UnregisterFromEvents();
+    }
+
+    private void DisplayAllHandsInPlay(List<PokerHand> allHandsInPlay)
     {
         for (int i = 0; i < allHandsInPlay.Count; i++)
         {
@@ -33,6 +53,23 @@ public class ExistingHandsUI : MonoBehaviour
         }
     }
 
+    private void GameManager_EndOfRound(List<bool> _, List<PokerHand> allHandsInPlay)
+    {
+        DisplayAllHandsInPlay(allHandsInPlay);
+        StartAnimation();
+    }
+
+    private void GameManager_PlayerLeft(string _, List<bool> __, List<PokerHand> allHandsInPlay)
+    {
+        DisplayAllHandsInPlay(allHandsInPlay);
+        StartAnimation();
+    }
+
+    private void GameManager_GameWon(int _, List<GameManager.PlayerData> __)
+    {
+        StartAnimation();
+    }
+
     private void ClearContent()
     {
         foreach (ExistingHandItemUI existingHandItem in m_ExistingHandItems) Destroy(existingHandItem.gameObject);
@@ -41,6 +78,7 @@ public class ExistingHandsUI : MonoBehaviour
 
     private void GameManager_NextRoundStarting()
     {
+        StartAnimation();
         ClearContent();
     }
 

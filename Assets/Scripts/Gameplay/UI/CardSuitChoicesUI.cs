@@ -4,7 +4,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class CardSuitChoicesUI : SelectionUI<Suit>
+public class CardSuitChoicesUI : ToggleSelectionableUIBase<Suit>
 {
     // [SerializeField] private ToggleGroup m_CardSuitChoiceToggleGroup;
     [SerializeField] private Toggle m_ClubsToggle;
@@ -25,12 +25,8 @@ public class CardSuitChoicesUI : SelectionUI<Suit>
     [HideInInspector]
     public event SelectRankDelegateHandler OnSelectSuit;
 
-    // private Dictionary<Toggle, Suit> m_ToggleSelectedSuit;
-
     private void Awake()
     {
-        Instance = this;
-
         m_ToggleDictionary = new Dictionary<Toggle, Suit>
         {
             { m_ClubsToggle, Suit.Club },

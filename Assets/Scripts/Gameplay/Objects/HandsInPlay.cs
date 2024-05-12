@@ -1,6 +1,7 @@
 using CardTraitExtensions;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 public class HandsInPlay
 {
@@ -148,7 +149,7 @@ public class HandsInPlay
                 {
                     if (rankInPlay.Value > 0)
                     {
-                        count += rankInPlay.Value;
+                        count++;
                         if (count >= 5)
                         {
                             m_handsInPlay.Add(new Flush(rankInPlay.Key, checkingSuit));

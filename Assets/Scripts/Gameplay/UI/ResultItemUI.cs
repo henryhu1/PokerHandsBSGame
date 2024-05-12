@@ -11,6 +11,6 @@ public class ResultItemUI : MonoBehaviour
     public void GivePlacementItem(int placement, string name)
     {
         m_placementText.text = $"{placement})";
-        m_placementText.text = name;
+        m_playerNameText.text = name;
     }
 }

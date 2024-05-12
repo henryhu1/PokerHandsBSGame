@@ -1,8 +1,10 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using TMPro;
+using Unity.Services.Authentication;
+using Unity.Services.Core;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 [DefaultExecutionOrder(1000)]
@@ -10,28 +12,47 @@ public class PlayerProfileNameUI : MonoBehaviour
 {
     [SerializeField] private TMP_InputField m_inputField;
     [SerializeField] private Button m_confirmButton;
+    private static Regex s_noWhiteSpace = new Regex(@"\s+");
 
     private void Awake()
     {
         m_confirmButton.onClick.AddListener(() =>
         {
-            LobbyManager.Instance.Authenticate(m_inputField.text);
+            Authenticate(s_noWhiteSpace.Replace(m_inputField.text, ""));
         });
     }
 
-    private void Start()
+    public async void Authenticate(string playerName)
     {
-        LobbyManager.Instance.OnAuthenticated += LobbyManager_OnAuthenticated;
-    }
+        try
+        {
+            InitializationOptions initializationOptions = new InitializationOptions();
+            initializationOptions.SetProfile(playerName);
 
-    private void LobbyManager_OnAuthenticated(string _)
-    {
-        Hide();
+            await UnityServices.InitializeAsync(initializationOptions);
+
+            AuthenticationService.Instance.SignedIn += () => {
+#if UNITY_EDITOR
+                Debug.Log("Signed in! " + AuthenticationService.Instance.PlayerId);
+#endif
+                GameManager.Instance.SetLocalPlayerId(AuthenticationService.Instance.PlayerId);
+                GameManager.Instance.SetLocalPlayerName(playerName);
+                SceneTransitionHandler.Instance.SetSceneState(SceneStates.MainMenu);
+                SceneManager.LoadScene(SceneTransitionHandler.k_MainMenuScene);
+            };
+
+            await AuthenticationService.Instance.SignInAnonymouslyAsync();
+        }
+        catch (Exception e)
+        {
+#if UNITY_EDITOR
+            Debug.Log(e.Message);
+#endif
+        }
     }
 
     private void Hide()
     {
-        LobbyManager.Instance.OnAuthenticated -= LobbyManager_OnAuthenticated;
         gameObject.SetActive(false);
     }
 }

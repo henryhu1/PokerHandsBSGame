@@ -5,7 +5,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class CardRankChoicesUI : SelectionUI<Rank>
+public class CardRankChoicesUI : ToggleSelectionableUIBase<Rank>
 {
     public static Color s_DarkerColor = new Color(0.8f, 0.8f, 0.8f);
 
@@ -52,8 +52,6 @@ public class CardRankChoicesUI : SelectionUI<Rank>
 
     private void Awake()
     {
-        Instance = this;
-
         m_byThreeText.gameObject.SetActive(false);
         m_byTwoText.gameObject.SetActive(false);
 

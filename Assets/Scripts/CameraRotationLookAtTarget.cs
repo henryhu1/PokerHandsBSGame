@@ -5,6 +5,7 @@ using UnityEngine;
 public class CameraRotationLookAtTarget : MonoBehaviour
 {
     public static CameraRotationLookAtTarget Instance { get; private set; }
+
     public Transform target;
     [SerializeField] private AnimationCurve movementCurve;
     [SerializeField] private float m_movementDuration;
@@ -16,6 +17,10 @@ public class CameraRotationLookAtTarget : MonoBehaviour
 
     private void Awake()
     {
+        if (Instance != this && Instance != null)
+        {
+            Destroy(Instance.gameObject);
+        }
         Instance = this;
     }
 

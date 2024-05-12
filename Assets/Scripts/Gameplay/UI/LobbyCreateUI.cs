@@ -27,21 +27,25 @@ public class LobbyCreateUI : MonoBehaviour
     // [SerializeField] private TextMeshProUGUI m_gameModeText;
 
     private string m_lobbyName;
-    private int m_maxPlayers = 6;
+    private int m_maxPlayers = 10;
 
     private void Awake()
     {
+        if (Instance != this && Instance != null)
+        {
+            Destroy(Instance.gameObject);
+        }
         Instance = this;
 
-        SetToggleText<PokerHandsBullshitGame.GameType>(m_gameTypeSetting);
-        SetToggleText<LobbyManager.LobbyType>(m_lobbyTypeSetting);
+        SetToggleText<GameType>(m_gameTypeSetting);
+        SetToggleText<LobbyType>(m_lobbyTypeSetting);
 
         m_createButton.onClick.AddListener(() => {
             LobbyManager.Instance.CreateLobby(
                 m_lobbyName,
                 m_maxPlayers,
-                (LobbyManager.LobbyType)m_lobbyTypeSetting.GetActiveToggle(),
-                (PokerHandsBullshitGame.GameType)m_gameTypeSetting.GetActiveToggle()
+                (LobbyType)m_lobbyTypeSetting.GetActiveToggle(),
+                (GameType)m_gameTypeSetting.GetActiveToggle()
             );
             Hide();
         });

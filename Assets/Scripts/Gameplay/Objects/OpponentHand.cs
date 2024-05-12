@@ -35,7 +35,9 @@ public class OpponentHand : MonoBehaviour
         m_opponentName = name;
         m_opponentAmountOfCardsInHand = amount;
         int materialsToRemove = m_meshRenderer.materials.Length - amount;
+#if UNITY_EDITOR
         Debug.Log($"opponent has {amount} cards, removing {materialsToRemove} materials");
+#endif
         Material[] mats = m_meshRenderer.materials;
         for (int i = 0; i < m_meshRenderer.materials.Length; i++)
         {
@@ -49,6 +51,7 @@ public class OpponentHand : MonoBehaviour
             }
         }
         m_meshRenderer.materials = mats;
+        gameObject.SetActive(m_meshRenderer.materials.Length > 0);
     }
 
     private void OnMouseEnter()
