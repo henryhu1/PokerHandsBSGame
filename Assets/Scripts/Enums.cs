@@ -25,6 +25,8 @@ public enum TransitionInDirection { Left, Right, Up, Down }
 
 public enum InvalidPlays { HandTooLow, FlushNotAllowed }
 
+public enum RoundResultTypes { Safe, CalledOut, CorrectBS, WrongBS }
+
 public enum Suit
 {
     Club = 1,

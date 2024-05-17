@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
-using WebSocketSharp;
 
 public class CardManager : NetworkBehaviour
 {
@@ -42,6 +41,7 @@ public class CardManager : NetworkBehaviour
     [SerializeField] private List<GameObject> cardPrefabs;
     [SerializeField] private GameObject deckGameObject;
     private Dictionary<string, GameObject> m_cardToPrefabMap;
+    private List<Card> m_myCards;
     private List<GameObject> m_cardGameObjects;
 
     private const float k_xSpacing = 0.06f;
@@ -93,6 +93,28 @@ public class CardManager : NetworkBehaviour
             string prefabName = prefab.name.Split("_")[2];
             m_cardToPrefabMap[prefabName] = prefab;
         }
+    }
+
+    private void Start()
+    {
+        OrderCardsUI.Instance.OnOrderCards += OrderCardsUI_OrderCards;
+    }
+
+    public override void OnDestroy()
+    {
+        base.OnDestroy();
+        OrderCardsUI.Instance.OnOrderCards -= OrderCardsUI_OrderCards;
+    }
+
+    private void OrderCardsUI_OrderCards(bool isAscending)
+    {
+        DestroyCardGameObjects();
+        m_myCards.Sort();
+        if (isAscending)
+        {
+            m_myCards.Reverse();
+        }
+        CreateCardGameObjects();
     }
 
     public override void OnNetworkSpawn()
@@ -175,9 +197,15 @@ public class CardManager : NetworkBehaviour
         }
     }
 
-    public void CreateCardGameObjects(List<Card> playerCards)
+    public void DestroyCardGameObjects()
     {
-        int numberOfCardsToDisplay = playerCards.Count;
+        foreach (GameObject cardGameObject in m_cardGameObjects) Destroy(cardGameObject);
+        m_cardGameObjects.Clear();
+    }
+
+    public void CreateCardGameObjects()
+    {
+        int numberOfCardsToDisplay = m_myCards.Count;
         int rowsOfCards = numberOfCardsToDisplay / k_maxCardsPerRow;
         int cardsPerRow = Math.Min(numberOfCardsToDisplay, k_maxCardsPerRow);
         float xPos = -cardsPerRow * k_xSpacing / 2;
@@ -185,7 +213,7 @@ public class CardManager : NetworkBehaviour
         float zPos = k_zCenter - (rowsOfCards - 1) * k_zSpacing / 2;
         for (int i = 0; i < numberOfCardsToDisplay; i++)
         {
-            Card currentCard = playerCards[i];
+            Card currentCard = m_myCards[i];
             // TODO: this if statement should not be needed as all cards will have a prefab mapped to it
             if (m_cardToPrefabMap.TryGetValue(currentCard.GetCardIdentifier(), out GameObject cardPrefab))
             {
@@ -443,7 +471,8 @@ public class CardManager : NetworkBehaviour
         Debug.Log($"Received list of cards {clientsCards.Length}");
 #endif
         deckGameObject.SetActive(GameManager.Instance.m_inPlayClientIds.Contains(NetworkManager.Singleton.LocalClientId));
-        CreateCardGameObjects(clientsCards.ToList());
+        m_myCards = clientsCards.ToList();
+        CreateCardGameObjects();
 
         Dictionary<ulong, PlayerCardInfo> otherClientsCardInfo = new Dictionary<ulong, PlayerCardInfo>();
         for (int i = 0; i < otherClientsCards.Length; i++)
@@ -456,7 +485,7 @@ public class CardManager : NetworkBehaviour
         }
         if (clientOrder.Length > 1)
         {
-            CreateOtherPlayersCardsGameObjects(otherClientsCardInfo, clientOrder.SubArray(1, clientOrder.Length - 1));
+            CreateOtherPlayersCardsGameObjects(otherClientsCardInfo, clientOrder.Skip(1).Take(clientOrder.Length - 1).ToArray());
         }
     }
 
@@ -466,8 +495,8 @@ public class CardManager : NetworkBehaviour
 #if UNITY_EDITOR
         Debug.Log($"Destroying the card game objects");
 #endif
-        foreach (GameObject cardGameObject in m_cardGameObjects) Destroy(cardGameObject);
-        m_cardGameObjects.Clear();
+        m_myCards.Clear();
+        DestroyCardGameObjects();
         allOpponentCards.HideOpponentHands();
     }
 }

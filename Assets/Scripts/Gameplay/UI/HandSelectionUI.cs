@@ -80,13 +80,17 @@ public class HandSelectionUI : TransitionableUIBase
         GameManager.Instance.OnRestartGame -= GameManager_RestartGame;
     }
 
-    private void Start() { RegisterForEvents(); }
+    protected override void Start()
+    {
+        RegisterForEvents();
+        base.Start();
+    }
 
     private void OnDestroy() { UnregisterFromEvents(); }
 
     private void CameraRotationLookAtTarget_CameraInPosition()
     {
-        if (gameObject.activeInHierarchy) StartAnimation();
+        if (GameManager.Instance.IsNotOut()) StartAnimation();
     }
 
     private void PlayUI_ShowPlayUI()
@@ -96,17 +100,17 @@ public class HandSelectionUI : TransitionableUIBase
 
     private void GameManager_EndOfRound(List<bool> _, List<PokerHand> __)
     {
-        if (gameObject.activeInHierarchy) StartAnimation();
+        if (GameManager.Instance.IsNotOut()) StartAnimation();
     }
 
     private void GameManager_PlayerLeft(string _, List<bool> __, List<PokerHand> ___)
     {
-        if (gameObject.activeInHierarchy) StartAnimation();
+        if (GameManager.Instance.IsNotOut()) StartAnimation();
     }
 
     private void GameManager_NextRoundStarting()
     {
-        if (gameObject.activeInHierarchy) StartAnimation();
+        if (GameManager.Instance.IsNotOut()) StartAnimation();
     }
 
     private void GameManager_RestartGame()

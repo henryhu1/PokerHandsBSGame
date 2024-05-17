@@ -27,7 +27,7 @@ public class RelayManager : MonoBehaviour
             Allocation allocation = await RelayService.Instance.CreateAllocationAsync(numberOfPlayers);
             string joinCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
 
-            RelayServerData relayServerData = new RelayServerData(allocation, "dtls");
+            RelayServerData relayServerData = new RelayServerData(allocation, "wss");
             NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(relayServerData);
 
             if (!NetworkManager.Singleton.StartHost())
@@ -50,7 +50,7 @@ public class RelayManager : MonoBehaviour
         {
             JoinAllocation joinAllocation = await RelayService.Instance.JoinAllocationAsync(joinCode);
 
-            RelayServerData relayServerData = new RelayServerData(joinAllocation, "dtls");
+            RelayServerData relayServerData = new RelayServerData(joinAllocation, "wss");
             NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(relayServerData);
             NetworkManager.Singleton.NetworkConfig.ConnectionData = StreamUtils.WritePlayerNameId(GameManager.Instance.LocalPlayerName, GameManager.Instance.LocalPlayerId);
 

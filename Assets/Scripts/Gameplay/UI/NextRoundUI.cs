@@ -61,7 +61,11 @@ public class NextRoundUI : TransitionableUIBase
         GameManager.Instance.OnGameWon -= GameManager_GameWon;
     }
 
-    private void Start() { RegisterForEvents(); }
+    protected override void Start()
+    {
+        RegisterForEvents();
+        base.Start();
+    }
 
     private void OnDestroy() { UnregisterFromEvents(); }
 

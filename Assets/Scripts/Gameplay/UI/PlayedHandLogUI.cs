@@ -60,7 +60,11 @@ public class PlayedHandLogUI : TransitionableUIBase
         GameManager.Instance.OnRestartGame -= GameManager_RestartGame;
     }
 
-    private void Start() { RegisterForEvents(); }
+    protected override void Start()
+    {
+        RegisterForEvents();
+        base.Start();
+    }
 
     private void OnDestroy() { UnregisterForEvents(); }
 

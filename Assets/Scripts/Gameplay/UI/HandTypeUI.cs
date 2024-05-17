@@ -134,7 +134,10 @@ public class HandTypeUI : ToggleSelectionableTransitionableUIBase<Hand>
         GameManager.Instance.OnRestartGame -= GameManager_RestartGame;
     }
 
-    private void Start() { RegisterForEvents(); }
+    protected override void Start() {
+        RegisterForEvents();
+        base.Start();
+    }
 
     private void OnDestroy() { UnregisterFromEvents(); }
 
@@ -146,7 +149,7 @@ public class HandTypeUI : ToggleSelectionableTransitionableUIBase<Hand>
 
     private void CameraRotationLookAtTarget_CameraInPosition()
     {
-        if (gameObject.activeInHierarchy) StartAnimation();
+        if (GameManager.Instance.IsNotOut()) StartAnimation();
     }
 
     private void PlayUI_ShowPlayUI()
@@ -162,7 +165,7 @@ public class HandTypeUI : ToggleSelectionableTransitionableUIBase<Hand>
 
     private void GameManager_EndOfRound(List<bool> _, List<PokerHand> __)
     {
-        if (gameObject.activeInHierarchy)
+        if (GameManager.Instance.IsNotOut())
         {
             ResetSelection();
             InvokeNoSelectionMade();
@@ -172,7 +175,7 @@ public class HandTypeUI : ToggleSelectionableTransitionableUIBase<Hand>
 
     private void GameManager_PlayerLeft(string _, List<bool> __, List<PokerHand> ___)
     {
-        if (gameObject.activeInHierarchy)
+        if (GameManager.Instance.IsNotOut())
         {
             ResetSelection();
             InvokeNoSelectionMade();
@@ -188,7 +191,7 @@ public class HandTypeUI : ToggleSelectionableTransitionableUIBase<Hand>
 
     private void GameManager_NextRoundStarting()
     {
-        if (gameObject.activeInHierarchy) StartAnimation();
+        if (GameManager.Instance.IsNotOut()) StartAnimation();
     }
 
     //private static int RankToToggleIndex(Rank rank)

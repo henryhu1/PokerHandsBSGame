@@ -63,6 +63,8 @@ public class GameManager : NetworkBehaviour
     private bool m_roundOver;
     // TODO: add a RoundManager? Played hands, next round ready, round events
 
+    // TODO: every player has their own play log... only the server should have the log
+    //   and clients just populate their log UI with the new play
     private List<PlayedHandLogItem> m_playedHandLog;
     public NetworkVariable<int> m_playersReadyForNextRound { get; } = new NetworkVariable<int>(0);
 
@@ -104,6 +106,11 @@ public class GameManager : NetworkBehaviour
     public delegate void EndOfRoundDelegateHandler(List<bool> playedHandsPresent, List<PokerHand> allHandsInPlay);
     [HideInInspector]
     public event EndOfRoundDelegateHandler OnEndOfRound;
+
+    [HideInInspector]
+    public delegate void EndOfRoundResultDelegateHandler(RoundResultTypes roundResult);
+    [HideInInspector]
+    public event EndOfRoundResultDelegateHandler OnEndOfRoundResult;
 
     [HideInInspector]
     public delegate void PlayerLeftDelegateHandler(string playerLeftName, List<bool> playedHandsPresent, List<PokerHand> allHandsInPlay);
@@ -638,6 +645,7 @@ public class GameManager : NetworkBehaviour
 
         PlayedHandLogItem lastLoggedHand = m_playedHandLog.Last();
         string lastPlayerToPlayHand = lastLoggedHand.m_playerId;
+        ulong lastPlayerToPlayHandClientId = m_playerData[lastPlayerToPlayHand].LastUsedClientID;
         PokerHand lastPlayedHand = lastLoggedHand.m_playedHand;
 
         bool isHandInPlay = CardManager.Instance.IsHandInPlay(lastPlayedHand);
@@ -645,9 +653,42 @@ public class GameManager : NetworkBehaviour
         Debug.Log($"{lastPlayedHand.GetStringRepresentation()} is in play => {isHandInPlay}");
 #endif
 
-        // TODO: visual display of bullshit result
-        m_lastRoundLosingClientId = isHandInPlay ? callingBullshitClientId : m_playerData[lastPlayerToPlayHand].LastUsedClientID;
+        m_lastRoundLosingClientId = isHandInPlay ? callingBullshitClientId : lastPlayerToPlayHandClientId;
         IEnumerable<bool> playedHandsPresent = m_playedHandLog.Select(i => i.m_existsInRound);
+
+        ClientRpcParams losingClientRpcParams = new ClientRpcParams
+        {
+            Send = new ClientRpcSendParams
+            {
+                TargetClientIds = new ulong[] { m_lastRoundLosingClientId }
+            }
+        };
+
+        if (m_lastRoundLosingClientId != callingBullshitClientId)
+        {
+            ClientRpcParams bullshitterClientRpcParams = new ClientRpcParams
+            {
+                Send = new ClientRpcSendParams
+                {
+                    TargetClientIds = new ulong[] { callingBullshitClientId }
+                }
+            };
+            CorrectBSClientRpc(bullshitterClientRpcParams);
+            CalledOutClientRpc(losingClientRpcParams);
+        }
+        else
+        {
+            ClientRpcParams lastPlayedClientRpcParams = new ClientRpcParams
+            {
+                Send = new ClientRpcSendParams
+                {
+                    TargetClientIds = new ulong[] { lastPlayerToPlayHandClientId }
+                }
+            };
+            WrongBSClientRpc(losingClientRpcParams);
+            SafeClientRpc(lastPlayedClientRpcParams);
+        }
+
         EndOfRoundClientRpc(playedHandsPresent.ToArray(), CardManager.Instance.GetAllHandsInPlay().ToArray());
     }
 
@@ -656,6 +697,30 @@ public class GameManager : NetworkBehaviour
     {
         List<PokerHand> pokerHandsInPlay = allHandsInPlay.Select(i => PokerHandFactory.InferPokerHandType(i)).ToList();
         OnEndOfRound?.Invoke(playedHandsPresent.ToList(), pokerHandsInPlay);
+    }
+
+    [ClientRpc]
+    public void CorrectBSClientRpc(ClientRpcParams clientRpcParams = default)
+    {
+        OnEndOfRoundResult?.Invoke(RoundResultTypes.CorrectBS);
+    }
+
+    [ClientRpc]
+    public void WrongBSClientRpc(ClientRpcParams clientRpcParams = default)
+    {
+        OnEndOfRoundResult?.Invoke(RoundResultTypes.WrongBS);
+    }
+
+    [ClientRpc]
+    public void CalledOutClientRpc(ClientRpcParams clientRpcParams = default)
+    {
+        OnEndOfRoundResult?.Invoke(RoundResultTypes.CalledOut);
+    }
+
+    [ClientRpc]
+    public void SafeClientRpc(ClientRpcParams clientRpcParams = default)
+    {
+        OnEndOfRoundResult?.Invoke(RoundResultTypes.Safe);
     }
 
     [ServerRpc(RequireOwnership = false)]
@@ -725,6 +790,7 @@ public class GameManager : NetworkBehaviour
     [ClientRpc]
     public void ExitGameClientRpc()
     {
+        m_playedHandLog.Clear();
         SceneTransitionHandler.Instance.ExitAndLoadStartMenu();
     }
 }

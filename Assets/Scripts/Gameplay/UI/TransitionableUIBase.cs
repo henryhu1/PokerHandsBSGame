@@ -9,7 +9,7 @@ public abstract class TransitionableUIBase : MonoBehaviour, IAnimatable
     [SerializeField] private AnimationCurve movementCurve;
     [SerializeField] private float m_movementDuration;
     [SerializeField] private float m_startDelay = 0f;
-    [SerializeField] private bool m_startOffScreen = true;
+    [SerializeField] protected bool m_startOffScreen = true;
     protected Vector3 m_originalPosition;
     protected Vector3 m_offScreenPosition;
     protected Vector3 m_transitionStartPosition;
@@ -46,6 +46,11 @@ public abstract class TransitionableUIBase : MonoBehaviour, IAnimatable
         // InGameUI.Instance.OnShowUI += StartDoTransition;
     }
 
+    protected virtual void Start()
+    {
+        gameObject.SetActive(!m_startOffScreen);
+    }
+
     public IEnumerator DoAnimation()
     {
         m_transitionStartPosition = transform.position;
@@ -74,11 +79,16 @@ public abstract class TransitionableUIBase : MonoBehaviour, IAnimatable
         m_transitioningCoroutine = null;
         transform.position = finalPosition;
         m_transitionStartPosition = finalPosition;
+        if (transform.position == m_offScreenPosition)
+        {
+            gameObject.SetActive(false);
+        }
     }
 
     public void StartAnimation()
     {
         StopAnimation();
+        gameObject.SetActive(true);
         m_transitioningCoroutine = StartCoroutine(DoAnimation());
     }
 

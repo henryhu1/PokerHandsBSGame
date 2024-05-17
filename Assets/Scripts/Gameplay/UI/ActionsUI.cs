@@ -11,6 +11,7 @@ public class ActionsUI : TransitionableUIBase
     [SerializeField] private Button m_BullshitButton;
     [SerializeField] private Outline m_Outline;
     [SerializeField] private InvalidPlayMessageUI m_InvalidPlayNotif;
+    [SerializeField] private GameObject m_TurnNotification;
     private bool m_isPlayerOut;
 
     protected override void Awake()
@@ -44,13 +45,8 @@ public class ActionsUI : TransitionableUIBase
         m_PlayButton.enabled = GameManager.Instance.IsHost; // TODO: flimsy how based on host the play button enables, change to actual turn logic?
         m_BullshitButton.enabled = !GameManager.Instance.IsBeginningOfRound();
         m_Outline.enabled = m_PlayButton.enabled;
+        m_TurnNotification.gameObject.SetActive(m_PlayButton.enabled);
     }
-
-    //private void Start()
-    //{
-    //    // GameManager.Instance.OnInvalidPlay += GameManager_OnInvalidPlay;
-    //    TurnManager.Instance.OnNextPlayerTurn += TurnManager_NextPlayerTurn;
-    //}
 
     protected override void RegisterForEvents()
     {
@@ -74,10 +70,11 @@ public class ActionsUI : TransitionableUIBase
         GameManager.Instance.OnRestartGame -= GameManager_RestartGame;
     }
 
-    private void Start()
+    protected override void Start()
     {
         RegisterForEvents();
         GameManager.Instance.RegisterActionsUIObservers();
+        base.Start();
     }
 
     private void OnDestroy()
@@ -87,7 +84,7 @@ public class ActionsUI : TransitionableUIBase
 
     private void CameraRotationLookAtTarget_CameraInPosition()
     {
-        if (gameObject.activeInHierarchy) StartAnimation();
+        if (GameManager.Instance.IsNotOut()) StartAnimation();
     }
 
     private void PlayUI_ShowPlayUI()
@@ -102,17 +99,17 @@ public class ActionsUI : TransitionableUIBase
 
     private void GameManager_EndOfRound(List<bool> _, List<PokerHand> __)
     {
-        if (gameObject.activeInHierarchy) { StartAnimation(); }
+        if (GameManager.Instance.IsNotOut()) { StartAnimation(); }
     }
 
     private void GameManager_PlayerLeft(string _, List<bool> __, List<PokerHand> ___)
     {
-        if (gameObject.activeInHierarchy) { StartAnimation(); }
+        if (GameManager.Instance.IsNotOut()) { StartAnimation(); }
     }
 
     private void GameManager_NextRoundStarting()
     {
-        if (gameObject.activeInHierarchy) StartAnimation();
+        if (GameManager.Instance.IsNotOut()) StartAnimation();
     }
     private void GameManager_RestartGame()
     {
@@ -135,5 +132,6 @@ public class ActionsUI : TransitionableUIBase
         m_PlayButton.enabled = !m_isPlayerOut && isPlayerTurn;
         m_BullshitButton.enabled = !m_isPlayerOut && !GameManager.Instance.IsBeginningOfRound() && !wasPlayersTurnPreviously;
         m_Outline.enabled = m_PlayButton.enabled;
+        m_TurnNotification.gameObject.SetActive(m_PlayButton.enabled);
     }
 }
