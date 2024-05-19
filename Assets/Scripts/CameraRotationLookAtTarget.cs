@@ -13,6 +13,7 @@ public class CameraRotationLookAtTarget : MonoBehaviour
     [HideInInspector]
     public delegate void CameraInPositionDelegateHandler();
     [HideInInspector]
+    // TODO: UI gets displayed on camera in position, instead should UI be displayed when cards are distributed?
     public event CameraInPositionDelegateHandler OnCameraInPosition;
 
     private void Awake()
