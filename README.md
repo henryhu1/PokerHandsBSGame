@@ -1,17 +1,52 @@
 # :spades: :hearts: PokerHandsBSGame :diamonds: :clubs:
 My first 3D Unity game :beginner:
 
-Multiplayer and networking made possible with :globe_with_meridians:
+![display](Repo/PokerHandsBSGame.png)
+
+Multiplayer and networking :globe_with_meridians: made possible with 
 - [Netcode for GameObjects](https://docs-multiplayer.unity3d.com/)
 - [Relay](https://unity.com/products/relay)
 - [Lobby](https://unity.com/products/lobby)
 
-The UI was built entirely using [TextMeshPro](https://docs.unity3d.com/Manual/com.unity.textmeshpro.html) :gear:
+The UI was built entirely using [TextMeshPro](https://docs.unity3d.com/Manual/com.unity.textmeshpro.html) :pencil:
+
+Card and table assets provided by [Game Asset Studio](https://assetstore.unity.com/packages/3d/props/tools/free-playing-cards-pack-154780) :pray:
+
+## Standout Files :eyes:
+- Managers
+  - [Game](Assets/Scripts/GameManager.cs)
+  - [Card](Assets/Scripts/CardManager.cs), includes [distributing cards to players](Assets/Scripts/CardManager.cs#L391)
+    - [Hands in play](Assets/Scripts/Gameplay/Objects/HandsInPlay.cs#L88) calculates what poker hands exist
+  - [Lobby](Assets/Scripts/LobbyManager.cs)
+  - [Turns](Assets/Scripts/TurnManager.cs)
+- Entities
+  - [All enums and card enum extensions](Assets/Scripts/Enums.cs)
+  - [Deck](Assets/Scripts/Gameplay/Objects/Deck.cs)
+  - [Card](Assets/Scripts/Gameplay/Objects/Card.cs)
+  - [Base poker hand and all types of hands](Assets/Scripts/Gameplay/Objects/PokerHand.cs)
+    - [Poker hand factory](Assets/Scripts/Gameplay/Objects/PokerHandFactory.cs)
+  - GameObjects
+    - [Opponent hand](Assets/Scripts/Gameplay/Objects/OpponentHand.cs)
+- Interactions and input
+  - [Player controller](Assets/Scripts/PlayerController.cs)
+  - [Opponent cards](Assets/Scripts/Gameplay/Objects/OpponentHand.cs)
+  - [Card dragging](Assets/Scripts/Draggable.cs)
+- UI
+  - [Selecting hands to play](Assets/Scripts/Gameplay/UI/HandSelectionUI.cs) consists of two parts -
+    - [Card rank selection](Assets/Scripts/Gameplay/UI/CardRankChoicesUI.cs)
+    - [Card suit selection](Assets/Scripts/Gameplay/UI/CardSuitChoicesUI.cs)
+  - [Player actions log](Assets/Scripts/Gameplay/UI/PlayedHandLogUI.cs)
+  - Animations
+    - [Interface](Assets/Scripts/Gameplay/Interfaces/IAnimatable.cs) that is implemented by different types of UI animations -
+    - [Translate](Assets/Scripts/Gameplay/UI/TransitionableUIBase.cs)
+    - [Resize](Assets/Scripts/Gameplay/UI/ResizableUIBase.cs)
+    - [Rotate](Assets/Scripts/Gameplay/UI/RotatableUIBase.cs)
+    - [Fade](Assets/Scripts/Gameplay/UI/FadeableUIBase.cs)
 
 ## Manager Classes :bookmark_tabs:
 Simplified diagram (UML-like) of the server/host side of the main classes, their *networked members* and server/host logic
 
-![main](Repo/networked_components.png)
+![components](Repo/networked_components.png)
 
 ## Gameplay Events :arrow_right_hook:
 RPCs and events that are used during the game in a pseudo sequence diagram

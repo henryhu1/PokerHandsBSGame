@@ -7,12 +7,14 @@ public class OrderCardsUI : RotatableUIBase
 {
     public static OrderCardsUI Instance;
 
-    [SerializeField] private Toggle m_orderToggle;
+    [SerializeField] private Button m_orderButton;
 
     [SerializeField]
     public delegate void OnOrderCardsDelegateHandler(bool isAscending);
     [SerializeField]
     public event OnOrderCardsDelegateHandler OnOrderCards;
+
+    bool m_isDoAscendingSort;
 
     protected override void Awake()
     {
@@ -24,10 +26,15 @@ public class OrderCardsUI : RotatableUIBase
         }
         Instance = this;
 
-        m_orderToggle.onValueChanged.AddListener((bool isOn) =>
+        m_isDoAscendingSort = false;
+        m_orderButton.onClick.AddListener(() =>
         {
-            OnOrderCards?.Invoke(isOn);
-            StartAnimation();
+            if (CardManager.Instance.m_areCardsSorted)
+            {
+                m_isDoAscendingSort = !m_isDoAscendingSort;
+                StartAnimation();
+            }
+            OnOrderCards?.Invoke(m_isDoAscendingSort);
         });
     }
 
