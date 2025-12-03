@@ -1,8 +1,6 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using UnityEngine;
 
 [Serializable]
 public class Deck// : MonoBehaviour, UIMainScene.IUIInfoContent
@@ -15,7 +13,6 @@ public class Deck// : MonoBehaviour, UIMainScene.IUIInfoContent
         new Card(Suit.Diamond, Rank.Ace), new Card(Suit.Diamond, Rank.Two), new Card(Suit.Diamond, Rank.Three), new Card(Suit.Diamond, Rank.Four), new Card(Suit.Diamond, Rank.Five), new Card(Suit.Diamond, Rank.Six), new Card(Suit.Diamond, Rank.Seven), new Card(Suit.Diamond, Rank.Eight), new Card(Suit.Diamond, Rank.Nine), new Card(Suit.Diamond, Rank.Ten), new Card(Suit.Diamond, Rank.Jack), new Card(Suit.Diamond, Rank.Queen), new Card(Suit.Diamond, Rank.King), 
         new Card(Suit.Club, Rank.Ace), new Card(Suit.Club, Rank.Two), new Card(Suit.Club, Rank.Three), new Card(Suit.Club, Rank.Four), new Card(Suit.Club, Rank.Five), new Card(Suit.Club, Rank.Six), new Card(Suit.Club, Rank.Seven), new Card(Suit.Club, Rank.Eight), new Card(Suit.Club, Rank.Nine), new Card(Suit.Club, Rank.Ten), new Card(Suit.Club, Rank.Jack), new Card(Suit.Club, Rank.Queen), new Card(Suit.Club, Rank.King), 
     });
-    private System.Random _random = new System.Random();
 
     public Deck()
     {
@@ -31,9 +28,7 @@ public class Deck// : MonoBehaviour, UIMainScene.IUIInfoContent
         for (var i = 0; i < last; ++i)
         {
             var r = UnityEngine.Random.Range(i, count);
-            var tmp = m_deck[i];
-            m_deck[i] = m_deck[r];
-            m_deck[r] = tmp;
+            (m_deck[r], m_deck[i]) = (m_deck[i], m_deck[r]);
         }
     }
 

@@ -1,13 +1,9 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using Unity.Netcode;
-using UnityEngine;
 
 [Serializable]
 public class Card : INetworkSerializable, IComparable<Card>, IEquatable<Card>
 {
-
     private Rank m_rank;
     public Rank Rank { get { return m_rank; } }
     private Suit m_suit;
@@ -34,6 +30,7 @@ public class Card : INetworkSerializable, IComparable<Card>, IEquatable<Card>
         //    _card = Instantiate(asset, position, rotation);
         //}
     }
+
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {
         serializer.SerializeValue(ref m_rank);
