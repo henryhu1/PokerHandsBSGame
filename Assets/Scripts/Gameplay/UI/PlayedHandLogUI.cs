@@ -10,6 +10,9 @@ public class PlayedHandLogUI : TransitionableUIBase
     [SerializeField] private PlayedHandLogItemUI m_PlayedHandLogItemUIPrefab;
     [SerializeField] private GameObject m_LogContent;
 
+    [Header("Listening Events")]
+    [SerializeField] private UlongEventChannelSO OnSelectOpponentHand;
+
     // TODO: GetPlayerAndRoundOfPlayedHand and AllOpponentCards events must iterate over this list
     //   to find the corresponding played hands, a better data structure could be used for better efficiency
     private List<PlayedHandLogItemUI> m_PlayedHandLogItems;
@@ -33,7 +36,6 @@ public class PlayedHandLogUI : TransitionableUIBase
     protected override void RegisterForEvents()
     {
         CameraRotationLookAtTarget.Instance.OnCameraInPosition += CameraRotationLookAtTarget_CameraInPosition;
-        AllOpponentCards.Instance.OnSelectOpponentHand += AllOpponentCards_SelectOpponentHand;
         AllOpponentCards.Instance.OnUnselectAllOpponentHand += AllOpponentCards_UnselectAllOpponentHand;
         AllOpponentCards.Instance.OnMouseEnterOpponentHand += AllOpponentCards_MouseEnterOpponentHand;
         AllOpponentCards.Instance.OnMouseExitOpponentHand += AllOpponentCards_MouseExitOpponentHand;
@@ -48,7 +50,6 @@ public class PlayedHandLogUI : TransitionableUIBase
     private void UnregisterForEvents()
     {
         CameraRotationLookAtTarget.Instance.OnCameraInPosition -= CameraRotationLookAtTarget_CameraInPosition;
-        AllOpponentCards.Instance.OnSelectOpponentHand -= AllOpponentCards_SelectOpponentHand;
         AllOpponentCards.Instance.OnUnselectAllOpponentHand -= AllOpponentCards_UnselectAllOpponentHand;
         AllOpponentCards.Instance.OnMouseEnterOpponentHand -= AllOpponentCards_MouseEnterOpponentHand;
         AllOpponentCards.Instance.OnMouseExitOpponentHand -= AllOpponentCards_MouseExitOpponentHand;
@@ -67,6 +68,16 @@ public class PlayedHandLogUI : TransitionableUIBase
     }
 
     private void OnDestroy() { UnregisterForEvents(); }
+
+    private void OnEnable()
+    {
+        OnSelectOpponentHand.OnEventRaised += AllOpponentCards_SelectOpponentHand;
+    }
+
+    private void OnDisable()
+    {
+        OnSelectOpponentHand.OnEventRaised -= AllOpponentCards_SelectOpponentHand;
+    }
 
     private void DisplayWhichPlayedHandsPresent(List<bool> playedHandsPresent)
     {

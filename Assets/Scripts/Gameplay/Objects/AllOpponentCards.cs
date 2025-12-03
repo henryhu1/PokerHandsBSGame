@@ -9,11 +9,6 @@ public class AllOpponentCards : MonoBehaviour
     [SerializeField] private List<OpponentHand> opponentCardsGameObjects;
 
     [HideInInspector]
-    public delegate void SelectOpponentHandDelegateHandler(ulong clientId);
-    [HideInInspector]
-    public event SelectOpponentHandDelegateHandler OnSelectOpponentHand;
-
-    [HideInInspector]
     public delegate void UnselectAllOpponentHandDelegateHandler();
     [HideInInspector]
     public event UnselectAllOpponentHandDelegateHandler OnUnselectAllOpponentHand;
@@ -27,6 +22,9 @@ public class AllOpponentCards : MonoBehaviour
     public delegate void MouseExitOpponentHandDelegateHandler();
     [HideInInspector]
     public event MouseExitOpponentHandDelegateHandler OnMouseExitOpponentHand;
+
+    [Header("Firing Events")]
+    [SerializeField] private UlongEventChannelSO OnSelectOpponentHand;
 
     private OpponentHand m_userSelectedHand;
     public OpponentHand UserSelectedHand { get { return m_userSelectedHand; } }
@@ -90,7 +88,7 @@ public class AllOpponentCards : MonoBehaviour
     private void SelectOpponentHand(OpponentHand opponentHand)
     {
         m_userSelectedHand = opponentHand;
-        OnSelectOpponentHand?.Invoke(opponentHand.OpponentClientId);
+        OnSelectOpponentHand.RaiseEvent(opponentHand.OpponentClientId);
     }
 
     public void UnselectAllOpponentHands()
