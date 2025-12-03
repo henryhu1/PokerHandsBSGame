@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Netcode;
@@ -40,6 +39,9 @@ public class TurnManager : NetworkBehaviour
     public delegate void NextPlayerTurnDelegateHandler(bool isPlayerTurn, bool wasPlayerTurnPreviously = false);
     [HideInInspector]
     public event NextPlayerTurnDelegateHandler OnNextPlayerTurn;
+
+    [Header("Listening Events")]
+    [SerializeField] private UlongEventChannelSO OnPlayerOut;
 
     public void Awake()
     {
@@ -84,14 +86,14 @@ public class TurnManager : NetworkBehaviour
         }
     }
 
-    public void RegisterCardManagerCallbacks()
+    private void OnEnable()
     {
-        CardManager.Instance.OnPlayerOut += CardManager_PlayerOut;
+        OnPlayerOut.OnEventRaised += CardManager_PlayerOut;
     }
 
-    public void UnregisterCardManagerCallbacks()
+    private void OnDisable()
     {
-        CardManager.Instance.OnPlayerOut -= CardManager_PlayerOut;
+        OnPlayerOut.OnEventRaised -= CardManager_PlayerOut;
     }
 
     private void CardManager_PlayerOut(ulong losingClientId)

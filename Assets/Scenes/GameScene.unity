@@ -7298,6 +7298,7 @@ MonoBehaviour:
   playerCardsInHand: {fileID: 299625353}
   allOpponentCards: {fileID: 277496372}
   deckGameObject: {fileID: 599213204}
+  OnPlayerOut: {fileID: 11400000, guid: 50d0634f9c669ef44bf23459aa4a30f4, type: 2}
 --- !u!114 &1096311314
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10414,6 +10415,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6668cb992c150624880a347c6689799a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  OnPlayerOut: {fileID: 11400000, guid: 50d0634f9c669ef44bf23459aa4a30f4, type: 2}
 --- !u!4 &1679527415
 Transform:
   m_ObjectHideFlags: 0

@@ -119,6 +119,9 @@ public class GameManager : NetworkBehaviour
     [HideInInspector]
     public event RestartGameDelegateHandler OnRestartGame;
 
+    [Header("Listening Events")]
+    [SerializeField] private UlongEventChannelSO OnPlayerOut;
+
     private void ApprovalCheck(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response)
     {
         // The client identifier to be authenticated
@@ -238,6 +241,7 @@ public class GameManager : NetworkBehaviour
             {
                 if (m_inPlayClientIds.Contains(clientId))
                 {
+                    // TODO: fix error occurring here when game shuts down and despawns on the network
                     m_inPlayClientIds.Remove(clientId);
                     m_numberOfPlayers -= 1;
                     if (!m_roundOver)
@@ -359,14 +363,14 @@ public class GameManager : NetworkBehaviour
         base.OnNetworkDespawn();
     }
 
-    public void RegisterCardManagerCallbacks()
+    private void OnEnable()
     {
-        CardManager.Instance.OnPlayerOut += CardManager_PlayerOut;
+        OnPlayerOut.OnEventRaised += CardManager_PlayerOut;
     }
 
-    public void UnregisterCardManagerCallbacks()
+    private void OnDisable()
     {
-        CardManager.Instance.OnPlayerOut -= CardManager_PlayerOut;
+        OnPlayerOut.OnEventRaised -= CardManager_PlayerOut;
     }
 
     private void CardManager_PlayerOut(ulong losingClientId)

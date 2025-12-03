@@ -8,9 +8,12 @@ public class CardManager : NetworkBehaviour
     public static CardManager Instance { get; private set; }
     private DeckManager deckManager;
     private CardGameServerManager cardGameServerManager;
+    
+    [Header("Data")]
     [SerializeField] private CardRegistrySO cardRegistry;
-    [SerializeField] private PlayerCardsInHandManager playerCardsInHand;
 
+    [Header("Objects")]
+    [SerializeField] private PlayerCardsInHandManager playerCardsInHand;
     [SerializeField] private AllOpponentCards allOpponentCards;
     [SerializeField] private GameObject deckGameObject;
     private List<Card> m_myCards;
@@ -20,10 +23,8 @@ public class CardManager : NetworkBehaviour
     [HideInInspector]
     public event AreFlushesAllowedHandsDelegateHandler OnAreFlushesAllowed;
 
-    [HideInInspector]
-    public delegate void PlayerOutDelegateHandler(ulong losingClientId);
-    [HideInInspector]
-    public event PlayerOutDelegateHandler OnPlayerOut;
+    [Header("Firing Events")]
+    [SerializeField] private UlongEventChannelSO OnPlayerOut;
 
     private void Awake()
     {
@@ -46,9 +47,6 @@ public class CardManager : NetworkBehaviour
             // SceneTransitionHandler.Instance.OnClientLoadedScene += SceneTransitionHandler_ClientLoadedScene;
             NetworkManager.OnClientDisconnectCallback += RemovePlayer;
 
-            GameManager.Instance.RegisterCardManagerCallbacks();
-            TurnManager.Instance.RegisterCardManagerCallbacks();
-
             cardGameServerManager.RegisterServerEvents();
             cardGameServerManager.ConfigureFromGameSettings();
         }
@@ -62,9 +60,6 @@ public class CardManager : NetworkBehaviour
         {
             // SceneTransitionHandler.Instance.OnClientLoadedScene -= SceneTransitionHandler_ClientLoadedScene;
             NetworkManager.OnClientDisconnectCallback -= RemovePlayer;
-
-            GameManager.Instance.UnregisterCardManagerCallbacks();
-            TurnManager.Instance.UnregisterCardManagerCallbacks();
 
             cardGameServerManager.UnregisterServerEvents();
         }
@@ -134,7 +129,7 @@ public class CardManager : NetworkBehaviour
         bool isPlayerOut = cardGameServerManager.ChangeClientCardAmount(clientId);
         if (isPlayerOut)
         {
-            OnPlayerOut?.Invoke(clientId);
+            OnPlayerOut.RaiseEvent(clientId);
         }
     }
 
