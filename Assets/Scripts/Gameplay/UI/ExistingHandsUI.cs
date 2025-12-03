@@ -69,7 +69,7 @@ public class ExistingHandsUI : TransitionableUIBase
         StartAnimation();
     }
 
-    private void GameManager_GameWon(int _, List<GameManager.PlayerData> __)
+    private void GameManager_GameWon(int _, List<PlayerData> __)
     {
         StartAnimation();
     }

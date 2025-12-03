@@ -29,7 +29,7 @@ public class OrderCardsUI : RotatableUIBase
         m_isDoAscendingSort = false;
         m_orderButton.onClick.AddListener(() =>
         {
-            if (CardManager.Instance.m_areCardsSorted)
+            if (PlayerCardsInHandManager.Instance.areCardsSorted)
             {
                 m_isDoAscendingSort = !m_isDoAscendingSort;
                 StartAnimation();

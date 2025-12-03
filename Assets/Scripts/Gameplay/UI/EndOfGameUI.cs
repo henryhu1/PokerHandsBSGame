@@ -90,12 +90,12 @@ public class EndOfGameUI : TransitionableUIBase
         GameManager.Instance.OnRestartGame -= GameManager_RestartGame;
     }
 
-    public void GameManager_GameWon(int myPosition, List<GameManager.PlayerData> eliminationOrder)
+    public void GameManager_GameWon(int myPosition, List<PlayerData> eliminationOrder)
     {
         m_restartGameOption.gameObject.SetActive(GameManager.Instance.m_connectedClientIds.Count != 1);
         for (int i = 0; i < eliminationOrder.Count; i++)
         {
-            GameManager.PlayerData playerData = eliminationOrder[i];
+            PlayerData playerData = eliminationOrder[i];
             string playerName = playerData.Name;
             if (i + 1 == myPosition)
             {

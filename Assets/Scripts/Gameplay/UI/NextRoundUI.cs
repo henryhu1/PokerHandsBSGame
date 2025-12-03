@@ -105,7 +105,7 @@ public class NextRoundUI : TransitionableUIBase
         }
     }
 
-    private void GameManager_GameWon(int _, List<GameManager.PlayerData> __)
+    private void GameManager_GameWon(int _, List<PlayerData> __)
     {
         if (transform.position != m_offScreenPosition)
         {
