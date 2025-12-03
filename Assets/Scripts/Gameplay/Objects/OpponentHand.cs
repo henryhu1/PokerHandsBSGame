@@ -1,5 +1,5 @@
-using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
 
 public class OpponentHand : MonoBehaviour
@@ -8,11 +8,16 @@ public class OpponentHand : MonoBehaviour
 
     [SerializeField] private MeshRenderer m_meshRenderer;
     [SerializeField] private Material blankCardTexture;
+    [SerializeField] private CardRegistrySO cardRegistry;
+
     private ulong m_opponentClientId;
     public ulong OpponentClientId { get { return m_opponentClientId; } }
     private string m_opponentName;
     public string OpponentName { get { return m_opponentName; } }
     private int m_opponentAmountOfCardsInHand;
+
+    private Vector3 m_originalRotation;
+    const float k_rotationDuration = 0.5f;
 
     [HideInInspector]
     public delegate void MouseEnterThisHandDelegateHandler(ulong clientId, string name, int amountOfCards);
@@ -29,8 +34,15 @@ public class OpponentHand : MonoBehaviour
     [HideInInspector]
     public event SelectedThisHandDelegateHandler OnSelectedThisHand;
 
-    public void DisplayCards(int amount, string name, ulong clientId)
+    private void Start()
     {
+        m_originalRotation = transform.rotation.eulerAngles;
+    }
+
+    public void DisplayCards(List<Card> cards, string name, ulong clientId)
+    {
+        int amount = cards.Count;
+
         m_opponentClientId = clientId;
         m_opponentName = name;
         m_opponentAmountOfCardsInHand = amount;
@@ -47,7 +59,8 @@ public class OpponentHand : MonoBehaviour
             }
             else
             {
-                mats[s_cardRemovalOrder[i]] = blankCardTexture;
+                Card atCard = cards[i - materialsToRemove];
+                mats[s_cardRemovalOrder[i]] = cardRegistry.GetEntry(atCard).material;
             }
         }
         m_meshRenderer.materials = mats;
@@ -67,5 +80,17 @@ public class OpponentHand : MonoBehaviour
     public void SetSelectedHand()
     {
         OnSelectedThisHand?.Invoke();
+    }
+
+    private void RevealHand()
+    {
+        var rot = transform.rotation.eulerAngles;
+        Vector3 newRotation = new(m_originalRotation.x, -1 * m_originalRotation.y, m_originalRotation.z);
+        transform.DORotate(newRotation, k_rotationDuration);
+    }
+
+    private void ConcealHand()
+    {
+        transform.DORotate(m_originalRotation, k_rotationDuration);
     }
 }

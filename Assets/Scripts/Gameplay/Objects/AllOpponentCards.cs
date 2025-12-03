@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -67,14 +66,14 @@ public class AllOpponentCards : MonoBehaviour
         opponentCardsGameObjects.ForEach(i => i.gameObject.SetActive(false));
     }
 
-    public void DisplayOpponentCards(List<int> opponentCardAmounts, List<string> opponentNames, ulong[] clientIds)
+    public void DisplayOpponentCards(List<List<Card>> opponentCards, List<string> opponentNames, ulong[] clientIds)
     {
         for (int i = 0; i < opponentCardsGameObjects.Count; i++)
         {
-            if (i < opponentCardAmounts.Count && opponentCardAmounts[i] > 0)
+            if (i < opponentCards.Count && opponentCards[i].Count > 0)
             {
                 opponentCardsGameObjects[i].gameObject.SetActive(true);
-                opponentCardsGameObjects[i].DisplayCards(opponentCardAmounts[i], opponentNames[i], clientIds[i]);
+                opponentCardsGameObjects[i].DisplayCards(opponentCards[i], opponentNames[i], clientIds[i]);
             }
             else
             {
