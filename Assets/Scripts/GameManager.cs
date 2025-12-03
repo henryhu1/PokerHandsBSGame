@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Netcode;
@@ -23,23 +22,6 @@ public class GameManager : NetworkBehaviour
     public int NumberOfPlayers { get { return m_numberOfPlayers; } }
     private float m_timeForTurn;
 
-    // Player and client data, TODO: player manager? Single source of truth for players, ^ also look at m_numberOfPlayers ^
-    public struct PlayerData : INetworkSerializable
-
-    {
-        public bool IsConnected { get; set; }
-        private ulong m_lastUsedClientId;
-        public ulong LastUsedClientID { get { return m_lastUsedClientId; } set { m_lastUsedClientId = value; } }
-        private string m_name;
-        public string Name { get { return m_name; } set { m_name = value; } }
-        public bool InPlay { get; set; }
-
-        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
-        {
-            serializer.SerializeValue(ref m_name);
-            serializer.SerializeValue(ref m_lastUsedClientId);
-        }
-    }
     private string m_localPlayerId;
     public string LocalPlayerId
     {
