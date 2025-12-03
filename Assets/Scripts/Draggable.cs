@@ -25,7 +25,7 @@ public class Draggable : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
             {
                 // Move the object to the new position, preserving the offset
                 transform.position = ray.GetPoint(distance) + offset;
-                CardManager.Instance.HandleCardDrag(transform.position);
+                PlayerCardsInHandManager.Instance.HandleCardDrag(transform.position);
             }
         }
         if (Input.GetMouseButtonUp(0))
@@ -41,7 +41,7 @@ public class Draggable : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        CardManager.Instance.HandleCardEnter(Index);
+        PlayerCardsInHandManager.Instance.HandleCardEnter(Index);
     }
 
     public void OnPointerDown(PointerEventData eventData)
@@ -57,19 +57,19 @@ public class Draggable : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
             // Calculate the offset between the object's position and the hit point
             offset = transform.position - ray.GetPoint(distance);
         }
-        CardManager.Instance.SetCardEmptySlotPosition(this);
+        PlayerCardsInHandManager.Instance.SetCardEmptySlotPosition(this);
         boxCollider.enabled = false;
     }
 
     public void OnPointerUp(PointerEventData eventData)
     {
         isBeingDragged = false;
-        CardManager.Instance.HandleCardEndDrag(Index);
+        PlayerCardsInHandManager.Instance.HandleCardEndDrag(Index);
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
         if (isBeingDragged) return;
-        CardManager.Instance.HandleCardExit(Index);
+        PlayerCardsInHandManager.Instance.HandleCardExit(Index);
     }
 }
