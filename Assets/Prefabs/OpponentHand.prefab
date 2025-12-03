@@ -57,23 +57,23 @@ PrefabInstance:
       value: OpponentHand
       objectReference: {fileID: 0}
     - target: {fileID: 8273389261548604659, guid: 67d3beb5d9aebe3449973246488fbfa3, type: 3}
-      propertyPath: m_Materials.Array.data[0]
+      propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 27bef4e92f71f0845a87bc056cd340d4, type: 2}
     - target: {fileID: 8273389261548604659, guid: 67d3beb5d9aebe3449973246488fbfa3, type: 3}
-      propertyPath: m_Materials.Array.data[1]
+      propertyPath: 'm_Materials.Array.data[1]'
       value: 
       objectReference: {fileID: 2100000, guid: 27bef4e92f71f0845a87bc056cd340d4, type: 2}
     - target: {fileID: 8273389261548604659, guid: 67d3beb5d9aebe3449973246488fbfa3, type: 3}
-      propertyPath: m_Materials.Array.data[2]
+      propertyPath: 'm_Materials.Array.data[2]'
       value: 
       objectReference: {fileID: 2100000, guid: 27bef4e92f71f0845a87bc056cd340d4, type: 2}
     - target: {fileID: 8273389261548604659, guid: 67d3beb5d9aebe3449973246488fbfa3, type: 3}
-      propertyPath: m_Materials.Array.data[3]
+      propertyPath: 'm_Materials.Array.data[3]'
       value: 
       objectReference: {fileID: 2100000, guid: 27bef4e92f71f0845a87bc056cd340d4, type: 2}
     - target: {fileID: 8273389261548604659, guid: 67d3beb5d9aebe3449973246488fbfa3, type: 3}
-      propertyPath: m_Materials.Array.data[4]
+      propertyPath: 'm_Materials.Array.data[4]'
       value: 
       objectReference: {fileID: 2100000, guid: 27bef4e92f71f0845a87bc056cd340d4, type: 2}
     m_RemovedComponents: []
@@ -106,6 +106,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_meshRenderer: {fileID: 1727636846722621297}
   blankCardTexture: {fileID: 2100000, guid: 27bef4e92f71f0845a87bc056cd340d4, type: 2}
+  cardRegistry: {fileID: 11400000, guid: dcd23699215c6b5418d1ab4edfc95314, type: 2}
 --- !u!64 &4784645110351213794
 MeshCollider:
   m_ObjectHideFlags: 0
