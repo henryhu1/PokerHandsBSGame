@@ -1,6 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -10,10 +7,6 @@ public class SceneTransitionHandler : MonoBehaviour
     public static SceneTransitionHandler Instance { get; private set; }
 
     [HideInInspector]
-    public delegate void ClientLoadedSceneDelegateHandler(ulong clientId);
-    [HideInInspector]
-    public event ClientLoadedSceneDelegateHandler OnClientLoadedScene;
-    [HideInInspector]
     public delegate void AllClientsLoadedSceneDelegateHandler();
     [HideInInspector]
     public event AllClientsLoadedSceneDelegateHandler OnAllClientsLoadedScene;
@@ -21,6 +14,9 @@ public class SceneTransitionHandler : MonoBehaviour
     public delegate void SceneStateChangedDelegateHandler(SceneStates newState);
     [HideInInspector]
     public event SceneStateChangedDelegateHandler OnSceneStateChanged;
+
+    [Header("Firing Events")]
+    [SerializeField] private UlongEventChannelSO OnClientLoadedScene;
     
     private int m_numberOfClientLoaded;
 
@@ -78,7 +74,7 @@ public class SceneTransitionHandler : MonoBehaviour
 #if UNITY_EDITOR
         Debug.Log($"client #{clientId} has loaded scene {sceneName}");
 #endif
-        OnClientLoadedScene?.Invoke(clientId);
+        OnClientLoadedScene.RaiseEvent(clientId);
         m_numberOfClientLoaded += 1;
         if (m_numberOfClientLoaded == NetworkManager.Singleton.ConnectedClients.Count)
         {
@@ -103,7 +99,6 @@ public class SceneTransitionHandler : MonoBehaviour
 
     public void ExitAndLoadStartMenu()
     {
-        OnClientLoadedScene = null;
         SetSceneState(SceneStates.MainMenu);
         SceneManager.LoadScene(k_MainMenuScene);
     }

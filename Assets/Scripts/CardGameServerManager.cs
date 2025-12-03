@@ -5,34 +5,39 @@ using Unity.Netcode;
 public class CardGameServerManager
 {
     private readonly DeckManager deckManager;
+    private UlongEventChannelSO OnClientLoadedScene;
+
     private readonly Dictionary<ulong, PlayerCardInfo> clientCards = new();
     private HandsInPlay handsInPlay = new();
 
     private int startAmount, endAmount, loseChange;
 
-    public CardGameServerManager(DeckManager deck)
+    public CardGameServerManager(DeckManager deck, UlongEventChannelSO OnClientLoadedScene)
     {
         deckManager = deck;
+        this.OnClientLoadedScene = OnClientLoadedScene;
+        this.OnClientLoadedScene.OnEventRaised += InitializePlayerEmptyHand;
+    }
+
+    ~CardGameServerManager()
+    {
+        OnClientLoadedScene.OnEventRaised -= InitializePlayerEmptyHand;
+    }
+
+    private void OnDisable()
+    {
     }
 
     public void RegisterServerEvents()
     {
-        SceneTransitionHandler.Instance.OnClientLoadedScene += OnClientLoadedScene;
         TurnManager.Instance.OnTurnOrderDecided += OnTurnOrderDecided;
         NetworkManager.Singleton.OnClientDisconnectCallback += RemovePlayer;
     }
 
     public void UnregisterServerEvents()
     {
-        SceneTransitionHandler.Instance.OnClientLoadedScene -= OnClientLoadedScene;
         TurnManager.Instance.OnTurnOrderDecided -= OnTurnOrderDecided;
         NetworkManager.Singleton.OnClientDisconnectCallback -= RemovePlayer;
-    }
-
-    private void OnClientLoadedScene(ulong clientId)
-    {
-        InitializePlayerEmptyHand(clientId);
-        // TryDistribute();
     }
 
     private void OnTurnOrderDecided() => TryDistribute();

@@ -26,6 +26,9 @@ public class CardManager : NetworkBehaviour
     [Header("Firing Events")]
     [SerializeField] private UlongEventChannelSO OnPlayerOut;
 
+    [Header("Listening Events")]
+    [SerializeField] private UlongEventChannelSO OnClientLoadedScene;
+
     private void Awake()
     {
         if (Instance != this && Instance != null)
@@ -35,7 +38,7 @@ public class CardManager : NetworkBehaviour
         Instance = this;
 
         deckManager = new();
-        cardGameServerManager = new(deckManager);
+        cardGameServerManager = new(deckManager, OnClientLoadedScene);
     }
 
     public override void OnNetworkSpawn()

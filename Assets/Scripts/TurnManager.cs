@@ -42,6 +42,7 @@ public class TurnManager : NetworkBehaviour
 
     [Header("Listening Events")]
     [SerializeField] private UlongEventChannelSO OnPlayerOut;
+    [SerializeField] private UlongEventChannelSO OnClientLoadedScene;
 
     public void Awake()
     {
@@ -68,7 +69,6 @@ public class TurnManager : NetworkBehaviour
         {
             m_currentTurnClientId.Value = NetworkManager.Singleton.LocalClientId;
 
-            SceneTransitionHandler.Instance.OnClientLoadedScene += AddClientToTurnOrder;
             NetworkManager.OnClientDisconnectCallback += RemovePlayer;
         }
     }
@@ -81,7 +81,6 @@ public class TurnManager : NetworkBehaviour
         {
             m_playerTurns.Clear();
 
-            SceneTransitionHandler.Instance.OnClientLoadedScene -= AddClientToTurnOrder;
             NetworkManager.OnClientDisconnectCallback -= RemovePlayer;
         }
     }
@@ -89,11 +88,13 @@ public class TurnManager : NetworkBehaviour
     private void OnEnable()
     {
         OnPlayerOut.OnEventRaised += CardManager_PlayerOut;
+        OnClientLoadedScene.OnEventRaised += AddClientToTurnOrder;
     }
 
     private void OnDisable()
     {
         OnPlayerOut.OnEventRaised -= CardManager_PlayerOut;
+        OnClientLoadedScene.OnEventRaised -= AddClientToTurnOrder;
     }
 
     private void CardManager_PlayerOut(ulong losingClientId)
