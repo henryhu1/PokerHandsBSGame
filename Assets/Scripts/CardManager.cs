@@ -184,7 +184,6 @@ public class CardManager : NetworkBehaviour
         deckGameObject.SetActive(GameManager.Instance.m_inPlayClientIds.Contains(NetworkManager.Singleton.LocalClientId));
         m_myCards = clientsCards.ToList();
         playerCardsInHand.CreateCardObjects(m_myCards);
-        // m_areCardsSorted = false;
 
         Dictionary<ulong, PlayerCardInfo> otherClientsCardInfo = new Dictionary<ulong, PlayerCardInfo>();
         for (int i = 0; i < otherClientsCards.Length; i++)

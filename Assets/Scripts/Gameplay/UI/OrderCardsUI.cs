@@ -6,14 +6,13 @@ public class OrderCardsUI : RotatableUIBase
 {
     public static OrderCardsUI Instance;
 
+    [Header("UI")]
     [SerializeField] private Button m_orderButton;
 
-    [SerializeField]
-    public delegate void OnOrderCardsDelegateHandler(bool isAscending);
-    [SerializeField]
-    public event OnOrderCardsDelegateHandler OnOrderCards;
+    [Header("Firing Events")]
+    [SerializeField] private VoidEventChannelSO OnOrderCards;
 
-    bool m_isDoAscendingSort;
+    private bool isPointingInAscendingDirection = true;
 
     protected override void Awake()
     {
@@ -24,17 +23,6 @@ public class OrderCardsUI : RotatableUIBase
             Destroy(Instance.gameObject);
         }
         Instance = this;
-
-        m_isDoAscendingSort = false;
-        m_orderButton.onClick.AddListener(() =>
-        {
-            if (PlayerCardsInHandManager.Instance.areCardsSorted)
-            {
-                m_isDoAscendingSort = !m_isDoAscendingSort;
-                StartAnimation();
-            }
-            OnOrderCards?.Invoke(m_isDoAscendingSort);
-        });
     }
 
     private void Start()
@@ -53,6 +41,24 @@ public class OrderCardsUI : RotatableUIBase
         GameManager.Instance.OnPlayerLeft -= GameManager_PlayerLeft;
         GameManager.Instance.OnNextRoundStarting -= GameManager_NextRoundStarting;
         GameManager.Instance.OnRestartGame -= GameManager_RestartGame;
+    }
+
+    private void OnEnable()
+    {
+        m_orderButton.onClick.AddListener(() =>
+        {
+            if (!isPointingInAscendingDirection || PlayerCardsInHandManager.Instance.cardSortState != CardSortState.UNSORTED)
+            {
+                StartAnimation();
+                isPointingInAscendingDirection = PlayerCardsInHandManager.Instance.cardSortState != CardSortState.ASCENDING;
+            }
+            OnOrderCards.RaiseEvent();
+        });
+    }
+
+    private void OnDisable()
+    {
+        m_orderButton.onClick.RemoveAllListeners();
     }
 
     private void GameManager_RestartGame()

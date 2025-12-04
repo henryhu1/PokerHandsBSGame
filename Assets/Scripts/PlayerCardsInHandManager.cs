@@ -12,13 +12,15 @@ public class PlayerCardsInHandManager : MonoBehaviour
     [SerializeField] private GraphicRaycaster graphicRaycaster;
     [SerializeField] private CardRegistrySO cardRegistry;
 
-    private readonly List<Draggable> cardObjects = new();
+    [Header("Listening Events")]
+    [SerializeField] private VoidEventChannelSO OnOrderCards;
+
+    private readonly List<(Draggable, int)> cardObjects = new();
     private readonly List<Vector3> positions = new();
     private int cardDraggingIndex = -1;
     private int cardDraggingOriginalIndex = -1;
-    private List<Card> cards = new();
 
-    public bool areCardsSorted = false;
+    public CardSortState cardSortState = CardSortState.UNSORTED;
 
     private const float k_xSpacing = 0.06f;
     private const float k_yCenter = 1.1f;
@@ -39,49 +41,44 @@ public class PlayerCardsInHandManager : MonoBehaviour
         Instance = this;
     }
 
-    // private void OnEnable()
-    // {
-    //     OrderCardsUI.Instance.OnOrderCards += OrderCardsUI_OrderCards;
-    // }
-
-    // private void OnDisable()
-    // {
-    //     OrderCardsUI.Instance.OnOrderCards -= OrderCardsUI_OrderCards;
-    // }
-
-    private void OrderCardsUI_OrderCards(bool isDoAscendingSort)
+    private void OnEnable()
     {
-        OrderCards(isDoAscendingSort);
+        OnOrderCards.OnEventRaised += OrderCardsUI_OrderCards;
     }
 
-    public void DisplayPlayerCards(Card[] newCards)
+    private void OnDisable()
     {
-        ClearCards();
-        cards = newCards.ToList();
-        CreateCardObjects(cards);
+        OnOrderCards.OnEventRaised -= OrderCardsUI_OrderCards;
     }
 
-    public void ClearCards()
+    private void OrderCardsUI_OrderCards()
     {
-        foreach (var c in cardObjects) Destroy(c.gameObject);
+        OrderCards(cardSortState != CardSortState.ASCENDING);
+    }
+
+    private void UpdateCardDisplay()
+    {
+        for (int i = 0; i < cardObjects.Count; i++)
+        {
+            Draggable cardObject = cardObjects[i].Item1;
+            cardObject.transform.position = positions[i];
+        }
     }
 
     public void DestroyCardGameObjects()
     {
-        foreach (Draggable cardGameObject in cardObjects) Destroy(cardGameObject.gameObject);
+        foreach ((Draggable cardGameObject, int _) in cardObjects) Destroy(cardGameObject.gameObject);
         cardObjects.Clear();
         positions.Clear();
-        // areCardsSorted = false;
+        cardSortState = CardSortState.UNSORTED;
     }
-
 
     public void OrderCards(bool ascending)
     {
-        DestroyCardGameObjects();
-        cards.Sort();
-        if (!ascending) cards.Reverse();
-        DisplayPlayerCards(cards.ToArray());
-        // areCardsSorted = true;
+        int order = ascending ? 1 : -1;
+        cardObjects.Sort((a, b) => a.Item2 < b.Item2 ? order : -order);
+        UpdateCardDisplay();
+        cardSortState = ascending ? CardSortState.ASCENDING : CardSortState.DESCENDING;
     }
 
     public void HandleCardDrag(Vector3 pos)
@@ -93,49 +90,60 @@ public class PlayerCardsInHandManager : MonoBehaviour
             slot = positions[i];
             if (Math.Abs(slot.x - pos.x) < 0.01 && Math.Abs(slot.y - pos.y) < 0.01)
             {
-                Draggable draggingCard = cardObjects[cardDraggingIndex];
-                Draggable displacedCard = cardObjects[i];
+                (Draggable draggingCard, int draggingSortIndex) = cardObjects[cardDraggingIndex];
+                (Draggable displacedCard, int displacedSortIndex) = cardObjects[i];
                 Vector3 emptySpace = positions[cardDraggingIndex];
                 StartCoroutine(MoveCard(displacedCard, emptySpace));
-                cardObjects[cardDraggingIndex] = displacedCard;
-                displacedCard.Index = cardDraggingIndex;
-                cardObjects[i] = draggingCard;
-                draggingCard.Index = i;
+                cardObjects[cardDraggingIndex] = (displacedCard, displacedSortIndex);
+                cardObjects[i] = (draggingCard, draggingSortIndex);
                 cardDraggingIndex = i;
             }
         }
     }
 
-    public void HandleCardEndDrag(int index)
+    public void HandleCardEndDrag(Draggable wasDragging)
     {
-        if (cardDraggingIndex != index) return;
-        Draggable exitedCard = cardObjects[index];
-        StartCoroutine(MoveCard(exitedCard, positions[index], k_cardMovementDuration, true));
+        int index = cardObjects.FindIndex(0, (cardSortIndexPair) => cardSortIndexPair.Item1 == wasDragging);
+        if (index == -1 || cardDraggingIndex != index) return;
+
+        StartCoroutine(MoveCard(cardObjects[index].Item1, positions[index], isEndDrag: true));
+
         if (cardDraggingOriginalIndex != index)
         {
-            areCardsSorted = false;
+            cardSortState = CardSortState.UNSORTED;
         }
         graphicRaycaster.enabled = true;
     }
 
-    public void HandleCardEnter(int index)
+    public void HandleCardEnter(Draggable mayDrag)
     {
         if (cardDraggingIndex != -1) return;
-        Draggable enteredCard = cardObjects[index];
-        StartCoroutine(MoveCard(enteredCard, positions[index] + k_cardZoom, k_cardMovementDuration));
+
+        int index = cardObjects.FindIndex(0, (cardSortIndexPair) => cardSortIndexPair.Item1 == mayDrag);
+        if (index == -1) return;
+
+        StartCoroutine(MoveCard(cardObjects[index].Item1, positions[index] + k_cardZoom));
     }
 
-    public void HandleCardExit(int index)
+    public void HandleCardExit(Draggable didNotDrag)
     {
-        if (cardDraggingIndex != -1 || cardDraggingIndex == index) return;
-        Draggable exitedCard = cardObjects[index];
-        StartCoroutine(MoveCard(exitedCard, positions[index], k_cardMovementDuration));
+        if (cardDraggingIndex != -1) return;
+
+        int index = cardObjects.FindIndex(0, (cardSortIndexPair) => cardSortIndexPair.Item1 == didNotDrag);
+        if (index == -1) return;
+
+        StartCoroutine(MoveCard(cardObjects[index].Item1, positions[index]));
     }
 
-    public void SetCardEmptySlotPosition(Draggable dragging)
+    public void HandleCardStartDrag(Draggable dragging)
     {
-        cardDraggingIndex = dragging.Index;
-        cardDraggingOriginalIndex = dragging.Index;
+        if (cardDraggingIndex != -1) return;
+
+        int index = cardObjects.FindIndex(0, (cardSortIndexPair) => cardSortIndexPair.Item1 == dragging);
+        if (index == -1) return;
+
+        cardDraggingIndex = index;
+        cardDraggingOriginalIndex = index;
         graphicRaycaster.enabled = false;
     }
 
@@ -149,7 +157,6 @@ public class PlayerCardsInHandManager : MonoBehaviour
             time += Time.deltaTime;
 
             float step = time / duration;
-            //float curveStep = movementCurve.Evaluate(step);
             card.transform.position = Vector3.Lerp(start, finalPosition, step);
 
             yield return null;
@@ -161,6 +168,10 @@ public class PlayerCardsInHandManager : MonoBehaviour
 
     public void CreateCardObjects(List<Card> myCards)
     {
+        List<Card> cardsSorted = new(myCards);
+        cardsSorted.Sort();
+        int[] cardIndexInPosition = myCards.Select(card => cardsSorted.IndexOf(card)).ToArray();
+
         int numberOfCardsToDisplay = myCards.Count;
         int rowsOfCards = numberOfCardsToDisplay / k_maxCardsPerRow;
         int cardsPerRow = Math.Min(numberOfCardsToDisplay, k_maxCardsPerRow);
@@ -179,12 +190,12 @@ public class PlayerCardsInHandManager : MonoBehaviour
             }
             Vector3 cardSlot = new(xPos, yPos, zPos);
             positions.Add(cardSlot);
+
             GameObject cardPrefab = cardRegistry.GetPrefab(currentCard.Rank, currentCard.Suit);
             GameObject cardGameObject = Instantiate(cardPrefab, cardSlot, k_cardsFacePlayerRotation);
             Draggable draggable = cardGameObject.GetComponent<Draggable>();
-            draggable.Index = cardObjects.Count;
             xPos += k_xSpacing;
-            cardObjects.Add(draggable);
+            cardObjects.Add((draggable, cardIndexInPosition[i]));
         }
     }
 }

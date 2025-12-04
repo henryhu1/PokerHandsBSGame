@@ -8,7 +8,6 @@ public class Draggable : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
     BoxCollider boxCollider;
 
     public bool isBeingDragged;
-    public int Index;
 
     public void Awake()
     {
@@ -41,7 +40,7 @@ public class Draggable : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        PlayerCardsInHandManager.Instance.HandleCardEnter(Index);
+        PlayerCardsInHandManager.Instance.HandleCardEnter(this);
     }
 
     public void OnPointerDown(PointerEventData eventData)
@@ -57,19 +56,19 @@ public class Draggable : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
             // Calculate the offset between the object's position and the hit point
             offset = transform.position - ray.GetPoint(distance);
         }
-        PlayerCardsInHandManager.Instance.SetCardEmptySlotPosition(this);
+        PlayerCardsInHandManager.Instance.HandleCardStartDrag(this);
         boxCollider.enabled = false;
     }
 
     public void OnPointerUp(PointerEventData eventData)
     {
         isBeingDragged = false;
-        PlayerCardsInHandManager.Instance.HandleCardEndDrag(Index);
+        PlayerCardsInHandManager.Instance.HandleCardEndDrag(this);
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
         if (isBeingDragged) return;
-        PlayerCardsInHandManager.Instance.HandleCardExit(Index);
+        PlayerCardsInHandManager.Instance.HandleCardExit(this);
     }
 }
