@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -41,6 +40,9 @@ public class HandTypeUI : ToggleSelectionableTransitionableUIBase<Hand>
     public delegate void NeedRoyalFlushChoicesDelegateHandler();
     [HideInInspector]
     public event NeedRoyalFlushChoicesDelegateHandler OnNeedRoyalFlushChoices;
+
+    [Header("Listening Events")]
+    [SerializeField] private BoolEventChannelSO OnAreFlushesAllowed;
 
     protected override void Awake()
     {
@@ -115,7 +117,6 @@ public class HandTypeUI : ToggleSelectionableTransitionableUIBase<Hand>
     protected override void RegisterForEvents()
     {
         // GameManager.Instance.OnUpdatePlayableHands += GameManager_UpdatePlayableHands;
-        CardManager.Instance.OnAreFlushesAllowed += CardManager_AreFlushesAllowed;
         GameManager.Instance.OnEndOfRound += GameManager_EndOfRound;
         GameManager.Instance.OnPlayerLeft += GameManager_PlayerLeft;
         GameManager.Instance.OnNextRoundStarting += GameManager_NextRoundStarting;
@@ -123,7 +124,6 @@ public class HandTypeUI : ToggleSelectionableTransitionableUIBase<Hand>
     }
     private void UnregisterFromEvents()
     {
-        CardManager.Instance.OnAreFlushesAllowed -= CardManager_AreFlushesAllowed;
         GameManager.Instance.OnEndOfRound -= GameManager_EndOfRound;
         GameManager.Instance.OnPlayerLeft -= GameManager_PlayerLeft;
         GameManager.Instance.OnNextRoundStarting -= GameManager_NextRoundStarting;
@@ -136,6 +136,16 @@ public class HandTypeUI : ToggleSelectionableTransitionableUIBase<Hand>
     }
 
     private void OnDestroy() { UnregisterFromEvents(); }
+
+    private void OnEnable()
+    {
+        OnAreFlushesAllowed.OnEventRaised += CardManager_AreFlushesAllowed;
+    }
+
+    private void OnDisable()
+    {
+        OnAreFlushesAllowed.OnEventRaised -= CardManager_AreFlushesAllowed;
+    }
 
     // TODO: disabling all hands lower than last played hand
     //private void GameManager_UpdatePlayableHands(PokerHand playedHand)

@@ -18,13 +18,9 @@ public class CardManager : NetworkBehaviour
     [SerializeField] private GameObject deckGameObject;
     private List<Card> m_myCards;
 
-    [HideInInspector]
-    public delegate void AreFlushesAllowedHandsDelegateHandler(bool flushesAllowed);
-    [HideInInspector]
-    public event AreFlushesAllowedHandsDelegateHandler OnAreFlushesAllowed;
-
     [Header("Firing Events")]
     [SerializeField] private UlongEventChannelSO OnPlayerOut;
+    [SerializeField] private BoolEventChannelSO OnAreFlushesAllowed;
 
     [Header("Listening Events")]
     [SerializeField] private UlongEventChannelSO OnClientLoadedScene;
@@ -179,7 +175,7 @@ public class CardManager : NetworkBehaviour
         ClientRpcParams clientRpcParams = default
     )
     {
-        OnAreFlushesAllowed?.Invoke(areFlushesAllowed);
+        OnAreFlushesAllowed.RaiseEvent(areFlushesAllowed);
 
         deckGameObject.SetActive(GameManager.Instance.m_inPlayClientIds.Contains(NetworkManager.Singleton.LocalClientId));
         m_myCards = clientsCards.ToList();
