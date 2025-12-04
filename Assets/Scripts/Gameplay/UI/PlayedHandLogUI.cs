@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class PlayedHandLogUI : TransitionableUIBase
 {
@@ -12,6 +11,7 @@ public class PlayedHandLogUI : TransitionableUIBase
 
     [Header("Listening Events")]
     [SerializeField] private UlongEventChannelSO OnSelectOpponentHand;
+    [SerializeField] private VoidEventChannelSO OnCameraInPosition;
 
     // TODO: GetPlayerAndRoundOfPlayedHand and AllOpponentCards events must iterate over this list
     //   to find the corresponding played hands, a better data structure could be used for better efficiency
@@ -35,7 +35,6 @@ public class PlayedHandLogUI : TransitionableUIBase
 
     protected override void RegisterForEvents()
     {
-        CameraRotationLookAtTarget.Instance.OnCameraInPosition += CameraRotationLookAtTarget_CameraInPosition;
         AllOpponentCards.Instance.OnUnselectAllOpponentHand += AllOpponentCards_UnselectAllOpponentHand;
         AllOpponentCards.Instance.OnMouseEnterOpponentHand += AllOpponentCards_MouseEnterOpponentHand;
         AllOpponentCards.Instance.OnMouseExitOpponentHand += AllOpponentCards_MouseExitOpponentHand;
@@ -49,7 +48,6 @@ public class PlayedHandLogUI : TransitionableUIBase
 
     private void UnregisterForEvents()
     {
-        CameraRotationLookAtTarget.Instance.OnCameraInPosition -= CameraRotationLookAtTarget_CameraInPosition;
         AllOpponentCards.Instance.OnUnselectAllOpponentHand -= AllOpponentCards_UnselectAllOpponentHand;
         AllOpponentCards.Instance.OnMouseEnterOpponentHand -= AllOpponentCards_MouseEnterOpponentHand;
         AllOpponentCards.Instance.OnMouseExitOpponentHand -= AllOpponentCards_MouseExitOpponentHand;
@@ -72,11 +70,13 @@ public class PlayedHandLogUI : TransitionableUIBase
     private void OnEnable()
     {
         OnSelectOpponentHand.OnEventRaised += AllOpponentCards_SelectOpponentHand;
+        OnCameraInPosition.OnEventRaised += CameraRotationLookAtTarget_CameraInPosition;
     }
 
     private void OnDisable()
     {
         OnSelectOpponentHand.OnEventRaised -= AllOpponentCards_SelectOpponentHand;
+        OnCameraInPosition.OnEventRaised -= CameraRotationLookAtTarget_CameraInPosition;
     }
 
     private void DisplayWhichPlayedHandsPresent(List<bool> playedHandsPresent)

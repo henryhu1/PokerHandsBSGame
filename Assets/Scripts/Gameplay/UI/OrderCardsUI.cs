@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -40,7 +39,6 @@ public class OrderCardsUI : RotatableUIBase
 
     private void Start()
     {
-        CameraRotationLookAtTarget.Instance.OnCameraInPosition += CameraRotationLookAtTarget_CameraInPosition;
         GameManager.Instance.OnEndOfRound += GameManager_EndOfRound;
         GameManager.Instance.OnPlayerLeft += GameManager_PlayerLeft;
         GameManager.Instance.OnNextRoundStarting += GameManager_NextRoundStarting;
@@ -51,7 +49,6 @@ public class OrderCardsUI : RotatableUIBase
 
     private void OnDestroy()
     {
-        CameraRotationLookAtTarget.Instance.OnCameraInPosition -= CameraRotationLookAtTarget_CameraInPosition;
         GameManager.Instance.OnEndOfRound -= GameManager_EndOfRound;
         GameManager.Instance.OnPlayerLeft -= GameManager_PlayerLeft;
         GameManager.Instance.OnNextRoundStarting -= GameManager_NextRoundStarting;
@@ -78,18 +75,13 @@ public class OrderCardsUI : RotatableUIBase
         Hide();
     }
 
-    private void CameraRotationLookAtTarget_CameraInPosition()
-    {
-        Show();
-    }
-
-    private void Show()
+    public void Show()
     {
         transform.eulerAngles = m_originalRotation;
         gameObject.SetActive(true);
     }
 
-    private void Hide()
+    public void Hide()
     {
         gameObject.SetActive(false);
     }

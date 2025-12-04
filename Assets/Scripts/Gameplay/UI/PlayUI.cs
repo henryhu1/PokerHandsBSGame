@@ -1,15 +1,17 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayUI : MonoBehaviour
 {
     public static PlayUI Instance { get; private set; }
 
-    [HideInInspector]
-    public delegate void ShowPlayUIDelegateHandler();
-    [HideInInspector]
-    public event ShowPlayUIDelegateHandler OnShowPlayUI;
+    [Header("UI Children")]
+    [SerializeField] private ActionsUI actionsUI;
+    [SerializeField] private HandSelectionUI handSelectionUI;
+    [SerializeField] private HandTypeUI handTypeUI;
+    [SerializeField] private OrderCardsUI orderCardsUI;
+
+    [Header("Listening Events")]
+    [SerializeField] private VoidEventChannelSO OnCameraInPosition;
 
     private void Awake()
     {
@@ -34,14 +36,35 @@ public class PlayUI : MonoBehaviour
         GameManager.Instance.UnregisterPlayUIObservers();
     }
 
+    private void OnEnable()
+    {
+        OnCameraInPosition.OnEventRaised += Show;
+    }
+
+    private void OnDisable()
+    {
+        OnCameraInPosition.OnEventRaised -= Show;
+    }
+
     public void Show()
     {
-        gameObject.SetActive(true);
-        OnShowPlayUI?.Invoke();
+        if (GameManager.Instance.IsNotOut())
+        {
+            actionsUI.StartAnimation();
+            handSelectionUI.StartAnimation();
+            handTypeUI.StartAnimation();
+            orderCardsUI.Show();
+        }
     }
 
     public void Hide()
     {
-        gameObject.SetActive(false);
+        if (GameManager.Instance.IsNotOut())
+        {
+            actionsUI.StartAnimation();
+            handSelectionUI.StartAnimation();
+            handTypeUI.StartAnimation();
+            orderCardsUI.Hide();
+        }
     }
 }

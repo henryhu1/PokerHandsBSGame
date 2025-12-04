@@ -1,5 +1,4 @@
 using CardTraitExtensions;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -47,8 +46,6 @@ public class HandSelectionUI : TransitionableUIBase
         m_RoyalFlushChoices.OnSelectSuit += RoyalFlushChoice_SelectSuit;
         m_RoyalFlushChoices.OnNoSelectionMade += RoyalFlushChoice_NoSelectionMade;
 
-        CameraRotationLookAtTarget.Instance.OnCameraInPosition += CameraRotationLookAtTarget_CameraInPosition;
-        PlayUI.Instance.OnShowPlayUI += PlayUI_ShowPlayUI;
         GameManager.Instance.OnEndOfRound += GameManager_EndOfRound;
         GameManager.Instance.OnPlayerLeft += GameManager_PlayerLeft;
         GameManager.Instance.OnNextRoundStarting += GameManager_NextRoundStarting;
@@ -72,8 +69,6 @@ public class HandSelectionUI : TransitionableUIBase
         m_RoyalFlushChoices.OnSelectSuit -= RoyalFlushChoice_SelectSuit;
         m_RoyalFlushChoices.OnNoSelectionMade -= RoyalFlushChoice_NoSelectionMade;
 
-        CameraRotationLookAtTarget.Instance.OnCameraInPosition -= CameraRotationLookAtTarget_CameraInPosition;
-        PlayUI.Instance.OnShowPlayUI -= PlayUI_ShowPlayUI;
         GameManager.Instance.OnEndOfRound -= GameManager_EndOfRound;
         GameManager.Instance.OnPlayerLeft -= GameManager_PlayerLeft;
         GameManager.Instance.OnNextRoundStarting -= GameManager_NextRoundStarting;
@@ -87,16 +82,6 @@ public class HandSelectionUI : TransitionableUIBase
     }
 
     private void OnDestroy() { UnregisterFromEvents(); }
-
-    private void CameraRotationLookAtTarget_CameraInPosition()
-    {
-        if (GameManager.Instance.IsNotOut()) StartAnimation();
-    }
-
-    private void PlayUI_ShowPlayUI()
-    {
-        StartAnimation();
-    }
 
     private void GameManager_EndOfRound(List<bool> _, List<PokerHand> __)
     {

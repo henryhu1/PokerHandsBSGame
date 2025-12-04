@@ -115,8 +115,6 @@ public class HandTypeUI : ToggleSelectionableTransitionableUIBase<Hand>
     protected override void RegisterForEvents()
     {
         // GameManager.Instance.OnUpdatePlayableHands += GameManager_UpdatePlayableHands;
-        CameraRotationLookAtTarget.Instance.OnCameraInPosition += CameraRotationLookAtTarget_CameraInPosition;
-        PlayUI.Instance.OnShowPlayUI += PlayUI_ShowPlayUI;
         CardManager.Instance.OnAreFlushesAllowed += CardManager_AreFlushesAllowed;
         GameManager.Instance.OnEndOfRound += GameManager_EndOfRound;
         GameManager.Instance.OnPlayerLeft += GameManager_PlayerLeft;
@@ -125,8 +123,6 @@ public class HandTypeUI : ToggleSelectionableTransitionableUIBase<Hand>
     }
     private void UnregisterFromEvents()
     {
-        CameraRotationLookAtTarget.Instance.OnCameraInPosition -= CameraRotationLookAtTarget_CameraInPosition;
-        PlayUI.Instance.OnShowPlayUI -= PlayUI_ShowPlayUI;
         CardManager.Instance.OnAreFlushesAllowed -= CardManager_AreFlushesAllowed;
         GameManager.Instance.OnEndOfRound -= GameManager_EndOfRound;
         GameManager.Instance.OnPlayerLeft -= GameManager_PlayerLeft;
@@ -146,16 +142,6 @@ public class HandTypeUI : ToggleSelectionableTransitionableUIBase<Hand>
     //{
     //    EnableTogglesToAtLeast();
     //}
-
-    private void CameraRotationLookAtTarget_CameraInPosition()
-    {
-        if (GameManager.Instance.IsNotOut()) StartAnimation();
-    }
-
-    private void PlayUI_ShowPlayUI()
-    {
-        StartAnimation();
-    }
 
     private void CardManager_AreFlushesAllowed(bool flushesAllowed)
     {

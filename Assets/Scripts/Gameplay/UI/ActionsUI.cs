@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -50,8 +49,6 @@ public class ActionsUI : TransitionableUIBase
 
     protected override void RegisterForEvents()
     {
-        CameraRotationLookAtTarget.Instance.OnCameraInPosition += CameraRotationLookAtTarget_CameraInPosition;
-        PlayUI.Instance.OnShowPlayUI += PlayUI_ShowPlayUI;
         TurnManager.Instance.OnNextPlayerTurn += TurnManager_NextPlayerTurn;
         GameManager.Instance.OnEndOfRound += GameManager_EndOfRound;
         GameManager.Instance.OnPlayerLeft += GameManager_PlayerLeft;
@@ -61,8 +58,6 @@ public class ActionsUI : TransitionableUIBase
 
     private void UnregisterFromEvents()
     {
-        CameraRotationLookAtTarget.Instance.OnCameraInPosition -= CameraRotationLookAtTarget_CameraInPosition;
-        PlayUI.Instance.OnShowPlayUI -= PlayUI_ShowPlayUI;
         TurnManager.Instance.OnNextPlayerTurn -= TurnManager_NextPlayerTurn;
         GameManager.Instance.OnEndOfRound -= GameManager_EndOfRound;
         GameManager.Instance.OnPlayerLeft -= GameManager_PlayerLeft;
@@ -80,16 +75,6 @@ public class ActionsUI : TransitionableUIBase
     private void OnDestroy()
     {
         UnregisterFromEvents();
-    }
-
-    private void CameraRotationLookAtTarget_CameraInPosition()
-    {
-        if (GameManager.Instance.IsNotOut()) StartAnimation();
-    }
-
-    private void PlayUI_ShowPlayUI()
-    {
-        StartAnimation();
     }
 
     private void TurnManager_NextPlayerTurn(bool isPlayerTurn, bool wasPlayersTurnPreviously)
