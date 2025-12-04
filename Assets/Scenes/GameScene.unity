@@ -951,6 +951,8 @@ MonoBehaviour:
   m_startOffScreen: 1
   m_PlayedHandLogItemUIPrefab: {fileID: 6540639121345542175, guid: 78a39f36983f0c441b98b965cf5a8527, type: 3}
   m_LogContent: {fileID: 1373818246}
+  OnSelectOpponentHand: {fileID: 11400000, guid: b1000c471aa09ba4697f0ab65776bc85, type: 2}
+  OnCameraInPosition: {fileID: 11400000, guid: d148c00a7f17d814fb021a5aa433be23, type: 2}
 --- !u!1001 &216998695
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1276,6 +1278,7 @@ MonoBehaviour:
   - {fileID: 1869643959}
   - {fileID: 880083331}
   - {fileID: 1208001308}
+  OnSelectOpponentHand: {fileID: 11400000, guid: b1000c471aa09ba4697f0ab65776bc85, type: 2}
 --- !u!1 &299625350
 GameObject:
   m_ObjectHideFlags: 0
@@ -1322,7 +1325,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerCardsInHandManager
   graphicRaycaster: {fileID: 1436354790}
   cardRegistry: {fileID: 11400000, guid: dcd23699215c6b5418d1ab4edfc95314, type: 2}
-  areCardsSorted: 0
+  OnOrderCards: {fileID: 11400000, guid: a7ebcf45511e44d4cb6bd22b3ebf0f48, type: 2}
+  cardSortState: 0
 --- !u!1 &310248963
 GameObject:
   m_ObjectHideFlags: 0
@@ -3614,6 +3618,7 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   m_movementDuration: 1
+  OnCameraInPosition: {fileID: 11400000, guid: d148c00a7f17d814fb021a5aa433be23, type: 2}
 --- !u!114 &620512811
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6249,6 +6254,7 @@ MonoBehaviour:
   m_movementDuration: 0.2
   m_rotationAmount: 180
   m_orderButton: {fileID: 1185457235}
+  OnOrderCards: {fileID: 11400000, guid: a7ebcf45511e44d4cb6bd22b3ebf0f48, type: 2}
 --- !u!1 &962607825
 GameObject:
   m_ObjectHideFlags: 0
@@ -7299,6 +7305,8 @@ MonoBehaviour:
   allOpponentCards: {fileID: 277496372}
   deckGameObject: {fileID: 599213204}
   OnPlayerOut: {fileID: 11400000, guid: 50d0634f9c669ef44bf23459aa4a30f4, type: 2}
+  OnAreFlushesAllowed: {fileID: 11400000, guid: 8c9401edf44e961428c524b26779534d, type: 2}
+  OnClientLoadedScene: {fileID: 11400000, guid: 90b31630f6d49bb49b2677d4a13442ab, type: 2}
 --- !u!114 &1096311314
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7374,6 +7382,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c0d08384e5c2f242ba9a7d83b1b1fba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  actionsUI: {fileID: 1915432409}
+  handSelectionUI: {fileID: 543125903}
+  handTypeUI: {fileID: 1887481977}
+  orderCardsUI: {fileID: 961002738}
+  OnCameraInPosition: {fileID: 11400000, guid: d148c00a7f17d814fb021a5aa433be23, type: 2}
 --- !u!1 &1177495711
 GameObject:
   m_ObjectHideFlags: 0
@@ -10416,6 +10429,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   OnPlayerOut: {fileID: 11400000, guid: 50d0634f9c669ef44bf23459aa4a30f4, type: 2}
+  OnClientLoadedScene: {fileID: 11400000, guid: 90b31630f6d49bb49b2677d4a13442ab, type: 2}
 --- !u!4 &1679527415
 Transform:
   m_ObjectHideFlags: 0
@@ -11373,6 +11387,7 @@ MonoBehaviour:
   m_FourOfAKindToggle: {fileID: 901665204}
   m_StraightFlushToggle: {fileID: 2085783624}
   m_RoyalFlushToggle: {fileID: 1915036998}
+  OnAreFlushesAllowed: {fileID: 11400000, guid: 8c9401edf44e961428c524b26779534d, type: 2}
 --- !u!1001 &1915036996
 PrefabInstance:
   m_ObjectHideFlags: 0
