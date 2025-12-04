@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public abstract class TransitionableUIBase : MonoBehaviour, IAnimatable
@@ -48,7 +47,7 @@ public abstract class TransitionableUIBase : MonoBehaviour, IAnimatable
 
     protected virtual void Start()
     {
-        gameObject.SetActive(!m_startOffScreen);
+        // gameObject.SetActive(!m_startOffScreen);
     }
 
     public IEnumerator DoAnimation()
