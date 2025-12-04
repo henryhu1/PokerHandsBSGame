@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "ulongEventChannelSO", menuName = "Events/ulong")]
+[CreateAssetMenu(fileName = "UlongEventChannelSO", menuName = "Events/ulong")]
 public class UlongEventChannelSO : ScriptableObject
 {
     public Action<ulong> OnEventRaised;
