@@ -55,11 +55,24 @@ public class PokerHand : INetworkSerializable, IComparable<PokerHand> // UIMainS
         serializer.SerializeValue(ref m_suit);
     }
 
+    public override string ToString()
+    {
+        return $"{m_hand} {m_rankPrimary} {m_rankSecondary} {m_suit}";
+    }
+
     public int CompareTo(PokerHand other)
     {
         if (this < other) return -1;
         else if (this > other) return 1;
         else return 0;
+    }
+
+    public bool Equals(PokerHand other)
+    {
+        return m_hand == other.m_hand &&
+            m_rankPrimary == other.m_rankPrimary &&
+            m_rankSecondary == other.m_rankSecondary &&
+            m_suit == other.m_suit;
     }
 
     public static bool operator <(PokerHand left, PokerHand right)
