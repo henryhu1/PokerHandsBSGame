@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public abstract class ToggleSelectionableTransitionableUIBase<T> : ToggleSelectionableUIBase<T>, IAnimatable
@@ -85,6 +84,8 @@ public abstract class ToggleSelectionableTransitionableUIBase<T> : ToggleSelecti
 
     public void StartAnimation()
     {
+        ResetSelection();
+        InvokeNoSelectionMade();
         StopAnimation();
         gameObject.SetActive(true);
         m_transitioningCoroutine = StartCoroutine(DoAnimation());

@@ -1,11 +1,12 @@
 using CardTraitExtensions;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class HandSelectionUI : TransitionableUIBase
 {
+    // TODO: remove Singleton?
     public static HandSelectionUI Instance { get; private set; }
 
+    [Header("UI")]
     [SerializeField] private CardRankChoicesUI m_CardRankChoicesPrimary;
     [SerializeField] private CardRankChoicesUI m_CardRankChoicesSecondary;
     [SerializeField] private CardSuitChoicesUI m_CardSuitChoices;
@@ -45,11 +46,6 @@ public class HandSelectionUI : TransitionableUIBase
         m_CardSuitChoices.OnNoSelectionMade += SuitChoice_NoSelectionMade;
         m_RoyalFlushChoices.OnSelectSuit += RoyalFlushChoice_SelectSuit;
         m_RoyalFlushChoices.OnNoSelectionMade += RoyalFlushChoice_NoSelectionMade;
-
-        GameManager.Instance.OnEndOfRound += GameManager_EndOfRound;
-        GameManager.Instance.OnPlayerLeft += GameManager_PlayerLeft;
-        GameManager.Instance.OnNextRoundStarting += GameManager_NextRoundStarting;
-        GameManager.Instance.OnRestartGame += GameManager_RestartGame;
     }
 
     private void UnregisterFromEvents()
@@ -68,11 +64,6 @@ public class HandSelectionUI : TransitionableUIBase
         m_CardSuitChoices.OnNoSelectionMade -= SuitChoice_NoSelectionMade;
         m_RoyalFlushChoices.OnSelectSuit -= RoyalFlushChoice_SelectSuit;
         m_RoyalFlushChoices.OnNoSelectionMade -= RoyalFlushChoice_NoSelectionMade;
-
-        GameManager.Instance.OnEndOfRound -= GameManager_EndOfRound;
-        GameManager.Instance.OnPlayerLeft -= GameManager_PlayerLeft;
-        GameManager.Instance.OnNextRoundStarting -= GameManager_NextRoundStarting;
-        GameManager.Instance.OnRestartGame -= GameManager_RestartGame;
     }
 
     protected override void Start()
@@ -82,27 +73,6 @@ public class HandSelectionUI : TransitionableUIBase
     }
 
     private void OnDestroy() { UnregisterFromEvents(); }
-
-    private void GameManager_EndOfRound(List<bool> _, List<PokerHand> __)
-    {
-        if (GameManager.Instance.IsNotOut()) StartAnimation();
-    }
-
-    private void GameManager_PlayerLeft(string _, List<bool> __, List<PokerHand> ___)
-    {
-        if (GameManager.Instance.IsNotOut()) StartAnimation();
-    }
-
-    private void GameManager_NextRoundStarting()
-    {
-        if (GameManager.Instance.IsNotOut()) StartAnimation();
-    }
-
-    private void GameManager_RestartGame()
-    {
-        gameObject.SetActive(true);
-        StartAnimation();
-    }
 
     private void HandTypeUI_NeedCardRankChoicesPrimary(Hand selectedHand)
     {

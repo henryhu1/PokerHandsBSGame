@@ -117,25 +117,12 @@ public class HandTypeUI : ToggleSelectionableTransitionableUIBase<Hand>
     protected override void RegisterForEvents()
     {
         // GameManager.Instance.OnUpdatePlayableHands += GameManager_UpdatePlayableHands;
-        GameManager.Instance.OnEndOfRound += GameManager_EndOfRound;
-        GameManager.Instance.OnPlayerLeft += GameManager_PlayerLeft;
-        GameManager.Instance.OnNextRoundStarting += GameManager_NextRoundStarting;
-        GameManager.Instance.OnRestartGame += GameManager_RestartGame;
-    }
-    private void UnregisterFromEvents()
-    {
-        GameManager.Instance.OnEndOfRound -= GameManager_EndOfRound;
-        GameManager.Instance.OnPlayerLeft -= GameManager_PlayerLeft;
-        GameManager.Instance.OnNextRoundStarting -= GameManager_NextRoundStarting;
-        GameManager.Instance.OnRestartGame -= GameManager_RestartGame;
     }
 
     protected override void Start() {
         RegisterForEvents();
         base.Start();
     }
-
-    private void OnDestroy() { UnregisterFromEvents(); }
 
     private void OnEnable()
     {
@@ -157,37 +144,6 @@ public class HandTypeUI : ToggleSelectionableTransitionableUIBase<Hand>
     {
         m_FlushToggle.enabled = flushesAllowed;
         m_FlushToggle.image.color = flushesAllowed ? Color.white : ToggleColors.k_DisabledColor;
-    }
-
-    private void GameManager_EndOfRound(List<bool> _, List<PokerHand> __)
-    {
-        if (GameManager.Instance.IsNotOut())
-        {
-            ResetSelection();
-            InvokeNoSelectionMade();
-            StartAnimation();
-        }
-    }
-
-    private void GameManager_PlayerLeft(string _, List<bool> __, List<PokerHand> ___)
-    {
-        if (GameManager.Instance.IsNotOut())
-        {
-            ResetSelection();
-            InvokeNoSelectionMade();
-            StartAnimation();
-        }
-    }
-
-    private void GameManager_RestartGame()
-    {
-        gameObject.SetActive(true);
-        StartAnimation();
-    }
-
-    private void GameManager_NextRoundStarting()
-    {
-        if (GameManager.Instance.IsNotOut()) StartAnimation();
     }
 
     //private static int RankToToggleIndex(Rank rank)

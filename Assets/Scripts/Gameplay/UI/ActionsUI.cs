@@ -1,11 +1,12 @@
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class ActionsUI : TransitionableUIBase
 {
+    // TODO: remove Singleton?
     public static ActionsUI Instance { get; private set; }
 
+    [Header("UI")]
     [SerializeField] private Button m_PlayButton;
     [SerializeField] private Button m_BullshitButton;
     [SerializeField] private Outline m_Outline;
@@ -50,19 +51,11 @@ public class ActionsUI : TransitionableUIBase
     protected override void RegisterForEvents()
     {
         TurnManager.Instance.OnNextPlayerTurn += TurnManager_NextPlayerTurn;
-        GameManager.Instance.OnEndOfRound += GameManager_EndOfRound;
-        GameManager.Instance.OnPlayerLeft += GameManager_PlayerLeft;
-        GameManager.Instance.OnNextRoundStarting += GameManager_NextRoundStarting;
-        GameManager.Instance.OnRestartGame += GameManager_RestartGame;
     }
 
     private void UnregisterFromEvents()
     {
         TurnManager.Instance.OnNextPlayerTurn -= TurnManager_NextPlayerTurn;
-        GameManager.Instance.OnEndOfRound -= GameManager_EndOfRound;
-        GameManager.Instance.OnPlayerLeft -= GameManager_PlayerLeft;
-        GameManager.Instance.OnNextRoundStarting -= GameManager_NextRoundStarting;
-        GameManager.Instance.OnRestartGame -= GameManager_RestartGame;
     }
 
     protected override void Start()
@@ -80,26 +73,6 @@ public class ActionsUI : TransitionableUIBase
     private void TurnManager_NextPlayerTurn(bool isPlayerTurn, bool wasPlayersTurnPreviously)
     {
         SetTurnActions(isPlayerTurn, wasPlayersTurnPreviously);
-    }
-
-    private void GameManager_EndOfRound(List<bool> _, List<PokerHand> __)
-    {
-        if (GameManager.Instance.IsNotOut()) { StartAnimation(); }
-    }
-
-    private void GameManager_PlayerLeft(string _, List<bool> __, List<PokerHand> ___)
-    {
-        if (GameManager.Instance.IsNotOut()) { StartAnimation(); }
-    }
-
-    private void GameManager_NextRoundStarting()
-    {
-        if (GameManager.Instance.IsNotOut()) StartAnimation();
-    }
-    private void GameManager_RestartGame()
-    {
-        gameObject.SetActive(true);
-        StartAnimation();
     }
 
     public void SetPlayerOut()
