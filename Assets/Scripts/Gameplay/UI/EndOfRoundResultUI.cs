@@ -1,14 +1,18 @@
-using System.Collections;
 using System.Collections.Generic;
 using TMPro;
-using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class EndOfRoundResultUI : TransitionableUIBase
 {
+    [Header("UI")]
     [SerializeField] private TextMeshProUGUI m_endOfRoundText;
     [SerializeField] private Image m_panel;
+
+    [Header("Listening Events")]
+    [SerializeField] private VoidEventChannelSO OnNextRoundStarting;
+    [SerializeField] private IntEventChannelSO OnEndOfRoundResult;
+    [SerializeField] private VoidEventChannelSO OnGameWon;
 
     private static Color s_safeColor = new Color(0, 0.9f, 0, 0.8f);
     private static Color s_loserColor = new Color(0.9f, 0, 0, 0.8f);
@@ -31,24 +35,32 @@ public class EndOfRoundResultUI : TransitionableUIBase
 
     protected override void RegisterForEvents()
     {
-        GameManager.Instance.OnEndOfRoundResult += GameManager_EndOfRoundResult;
-        GameManager.Instance.OnNextRoundStarting += GameManager_NextRoundStarting;
+        OnEndOfRoundResult.OnEventRaised += EndOfRoundResult;
+        OnNextRoundStarting.OnEventRaised += NextRoundStarting;
+        OnGameWon.OnEventRaised += GameWon;
     }
 
     private void UnregisterFromEvents()
     {
-        GameManager.Instance.OnEndOfRoundResult -= GameManager_EndOfRoundResult;
-        GameManager.Instance.OnNextRoundStarting -= GameManager_NextRoundStarting;
+        OnEndOfRoundResult.OnEventRaised -= EndOfRoundResult;
+        OnNextRoundStarting.OnEventRaised -= NextRoundStarting;
+        OnGameWon.OnEventRaised -= GameWon;
     }
 
-    private void GameManager_EndOfRoundResult(RoundResultTypes roundResult)
+    private void EndOfRoundResult(int roundResultValue)
     {
+        RoundResultTypes roundResult = (RoundResultTypes) roundResultValue;
         m_panel.color = s_roundResultColors[roundResult];
         m_endOfRoundText.text = s_roundResultMessages[roundResult];
         StartAnimation();
     }
 
-    private void GameManager_NextRoundStarting()
+    private void NextRoundStarting()
+    {
+        if (gameObject.activeInHierarchy) StartAnimation();
+    }
+
+    private void GameWon()
     {
         if (gameObject.activeInHierarchy) StartAnimation();
     }

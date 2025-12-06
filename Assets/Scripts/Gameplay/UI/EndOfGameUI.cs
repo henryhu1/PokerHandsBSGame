@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -20,14 +19,15 @@ public class EndOfGameUI : TransitionableUIBase
     private List<ResultItemUI> m_resultItems;
 
     [HideInInspector]
-    public delegate void RestartGameDelegateHandler(GameType gameType);
-    [HideInInspector]
-    public event RestartGameDelegateHandler OnRestartGame;
-
-    [HideInInspector]
     public delegate void ExitGameDelegateHandler();
     [HideInInspector]
     public event ExitGameDelegateHandler OnExitGame;
+
+    [Header("Firing Events")]
+    [SerializeField] private IntEventChannelSO OnRestartGame;
+
+    [Header("Listening Events")]
+    [SerializeField] private VoidEventChannelSO OnInitializeNewGame;
 
     protected override void Awake()
     {
@@ -59,7 +59,7 @@ public class EndOfGameUI : TransitionableUIBase
 
         m_restartButton.onClick.AddListener(() =>
         {
-            OnRestartGame?.Invoke(m_selectedGameType);
+            OnRestartGame.RaiseEvent((int)m_selectedGameType);
         });
 
         m_exitButton.onClick.AddListener(() =>
@@ -67,14 +67,13 @@ public class EndOfGameUI : TransitionableUIBase
             OnExitGame?.Invoke();
         });
 
-        m_optionsUI.gameObject.SetActive(GameManager.Instance.IsHost);
+        m_optionsUI.SetActive(GameManager.Instance.IsHost);
     }
 
     protected override void RegisterForEvents()
     {
         GameManager.Instance.RegisterEndOfGameUICallbacks();
-        GameManager.Instance.OnGameWon += GameManager_GameWon;
-        GameManager.Instance.OnRestartGame += GameManager_RestartGame;
+        OnInitializeNewGame.OnEventRaised += InitializeNewGame;
     }
 
     protected override void Start()
@@ -86,11 +85,10 @@ public class EndOfGameUI : TransitionableUIBase
     private void OnDestroy()
     {
         GameManager.Instance.UnregisterEndOfGameUICallbacks();
-        GameManager.Instance.OnGameWon -= GameManager_GameWon;
-        GameManager.Instance.OnRestartGame -= GameManager_RestartGame;
+        OnInitializeNewGame.OnEventRaised -= InitializeNewGame;
     }
 
-    public void GameManager_GameWon(int myPosition, List<PlayerData> eliminationOrder)
+    public void DisplayGameResults(int myPosition, List<PlayerData> eliminationOrder)
     {
         m_restartGameOption.gameObject.SetActive(GameManager.Instance.m_connectedClientIds.Count != 1);
         for (int i = 0; i < eliminationOrder.Count; i++)
@@ -109,7 +107,7 @@ public class EndOfGameUI : TransitionableUIBase
         StartAnimation();
     }
 
-    public void GameManager_RestartGame()
+    private void InitializeNewGame()
     {
         foreach (ResultItemUI resultItemUI in m_resultItems) Destroy(resultItemUI.gameObject);
         m_resultItems.Clear();

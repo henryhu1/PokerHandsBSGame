@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -6,12 +5,21 @@ using UnityEngine.UI;
 
 public class NextRoundUI : TransitionableUIBase
 {
+    // TODO: remove Singleton
     public static NextRoundUI Instance { get; private set; }
 
+    [Header("UI")]
     [SerializeField] private Toggle m_readyForNextRoundToggle;
     [SerializeField] private TextMeshProUGUI m_playersReadyText;
     [SerializeField] private TextMeshProUGUI m_toggleText;
     [SerializeField] private TextMeshProUGUI m_playerLeftText;
+
+    [Header("Listening Events")]
+    [SerializeField] private VoidEventChannelSO OnNextRoundStarting;
+    [SerializeField] private VoidEventChannelSO OnRoundEnded;
+    [SerializeField] private StringEventChannelSO OnPlayerLeft;
+    [SerializeField] private VoidEventChannelSO OnGameWon;
+
     private const string k_readyText = "Ready";
     private const string k_unreadyText = "Unready";
 
@@ -47,18 +55,18 @@ public class NextRoundUI : TransitionableUIBase
     protected override void RegisterForEvents()
     {
         GameManager.Instance.RegisterNextRoundUIObservers();
-        GameManager.Instance.OnEndOfRound += GameManager_EndOfRound;
-        GameManager.Instance.OnPlayerLeft += GameManager_PlayerLeft;
-        GameManager.Instance.OnNextRoundStarting += GameManager_NextRoundStarting;
-        GameManager.Instance.OnGameWon += GameManager_GameWon;
+        OnRoundEnded.OnEventRaised += EndOfRound;
+        OnPlayerLeft.OnEventRaised += PlayerLeft;
+        OnNextRoundStarting.OnEventRaised += NextRoundStarting;
+        OnGameWon.OnEventRaised += GameWon;
     }
 
     private void UnregisterFromEvents()
     {
-        GameManager.Instance.OnEndOfRound -= GameManager_EndOfRound;
-        GameManager.Instance.OnPlayerLeft -= GameManager_PlayerLeft;
-        GameManager.Instance.OnNextRoundStarting -= GameManager_NextRoundStarting;
-        GameManager.Instance.OnGameWon -= GameManager_GameWon;
+        OnRoundEnded.OnEventRaised -= EndOfRound;
+        OnPlayerLeft.OnEventRaised -= PlayerLeft;
+        OnNextRoundStarting.OnEventRaised -= NextRoundStarting;
+        OnGameWon.OnEventRaised -= GameWon;
     }
 
     protected override void Start()
@@ -69,7 +77,7 @@ public class NextRoundUI : TransitionableUIBase
 
     private void OnDestroy() { UnregisterFromEvents(); }
 
-    private void GameManager_EndOfRound(List<bool> _, List<PokerHand> __)
+    private void EndOfRound()
     {
         m_playerLeftText.gameObject.SetActive(false);
         if (transform.position != m_originalPosition)
@@ -81,7 +89,7 @@ public class NextRoundUI : TransitionableUIBase
         }
     }
 
-    private void GameManager_PlayerLeft(string playerLeftName, List<bool> _, List<PokerHand> __)
+    private void PlayerLeft(string playerLeftName)
     {
         m_playerLeftText.gameObject.SetActive(true);
         m_playerLeftText.text = $"{playerLeftName} has left";
@@ -94,7 +102,7 @@ public class NextRoundUI : TransitionableUIBase
         }
     }
 
-    private void GameManager_NextRoundStarting()
+    private void NextRoundStarting()
     {
         if (transform.position != m_offScreenPosition)
         {
@@ -105,7 +113,7 @@ public class NextRoundUI : TransitionableUIBase
         }
     }
 
-    private void GameManager_GameWon(int _, List<PlayerData> __)
+    private void GameWon()
     {
         if (transform.position != m_offScreenPosition)
         {
