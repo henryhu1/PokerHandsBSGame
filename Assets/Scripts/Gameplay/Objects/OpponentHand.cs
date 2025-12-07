@@ -4,11 +4,14 @@ using UnityEngine;
 
 public class OpponentHand : MonoBehaviour
 {
-    private static List<int> s_cardRemovalOrder = new List<int> { 1, 3, 2, 0, 4 };
+    private static readonly List<int> s_cardRemovalOrder = new() { 1, 3, 2, 0, 4 };
 
     [SerializeField] private MeshRenderer m_meshRenderer;
     [SerializeField] private Material blankCardTexture;
+    [SerializeField] private Material invisibleCardTexture;
     [SerializeField] private CardRegistrySO cardRegistry;
+
+    private Vector3 showPlayerRotation = new(-90, 180, 0);
 
     private ulong m_opponentClientId;
     public ulong OpponentClientId { get { return m_opponentClientId; } }
@@ -39,31 +42,31 @@ public class OpponentHand : MonoBehaviour
         m_originalRotation = transform.rotation.eulerAngles;
     }
 
-    private void DisplayGameObjects(Material[] mats, string playerName, ulong clientId)
+    private void DisplayMaterialsOnCards(Material[] cardMats, string playerName, ulong clientId)
     {
-        int amount = mats.Length;
         int displayableCount = m_meshRenderer.materials.Length;
+        Material[] replacingMats = m_meshRenderer.materials;
+        int amount = cardMats.Length;
 
         m_opponentClientId = clientId;
         m_opponentName = playerName;
         m_opponentAmountOfCardsInHand = amount;
         int materialsToRemove = displayableCount - amount;
 #if UNITY_EDITOR
-        Debug.Log($"opponent has {amount} cards, removing {materialsToRemove} materials");
+        Debug.Log($"opponent has {amount} cards, removing {displayableCount} - {amount} = {materialsToRemove} materials (out of {m_meshRenderer.materials.Length})");
 #endif
         for (int i = 0; i < displayableCount; i++)
         {
             if (i < materialsToRemove)
             {
-                mats[s_cardRemovalOrder[i]] = null;
+                replacingMats[s_cardRemovalOrder[i]] = invisibleCardTexture;
             }
             else
             {
-                mats[s_cardRemovalOrder[i]] = mats[i - materialsToRemove];
+                replacingMats[s_cardRemovalOrder[i]] = cardMats[i - materialsToRemove];
             }
         }
-        m_meshRenderer.materials = mats;
-        gameObject.SetActive(displayableCount > 0);
+        m_meshRenderer.materials = replacingMats;
     }
 
     private Material[] GetCardMaterials(List<Card> cards)
@@ -80,18 +83,22 @@ public class OpponentHand : MonoBehaviour
     public void DisplayCards(PlayerCardInfo opponentCardsInfo)
     {
         Material[] mats = GetCardMaterials(opponentCardsInfo.cards);
-        DisplayGameObjects(mats, opponentCardsInfo.playerName, opponentCardsInfo.clientId);
+        DisplayMaterialsOnCards(mats, opponentCardsInfo.playerName, opponentCardsInfo.clientId);
+        RevealHand();
     }
 
     public void DisplayBlanks(PlayerHiddenCardInfo hiddenCardInfo)
     {
-        int amount = hiddenCardInfo.amountOfCards;
-        Material[] blankMaterials = new Material[amount];
-        for (int i = 0; i < amount; i++)
+        ConcealHand().OnComplete(() =>
         {
-            blankMaterials[i] = blankCardTexture;
-        }
-        DisplayGameObjects(blankMaterials, hiddenCardInfo.playerName, hiddenCardInfo.clientId);
+            int amount = hiddenCardInfo.amountOfCards;
+            Material[] blankMaterials = new Material[amount];
+            for (int i = 0; i < amount; i++)
+            {
+                blankMaterials[i] = blankCardTexture;
+            }
+            DisplayMaterialsOnCards(blankMaterials, hiddenCardInfo.playerName, hiddenCardInfo.clientId);
+        });
     }
 
     private void OnMouseEnter()
@@ -109,15 +116,19 @@ public class OpponentHand : MonoBehaviour
         OnSelectedThisHand?.Invoke();
     }
 
-    private void RevealHand()
+    private Sequence RevealHand()
     {
-        var rot = transform.rotation.eulerAngles;
-        Vector3 newRotation = new(m_originalRotation.x, -1 * m_originalRotation.y, m_originalRotation.z);
-        transform.DORotate(newRotation, k_rotationDuration);
+        Sequence mySequence = DOTween.Sequence();
+        mySequence.Insert(0, transform.DORotate(showPlayerRotation, k_rotationDuration));
+        mySequence.Insert(0, transform.DOPunchPosition(Vector3.up * 0.05f, k_rotationDuration, 0, 0));
+        return mySequence;
     }
 
-    private void ConcealHand()
+    private Sequence ConcealHand()
     {
-        transform.DORotate(m_originalRotation, k_rotationDuration);
+        Sequence mySequence = DOTween.Sequence();
+        mySequence.Insert(0, transform.DORotate(m_originalRotation, k_rotationDuration));
+        mySequence.Insert(0, transform.DOPunchPosition(Vector3.up * 0.05f, k_rotationDuration, 0, 0));
+        return mySequence;
     }
 }
