@@ -4539,9 +4539,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a57e3dbd5ba2c914d8e0ba47661592d1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  fadeInDuration: 1
+  fadeInDuration: 0.5
   freezeDuration: 1
-  fadeOutDuration: 1
+  fadeOutDuration: 0.5
+  easingFunction: 9
   fadingText: {fileID: 1656148783}
   OnInvalidPlay: {fileID: 11400000, guid: 09b02b6f2cc7fb54e90d78cadf28c517, type: 2}
 --- !u!1001 &808768436
@@ -9681,34 +9682,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b5bda4060d27fc0408623cf7c51086a1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rectTransform: {fileID: 1571333040}
-  m_sideToChange: 0
-  m_change: {x: 0, y: 250}
-  movementCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 2
-      outSlope: 2
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  m_movementDuration: 0.3
+  resizingRect: {fileID: 1571333040}
+  sideToChange: 0
+  change: {x: 0, y: 250}
+  easingFunction: 9
+  movementDuration: 0.5
   OnNextRoundStarting: {fileID: 11400000, guid: 8733d489064045b499db4c6848ba08fe, type: 2}
   OnRoundEnded: {fileID: 11400000, guid: 2efb75451219c1549b19941a68f213b7, type: 2}
   OnGameWon: {fileID: 11400000, guid: f9f16b67881813b4e8404a8da0ec5b53, type: 2}
