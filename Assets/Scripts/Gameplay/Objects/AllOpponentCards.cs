@@ -36,8 +36,6 @@ public class AllOpponentCards : MonoBehaviour
             Destroy(Instance.gameObject);
         }
         Instance = this;
-
-        HideOpponentHands();
     }
 
     private void Start()
@@ -57,6 +55,8 @@ public class AllOpponentCards : MonoBehaviour
                 SelectOpponentHand(i);
             };
         });
+
+        HideOpponentHands();
     }
 
     public void HideOpponentHands()

@@ -37,7 +37,7 @@ public class OpponentHand : MonoBehaviour
     [HideInInspector]
     public event SelectedThisHandDelegateHandler OnSelectedThisHand;
 
-    private void Start()
+    private void Awake()
     {
         m_originalRotation = transform.rotation.eulerAngles;
     }
