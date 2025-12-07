@@ -4539,58 +4539,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a57e3dbd5ba2c914d8e0ba47661592d1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_fadeInDuration: 0.3
-  m_fadeInCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 2
-      outSlope: 2
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  m_freezeDuration: 1
-  m_fadeOutDuration: 0.3
-  m_fadeOutCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 2
-      outSlope: 2
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  m_fadingText: {fileID: 1656148783}
+  fadeInDuration: 1
+  freezeDuration: 1
+  fadeOutDuration: 1
+  fadingText: {fileID: 1656148783}
+  OnInvalidPlay: {fileID: 11400000, guid: 09b02b6f2cc7fb54e90d78cadf28c517, type: 2}
 --- !u!1001 &808768436
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6381,10 +6334,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 1631509119}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 125, y: -20}
-  m_SizeDelta: {x: 250, y: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &967944549
 MonoBehaviour:
@@ -6449,7 +6402,7 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_TextWrappingMode: 1
+  m_TextWrappingMode: 0
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
   m_linkedTextComponent: {fileID: 0}
@@ -11942,7 +11895,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1974608635}
   - component: {fileID: 1974608637}
-  - component: {fileID: 1974608636}
   m_Layer: 5
   m_Name: ExistingHandsLabel
   m_TagString: Untagged
@@ -11965,38 +11917,11 @@ RectTransform:
   - {fileID: 637930357}
   m_Father: {fileID: 1573028241}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 65}
-  m_SizeDelta: {x: 0, y: -130}
+  m_AnchorMin: {x: 0.5, y: 1}
+  m_AnchorMax: {x: 0.5, y: 1}
+  m_AnchoredPosition: {x: 0, y: -10}
+  m_SizeDelta: {x: 400, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1974608636
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1974608634}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1344c3c82d62a2a41a3576d8abb8e3ea, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
-  m_Color: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 0.78431374}
-  m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_Texture: {fileID: 0}
-  m_UVRect:
-    serializedVersion: 2
-    x: 0
-    y: 0
-    width: 1
-    height: 1
 --- !u!222 &1974608637
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -12451,10 +12376,10 @@ RectTransform:
   - {fileID: 1631509119}
   m_Father: {fileID: 1436354789}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 439, y: 0}
-  m_SizeDelta: {x: 250, y: 40}
+  m_AnchorMin: {x: 1, y: 0.5}
+  m_AnchorMax: {x: 1, y: 0.5}
+  m_AnchoredPosition: {x: -200, y: 0}
+  m_SizeDelta: {x: 250, y: 35}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2096773829
 MonoBehaviour:

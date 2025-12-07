@@ -341,6 +341,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   OnPlayerOut: {fileID: 11400000, guid: 50d0634f9c669ef44bf23459aa4a30f4, type: 2}
   OnRestartGame: {fileID: 11400000, guid: b65207f71c9799243bd25a7dbf6caea8, type: 2}
+  OnInvalidPlay: {fileID: 11400000, guid: 09b02b6f2cc7fb54e90d78cadf28c517, type: 2}
   OnPlayerLeft: {fileID: 11400000, guid: e764b6f002e5ea340aefa0bedf3a899b, type: 2}
   OnInitializeNewGame: {fileID: 11400000, guid: 819f300a5119a584b85d32c1537c7b44, type: 2}
   OnDisplayAllHandsInPlay: {fileID: 11400000, guid: 41bf55ca0669b40418ad49f73a3c1331, type: 2}
