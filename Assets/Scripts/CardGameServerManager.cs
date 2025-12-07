@@ -59,7 +59,7 @@ public class CardGameServerManager
     {
         if (clientCards.ContainsKey(clientId)) return;
         string playerName = GameManager.Instance.GetClientName(clientId);
-        clientCards[clientId] = new PlayerCardInfo(new List<Card>(), startAmount, playerName);
+        clientCards[clientId] = new PlayerCardInfo(new List<Card>(), startAmount, playerName, clientId);
     }
 
     public void ClearAllHands()
@@ -166,10 +166,10 @@ public class CardGameServerManager
                 sendingCards = deckManager.GetAllCardsInDeck();
             }
 
-            CardManager.Instance.SendCardInfoToPlayerClientRpc(
+            PlayerHiddenCardInfo[] hiddenClientCards = clientCards.Values.Select(clientCardInfo => new PlayerHiddenCardInfo(clientCardInfo.amountOfCards, clientCardInfo.playerName, clientCardInfo.clientId)).ToArray();
+            CardManager.Instance.DistributeCardInfoToPlayerClientRpc(
                 sendingCards.ToArray(),
-                clientCards.Keys.ToArray(),
-                clientCards.Values.ToArray(),
+                hiddenClientCards,
                 TurnManager.Instance.GetTurnOrderStartingAtClient(clientId).ToArray(),
                 GetTotalCardsInPlay() <= CardManagerConstants.FlushLimit,
                 new ClientRpcParams { Send = new() { TargetClientIds = new[] { clientId } } }
@@ -178,6 +178,20 @@ public class CardGameServerManager
 
         handsInPlay.PopulateCardsInPlay(clientCards.Values.SelectMany(v => v.cards));
         handsInPlay.FindHandsInPlay();
+    }
+
+    public void RevealAllCards()
+    {
+        foreach (var kvp in clientCards)
+        {
+            var clientId = kvp.Key;
+
+            CardManager.Instance.RevealCardInfoToPlayerClientRpc(
+                clientCards.Values.ToArray(),
+                TurnManager.Instance.GetTurnOrderStartingAtClient(clientId).ToArray(),
+                new ClientRpcParams { Send = new() { TargetClientIds = new[] { clientId } } }
+            );
+        }
     }
 
     public int GetTotalCardsInPlay() => clientCards.Values.Sum(i => i.amountOfCards);

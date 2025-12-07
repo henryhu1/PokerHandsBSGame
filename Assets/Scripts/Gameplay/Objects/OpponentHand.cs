@@ -39,19 +39,19 @@ public class OpponentHand : MonoBehaviour
         m_originalRotation = transform.rotation.eulerAngles;
     }
 
-    public void DisplayCards(List<Card> cards, string name, ulong clientId)
+    private void DisplayGameObjects(Material[] mats, string playerName, ulong clientId)
     {
-        int amount = cards.Count;
+        int amount = mats.Length;
+        int displayableCount = m_meshRenderer.materials.Length;
 
         m_opponentClientId = clientId;
-        m_opponentName = name;
+        m_opponentName = playerName;
         m_opponentAmountOfCardsInHand = amount;
-        int materialsToRemove = m_meshRenderer.materials.Length - amount;
+        int materialsToRemove = displayableCount - amount;
 #if UNITY_EDITOR
         Debug.Log($"opponent has {amount} cards, removing {materialsToRemove} materials");
 #endif
-        Material[] mats = m_meshRenderer.materials;
-        for (int i = 0; i < m_meshRenderer.materials.Length; i++)
+        for (int i = 0; i < displayableCount; i++)
         {
             if (i < materialsToRemove)
             {
@@ -59,12 +59,39 @@ public class OpponentHand : MonoBehaviour
             }
             else
             {
-                Card atCard = cards[i - materialsToRemove];
-                mats[s_cardRemovalOrder[i]] = cardRegistry.GetEntry(atCard).material;
+                mats[s_cardRemovalOrder[i]] = mats[i - materialsToRemove];
             }
         }
         m_meshRenderer.materials = mats;
-        gameObject.SetActive(m_meshRenderer.materials.Length > 0);
+        gameObject.SetActive(displayableCount > 0);
+    }
+
+    private Material[] GetCardMaterials(List<Card> cards)
+    {
+        Material[] mats = new Material[cards.Count];
+        for (int i = 0; i < cards.Count; i++)
+        {
+            Card atCard = cards[i];
+            mats[i] = cardRegistry.GetEntry(atCard).material;
+        }
+        return mats;
+    }
+
+    public void DisplayCards(PlayerCardInfo opponentCardsInfo)
+    {
+        Material[] mats = GetCardMaterials(opponentCardsInfo.cards);
+        DisplayGameObjects(mats, opponentCardsInfo.playerName, opponentCardsInfo.clientId);
+    }
+
+    public void DisplayBlanks(PlayerHiddenCardInfo hiddenCardInfo)
+    {
+        int amount = hiddenCardInfo.amountOfCards;
+        Material[] blankMaterials = new Material[amount];
+        for (int i = 0; i < amount; i++)
+        {
+            blankMaterials[i] = blankCardTexture;
+        }
+        DisplayGameObjects(blankMaterials, hiddenCardInfo.playerName, hiddenCardInfo.clientId);
     }
 
     private void OnMouseEnter()

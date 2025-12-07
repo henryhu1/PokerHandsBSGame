@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 public class CardManager : NetworkBehaviour
 {
@@ -72,20 +73,6 @@ public class CardManager : NetworkBehaviour
         }
     }
 
-    private void CreateOtherPlayersCardsGameObjects(Dictionary<ulong, PlayerCardInfo> otherClientsCardInfo, ulong[] clientOrder)
-    {
-        // TODO: why not do this server-side? Giving client work to do
-        List<List<Card>> opponentCards = new List<List<Card>>();
-        List<string> opponentNames = new List<string>();
-        foreach (ulong clientId in clientOrder)
-        {
-            PlayerCardInfo otherClientCardInfo = otherClientsCardInfo[clientId];
-            opponentCards.Add(otherClientCardInfo.cards);
-            opponentNames.Add(otherClientCardInfo.playerName);
-        }
-        allOpponentCards.DisplayOpponentCards(opponentCards, opponentNames, clientOrder);
-    }
-
     public void RemovePlayer(ulong clientId)
     {
         if (IsServer)
@@ -132,13 +119,13 @@ public class CardManager : NetworkBehaviour
         }
     }
 
-    //public void EndOfRound(ulong losingClientId, int cardAmonutChange)
-    //{
-    //    if (IsServer)
-    //    {
-    //        ChangeClientCardAmount(losingClientId, cardAmonutChange);
-    //    }
-    //}
+    public void RevealAllCards()
+    {
+       if (IsServer)
+        {
+            cardGameServerManager.RevealAllCards();
+        }
+    }
 
     public void NextRound()
     {
@@ -166,33 +153,58 @@ public class CardManager : NetworkBehaviour
     }
 
     [ClientRpc]
-    public void SendCardInfoToPlayerClientRpc(
+    public void DistributeCardInfoToPlayerClientRpc(
         Card[] clientsCards,
-        ulong[] allClientIds,
-        PlayerCardInfo[] otherClientsCards,
+        PlayerHiddenCardInfo[] otherClientsInfo,
         ulong[] clientOrder,
         bool areFlushesAllowed,
         ClientRpcParams clientRpcParams = default
     )
     {
+        Assert.AreNotEqual(clientOrder.Count(), 0);
+        Assert.AreEqual(clientOrder[0], NetworkManager.Singleton.LocalClientId);
+        Assert.AreEqual(otherClientsInfo.Count(), clientOrder.Count());
+
         OnAreFlushesAllowed.RaiseEvent(areFlushesAllowed);
 
         deckGameObject.SetActive(GameManager.Instance.m_inPlayClientIds.Contains(NetworkManager.Singleton.LocalClientId));
         m_myCards = clientsCards.ToList();
         playerCardsInHand.CreateCardObjects(m_myCards);
 
-        Dictionary<ulong, PlayerCardInfo> otherClientsCardInfo = new Dictionary<ulong, PlayerCardInfo>();
-        for (int i = 0; i < otherClientsCards.Length; i++)
-        {
-            if (NetworkManager.Singleton.LocalClientId != allClientIds[i])
-            {
-                PlayerCardInfo opponentCardInfo = otherClientsCards[i]; // new PlayerCardInfo(null, allClientCardAmounts[i], allClientNames[i]);
-                otherClientsCardInfo.Add(allClientIds[i], opponentCardInfo);
-            }
-        }
+        // TODO: why not do this server-side? Giving client work to do
+        List<PlayerHiddenCardInfo> opponentCardsHidden = CardInfoHelper<PlayerHiddenCardInfo>.OrderDataByID(
+            NetworkManager.Singleton.LocalClientId,
+            otherClientsInfo,
+            otherClientsInfo.Select(clientInfo => clientInfo.clientId).ToArray(),
+            clientOrder
+        );
         if (clientOrder.Length > 1)
         {
-            CreateOtherPlayersCardsGameObjects(otherClientsCardInfo, clientOrder.Skip(1).Take(clientOrder.Length - 1).ToArray());
+            allOpponentCards.DisplayHiddenOpponentCards(opponentCardsHidden);
+        }
+    }
+
+    [ClientRpc]
+    public void RevealCardInfoToPlayerClientRpc(
+        PlayerCardInfo[] otherClientsInfo,
+        ulong[] clientOrder,
+        ClientRpcParams clientRpcParams = default
+    )
+    {
+        Assert.AreNotEqual(clientOrder.Count(), 0);
+        Assert.AreEqual(clientOrder[0], NetworkManager.Singleton.LocalClientId);
+        Assert.AreEqual(otherClientsInfo.Count(), clientOrder.Count());
+
+        // TODO: why not do this server-side? Giving client work to do
+        List<PlayerCardInfo> opponentCards = CardInfoHelper<PlayerCardInfo>.OrderDataByID(
+            NetworkManager.Singleton.LocalClientId,
+            otherClientsInfo,
+            otherClientsInfo.Select(clientInfo => clientInfo.clientId).ToArray(),
+            clientOrder
+        );
+        if (clientOrder.Length > 1)
+        {
+            allOpponentCards.DisplayOpponentCards(opponentCards);
         }
     }
 

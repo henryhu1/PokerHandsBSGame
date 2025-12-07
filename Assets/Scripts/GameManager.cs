@@ -225,6 +225,7 @@ public class GameManager : NetworkBehaviour
                     {
                         m_lastRoundLosingClientId = clientId;
                         PlayerLeftClientRpc(playerData.Name, CardManager.Instance.GetAllHandsInPlay().ToArray());
+                        CardManager.Instance.RevealAllCards();
                     }
                 }
                 else if (m_eliminatedClientIds.Select(i => i.LastUsedClientID).Contains(clientId))
@@ -653,6 +654,7 @@ public class GameManager : NetworkBehaviour
         }
 
         EndOfRoundClientRpc(CardManager.Instance.GetAllHandsInPlay().ToArray());
+        CardManager.Instance.RevealAllCards();
     }
 
     [ClientRpc]

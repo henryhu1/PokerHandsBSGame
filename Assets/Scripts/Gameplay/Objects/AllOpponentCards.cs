@@ -44,7 +44,7 @@ public class AllOpponentCards : MonoBehaviour
     {
         opponentCardsGameObjects.ForEach(i =>
         {
-            i.OnMouseEnterThisHand += (ulong clientId, string name, int amountOfCards) =>
+            i.OnMouseEnterThisHand += (clientId, name, amountOfCards) =>
             {
                 OnMouseEnterOpponentHand?.Invoke(clientId, name, amountOfCards);
             };
@@ -64,14 +64,30 @@ public class AllOpponentCards : MonoBehaviour
         opponentCardsGameObjects.ForEach(i => i.gameObject.SetActive(false));
     }
 
-    public void DisplayOpponentCards(List<List<Card>> opponentCards, List<string> opponentNames, ulong[] clientIds)
+    public void DisplayOpponentCards(List<PlayerCardInfo> orderedOpponentCards)
     {
         for (int i = 0; i < opponentCardsGameObjects.Count; i++)
         {
-            if (i < opponentCards.Count && opponentCards[i].Count > 0)
+            if (i < orderedOpponentCards.Count && orderedOpponentCards[i].amountOfCards > 0)
             {
                 opponentCardsGameObjects[i].gameObject.SetActive(true);
-                opponentCardsGameObjects[i].DisplayCards(opponentCards[i], opponentNames[i], clientIds[i]);
+                opponentCardsGameObjects[i].DisplayCards(orderedOpponentCards[i]);
+            }
+            else
+            {
+                opponentCardsGameObjects[i].gameObject.SetActive(false);
+            }
+        }
+    }
+
+    public void DisplayHiddenOpponentCards(List<PlayerHiddenCardInfo> orderedOpponentsHiddenCards)
+    {
+        for (int i = 0; i < opponentCardsGameObjects.Count; i++)
+        {
+            if (i < orderedOpponentsHiddenCards.Count && orderedOpponentsHiddenCards[i].amountOfCards > 0)
+            {
+                opponentCardsGameObjects[i].gameObject.SetActive(true);
+                opponentCardsGameObjects[i].DisplayBlanks(orderedOpponentsHiddenCards[i]);
             }
             else
             {

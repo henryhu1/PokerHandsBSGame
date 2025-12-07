@@ -6,12 +6,14 @@ public struct PlayerCardInfo : INetworkSerializable
     public List<Card> cards;
     public int amountOfCards;
     public string playerName;
+    public ulong clientId;
 
-    public PlayerCardInfo(List<Card> cards, int amountOfCards, string playerName)
+    public PlayerCardInfo(List<Card> cards, int amountOfCards, string playerName, ulong clientId)
     {
         this.cards = cards;
         this.amountOfCards = amountOfCards;
         this.playerName = playerName;
+        this.clientId = clientId;
     }
 
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
@@ -23,6 +25,7 @@ public struct PlayerCardInfo : INetworkSerializable
         serializer.SerializeValue(ref count);
         serializer.SerializeValue(ref amountOfCards);
         serializer.SerializeValue(ref playerName);
+        serializer.SerializeValue(ref clientId);
 
         if (serializer.IsWriter)
         {
