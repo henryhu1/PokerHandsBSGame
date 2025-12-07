@@ -83,16 +83,12 @@ public class GameManager : NetworkBehaviour
     [HideInInspector]
     public event ClearCardLogDelegateHandler OnClearCardLog;
 
-    [HideInInspector]
-    public delegate void InvalidPlayDelegateHandler(InvalidPlays invalidPlay);
-    [HideInInspector]
-    public event InvalidPlayDelegateHandler OnInvalidPlay;
-
     [Header("Listening Events")]
     [SerializeField] private UlongEventChannelSO OnPlayerOut;
     [SerializeField] private IntEventChannelSO OnRestartGame;
 
     [Header("Firing Events")]
+    [SerializeField] private IntEventChannelSO OnInvalidPlay;
     [SerializeField] private StringEventChannelSO OnPlayerLeft;
     [SerializeField] private VoidEventChannelSO OnInitializeNewGame;
     [SerializeField] private PokerHandListEventChannelSO OnDisplayAllHandsInPlay;
@@ -576,7 +572,7 @@ public class GameManager : NetworkBehaviour
     [ClientRpc]
     public void PlayedInvalidHandClientRpc(InvalidPlays invalidPlay, ClientRpcParams clientRpcParams = default)
     {
-        OnInvalidPlay?.Invoke(invalidPlay);
+        OnInvalidPlay.RaiseEvent((int)invalidPlay);
     }
 
     [ClientRpc]

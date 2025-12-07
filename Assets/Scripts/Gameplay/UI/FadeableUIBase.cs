@@ -1,78 +1,64 @@
-using System.Collections;
-using System.Collections.Generic;
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
 
 public abstract class FadableUIBase : MonoBehaviour, IAnimatable
 {
-    [SerializeField] private float m_fadeInDuration;
-    [SerializeField] private AnimationCurve m_fadeInCurve;
-    [SerializeField] private float m_freezeDuration = 1f;
-    [SerializeField] private float m_fadeOutDuration;
-    [SerializeField] private AnimationCurve m_fadeOutCurve;
-    [SerializeField] protected TextMeshProUGUI m_fadingText;
-    private Coroutine m_fadingCoroutine;
+    [SerializeField] private float fadeInDuration;
+    [SerializeField] private float freezeDuration = 1f;
+    [SerializeField] private float fadeOutDuration;
+    [SerializeField] protected TextMeshProUGUI fadingText;
+    private Sequence fadingSequence;
 
-    protected virtual void Awake()
+    private void Start()
     {
-        SetTextColorColorAlphaToStarting();
+        fadingSequence = DOTween.Sequence();
+        Tween fadeIn = ChangeTextColorAlpha(fadeInDuration, Ease.OutCubic, 1f);
+        Tween fadeOut = ChangeTextColorAlpha(fadeOutDuration, Ease.OutCubic, 0f);
+
+        fadingSequence.Append(fadeIn);
+        fadingSequence.AppendInterval(freezeDuration);
+        fadingSequence.Append(fadeOut);
+        fadingSequence.OnComplete(() => fadingText.gameObject.SetActive(false));
+
+        fadingSequence.Pause();
+        fadingSequence.SetAutoKill(false);
     }
 
-    private void SetTextColorColorAlphaToStarting()
+    protected virtual void OnEnable()
     {
-        Color textColor = m_fadingText.color;
+        fadingText.gameObject.SetActive(false);
+    }
+
+    private void SetTextColorAlphaToStarting()
+    {
+        Color textColor = fadingText.color;
         textColor.a = 0f;
-        m_fadingText.color = textColor;
+        fadingText.color = textColor;
     }
 
-    private void ChangeTextColorAlpha(float time, float duration, AnimationCurve curve, float targetOpacity)
+    private Tween ChangeTextColorAlpha(float duration, Ease easingFunction, float targetOpacity)
     {
-        float step = time / duration;
-        float curveStep = curve.Evaluate(step);
-        Color textColor = m_fadingText.color;
-        textColor.a = Mathf.Lerp(textColor.a, targetOpacity, curveStep);
-        m_fadingText.color = textColor;
-    }
-
-    public IEnumerator DoAnimation()
-    {
-        float fadeInTime = 0.0f;
-        while (fadeInTime < m_fadeInDuration)
-        {
-            fadeInTime += Time.deltaTime;
-            ChangeTextColorAlpha(fadeInTime, m_fadeInDuration, m_fadeInCurve, 1f);
-            yield return null;
-        }
-
-        yield return new WaitForSeconds(m_freezeDuration);
-
-        float fadeOutTime = 0.0f;
-        while (fadeOutTime < m_fadeOutDuration)
-        {
-            fadeOutTime += Time.deltaTime;
-            ChangeTextColorAlpha(fadeOutTime, m_fadeOutDuration, m_fadeOutCurve, 0f);
-            yield return null;
-        }
-
-        m_fadingCoroutine = null;
-        gameObject.SetActive(false);
+        Color targetColor = fadingText.color;
+        targetColor.a = targetOpacity;
+        return fadingText.DOColor(targetColor, duration).SetEase(easingFunction);
     }
 
     public void StartAnimation()
     {
-        gameObject.SetActive(true);
-        SetTextColorColorAlphaToStarting();
         StopAnimation();
-        m_fadingCoroutine = StartCoroutine(DoAnimation());
+
+        fadingText.gameObject.SetActive(true);
+        SetTextColorAlphaToStarting();
+
+        fadingSequence.Restart();
+        fadingSequence.Play();
     }
 
     public void StopAnimation()
     {
-        if (m_fadingCoroutine != null)
-        {
-            StopCoroutine(m_fadingCoroutine);
-            m_fadingCoroutine = null;
-            gameObject.SetActive(false);
-        }
+        fadingSequence.Pause();
+
+        fadingText.gameObject.SetActive(false);
     }
 }
