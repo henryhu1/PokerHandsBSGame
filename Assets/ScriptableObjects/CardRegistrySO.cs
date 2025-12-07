@@ -9,6 +9,7 @@ public class CardRegistrySO : ScriptableObject
         public CardSO card;
         public GameObject cardPrefab;
         public Material material;
+        public Texture2D texture;
     }
 
     public Entry[] mappings;
