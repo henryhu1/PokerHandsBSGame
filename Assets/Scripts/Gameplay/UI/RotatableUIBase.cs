@@ -1,60 +1,52 @@
-using System.Collections;
-using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
 
 public class RotatableUIBase : MonoBehaviour, IAnimatable
 {
-    [SerializeField] private AnimationCurve movementCurve;
-    [SerializeField] private float m_movementDuration;
-    [SerializeField] protected float m_rotationAmount;
-    protected Vector3 m_originalRotation;
-    protected Vector3 m_rotatedRotation;
-    // protected Quaternion m_rotationStart; do not need this if StopAnimation() is not resetting rotation
-    protected Coroutine m_rotatingCoroutine;
+    [SerializeField] protected RectTransform rotatingRect;
+    [SerializeField] private Ease easingFunction = Ease.OutCubic;
+    [SerializeField] private float movementDuration;
+    [SerializeField] private float rotationAmount;
+
+    protected Vector3 originalRotation;
+    protected Vector3 rotatedRotation;
+
+    private Tween rotationTween;
 
     protected virtual void Awake()
     {
-        m_originalRotation = transform.eulerAngles;
-        m_rotatedRotation = new Vector3(transform.eulerAngles.x, transform.eulerAngles.y, transform.eulerAngles.z + m_rotationAmount);
+        originalRotation = rotatingRect.eulerAngles;
+        rotatedRotation = rotatingRect.eulerAngles + new Vector3(0, 0, rotationAmount);
     }
 
-    public IEnumerator DoAnimation()
+    public Tween GetRotationTween()
     {
-        Vector3 rotationStart = transform.eulerAngles;
-        Vector3 finalRotation = m_rotatedRotation;
-        if (rotationStart == m_rotatedRotation)
+        Vector3 finalRotation;
+        if (rotatingRect.eulerAngles == rotatedRotation)
         {
-            finalRotation = m_originalRotation;
+            finalRotation = originalRotation;
         }
-        float time = 0f;
-
-        while (time < m_movementDuration)
+        else
         {
-            time += Time.deltaTime;
-
-            float step = time / m_movementDuration;
-            float curveStep = movementCurve.Evaluate(step);
-            transform.eulerAngles = Vector3.Lerp(rotationStart, finalRotation, curveStep);
-
-            yield return null;
+            finalRotation = rotatedRotation;
         }
 
-        m_rotatingCoroutine = null;
-        transform.eulerAngles = finalRotation;
+        return rotatingRect.DORotate(finalRotation, movementDuration).SetEase(easingFunction);
     }
 
     public void StartAnimation()
     {
         StopAnimation();
-        m_rotatingCoroutine = StartCoroutine(DoAnimation());
+        rotationTween = GetRotationTween();
+        rotationTween.Play();
     }
 
     public void StopAnimation()
     {
-        if (m_rotatingCoroutine != null)
+        if (rotationTween != null && rotationTween.IsPlaying())
         {
-            StopCoroutine(m_rotatingCoroutine);
-            m_rotatingCoroutine = null;
+            rotationTween.Kill();
+            rotatingRect.eulerAngles = originalRotation;
         }
     }
 }

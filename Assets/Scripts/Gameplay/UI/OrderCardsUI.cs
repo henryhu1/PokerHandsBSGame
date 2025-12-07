@@ -26,7 +26,7 @@ public class OrderCardsUI : RotatableUIBase
 
     private void Start()
     {
-        gameObject.SetActive(false);
+        rotatingRect.gameObject.SetActive(false);
     }
 
     private void OnEnable()
@@ -49,12 +49,12 @@ public class OrderCardsUI : RotatableUIBase
 
     public void Show()
     {
-        transform.eulerAngles = m_originalRotation;
-        gameObject.SetActive(true);
+        transform.eulerAngles = originalRotation;
+        rotatingRect.gameObject.SetActive(true);
     }
 
     public void Hide()
     {
-        gameObject.SetActive(false);
+        rotatingRect.gameObject.SetActive(false);
     }
 }

@@ -18,12 +18,14 @@ public abstract class ResizableUIBase : MonoBehaviour, IAnimatable
     [SerializeField] private float movementDuration;
     // [SerializeField] private TriggerUITransition triggerUITransition;
     private Vector2 originalSize;
+    private Vector2 resizedSize;
 
     private Tween resizeTween;
 
     protected virtual void Awake()
     {
         originalSize = resizingRect.sizeDelta;
+        resizedSize = Vector2.Scale(s_DirectionToScale[sideToChange], change);
 
         // triggerUITransition.RegisterCallback(StartDoScale);
     }
@@ -33,7 +35,7 @@ public abstract class ResizableUIBase : MonoBehaviour, IAnimatable
         Vector2 finalSize;
         if (resizingRect.sizeDelta == originalSize)
         {
-            finalSize = Vector2.Scale(s_DirectionToScale[sideToChange], change);
+            finalSize = resizedSize;
         }
         else
         {
