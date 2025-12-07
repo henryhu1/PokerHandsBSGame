@@ -7,14 +7,15 @@ public abstract class FadableUIBase : MonoBehaviour, IAnimatable
     [SerializeField] private float fadeInDuration;
     [SerializeField] private float freezeDuration = 1f;
     [SerializeField] private float fadeOutDuration;
+    [SerializeField] private Ease easingFunction = Ease.OutCubic;
     [SerializeField] protected TextMeshProUGUI fadingText;
     private Sequence fadingSequence;
 
     private void Start()
     {
         fadingSequence = DOTween.Sequence();
-        Tween fadeIn = ChangeTextColorAlpha(fadeInDuration, Ease.OutCubic, 1f);
-        Tween fadeOut = ChangeTextColorAlpha(fadeOutDuration, Ease.OutCubic, 0f);
+        Tween fadeIn = ChangeTextColorAlpha(fadeInDuration, 1f);
+        Tween fadeOut = ChangeTextColorAlpha(fadeOutDuration, 0f);
 
         fadingSequence.Append(fadeIn);
         fadingSequence.AppendInterval(freezeDuration);
@@ -37,7 +38,7 @@ public abstract class FadableUIBase : MonoBehaviour, IAnimatable
         fadingText.color = textColor;
     }
 
-    private Tween ChangeTextColorAlpha(float duration, Ease easingFunction, float targetOpacity)
+    private Tween ChangeTextColorAlpha(float duration, float targetOpacity)
     {
         Color targetColor = fadingText.color;
         targetColor.a = targetOpacity;

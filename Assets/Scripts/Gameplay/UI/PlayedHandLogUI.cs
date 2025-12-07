@@ -104,7 +104,8 @@ public class PlayedHandLogUI : TransitionableUIBase
         UnhighlightPlayedHands();
     }
 
-    private void AllOpponentCards_MouseEnterOpponentHand(ulong clientId, string name, int amountOfCards)
+    // TODO: refactor into event channel to remove unused args
+    private void AllOpponentCards_MouseEnterOpponentHand(ulong clientId, string _, int __)
     {
         StartPulsingAnimation(clientId);
     }

@@ -1,75 +1,61 @@
-using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
 
 public abstract class ResizableUIBase : MonoBehaviour, IAnimatable
 {
-    public static Dictionary<ResizingSide, Vector2> s_DirectionToScale = new Dictionary<ResizingSide, Vector2>
+    public static Dictionary<ResizingSide, Vector2> s_DirectionToScale = new()
     {
         { ResizingSide.Vertical, Vector2.up },
         { ResizingSide.Horizontal, Vector2.right },
         { ResizingSide.Both, Vector2.up + Vector2.right },
     };
 
-    [SerializeField] private RectTransform rectTransform;
-    [SerializeField] private ResizingSide m_sideToChange;
-    [SerializeField] private Vector2 m_change;
-    [SerializeField] private AnimationCurve movementCurve;
-    [SerializeField] private float m_movementDuration;
-    // [SerializeField] private TriggerUITransition m_triggerUITransition;
-    private Vector2 m_originalSize;
-    private Vector2 m_changedSize;
-    private Vector2 m_startingSize;
-    private Coroutine m_resizingCoroutine;
+    [SerializeField] private RectTransform resizingRect;
+    [SerializeField] private ResizingSide sideToChange;
+    [SerializeField] private Vector2 change;
+    [SerializeField] private Ease easingFunction = Ease.OutCubic;
+    [SerializeField] private float movementDuration;
+    // [SerializeField] private TriggerUITransition triggerUITransition;
+    private Vector2 originalSize;
+
+    private Tween resizeTween;
 
     protected virtual void Awake()
     {
-        m_originalSize = rectTransform.sizeDelta;
-        m_startingSize = rectTransform.sizeDelta;
-        m_changedSize = Vector2.Scale(s_DirectionToScale[m_sideToChange], m_change);
+        originalSize = resizingRect.sizeDelta;
 
-        // m_triggerUITransition.RegisterCallback(StartDoScale);
+        // triggerUITransition.RegisterCallback(StartDoScale);
     }
 
-    public IEnumerator DoAnimation()
+    public Tween GetResizeTween()
     {
-        m_startingSize = rectTransform.sizeDelta;
-        Vector2 finalSize = m_originalSize;
-        if (rectTransform.sizeDelta == m_originalSize)
+        Vector2 finalSize;
+        if (resizingRect.sizeDelta == originalSize)
         {
-            finalSize = m_changedSize;
+            finalSize = Vector2.Scale(s_DirectionToScale[sideToChange], change);
         }
-        float time = 0f;
-
-        while (time < m_movementDuration)
+        else
         {
-            time += Time.deltaTime;
-
-            float step = time / m_movementDuration;
-            float curveStep = movementCurve.Evaluate(step);
-            rectTransform.sizeDelta = Vector2.Lerp(m_startingSize, finalSize, curveStep);
-
-            yield return null;
+            finalSize = originalSize;
         }
 
-        m_resizingCoroutine = null;
-        rectTransform.sizeDelta = finalSize;
-        m_startingSize = finalSize;
+        return resizingRect.DOSizeDelta(finalSize, movementDuration).SetEase(easingFunction);
     }
 
     public void StartAnimation()
     {
         StopAnimation();
-        m_resizingCoroutine = StartCoroutine(DoAnimation());
+        resizeTween = GetResizeTween();
+        resizeTween.Play();
     }
 
     public void StopAnimation()
     {
-        if (m_resizingCoroutine != null)
+        if (resizeTween != null && resizeTween.IsPlaying())
         {
-            StopCoroutine(m_resizingCoroutine);
-            m_resizingCoroutine = null;
-            rectTransform.sizeDelta = m_startingSize;
+            resizeTween.Kill();
+            resizingRect.sizeDelta = originalSize;
         }
     }
 }
