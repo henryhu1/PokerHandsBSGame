@@ -30,14 +30,26 @@ public class HandSelectionUI : TransitionableUIBase
         ResetAllSelections();
     }
 
-    protected override void RegisterForEvents()
+    public void RegisterHandTypeUICallbacks()
     {
         HandTypeUI.Instance.OnNeedCardRankChoicesPrimary += HandTypeUI_NeedCardRankChoicesPrimary;
         HandTypeUI.Instance.OnNeedCardRankChoicesSecondary += HandTypeUI_NeedCardRankChoicesSecondary;
         HandTypeUI.Instance.OnNeedCardSuitChoices += HandTypeUI_NeedCardSuitChoices;
         HandTypeUI.Instance.OnNeedRoyalFlushChoices += HandTypeUI_NeedRoyalFlushChoices;
         HandTypeUI.Instance.OnNoSelectionMade += HandTypeUI_NoSelectionMade;
+    }
 
+    public void UnregisterHandTypeUICallbacks()
+    {
+        HandTypeUI.Instance.OnNeedCardRankChoicesPrimary -= HandTypeUI_NeedCardRankChoicesPrimary;
+        HandTypeUI.Instance.OnNeedCardRankChoicesSecondary -= HandTypeUI_NeedCardRankChoicesSecondary;
+        HandTypeUI.Instance.OnNeedCardSuitChoices -= HandTypeUI_NeedCardSuitChoices;
+        HandTypeUI.Instance.OnNeedRoyalFlushChoices -= HandTypeUI_NeedRoyalFlushChoices;
+        HandTypeUI.Instance.OnNoSelectionMade -= HandTypeUI_NoSelectionMade;
+    }
+
+    private void OnEnable()
+    {
         m_CardRankChoicesPrimary.OnSelectRank += RankChoice_SelectRank;
         m_CardRankChoicesPrimary.OnNoSelectionMade += PrimaryRankChoice_NoSelectionMade;
         m_CardRankChoicesSecondary.OnSelectRank += RankChoice_SelectRank;
@@ -48,14 +60,8 @@ public class HandSelectionUI : TransitionableUIBase
         m_RoyalFlushChoices.OnNoSelectionMade += RoyalFlushChoice_NoSelectionMade;
     }
 
-    private void UnregisterFromEvents()
+    private void OnDisable()
     {
-        HandTypeUI.Instance.OnNeedCardRankChoicesPrimary -= HandTypeUI_NeedCardRankChoicesPrimary;
-        HandTypeUI.Instance.OnNeedCardRankChoicesSecondary -= HandTypeUI_NeedCardRankChoicesSecondary;
-        HandTypeUI.Instance.OnNeedCardSuitChoices -= HandTypeUI_NeedCardSuitChoices;
-        HandTypeUI.Instance.OnNeedRoyalFlushChoices -= HandTypeUI_NeedRoyalFlushChoices;
-        HandTypeUI.Instance.OnNoSelectionMade -= HandTypeUI_NoSelectionMade;
-
         m_CardRankChoicesPrimary.OnSelectRank -= RankChoice_SelectRank;
         m_CardRankChoicesPrimary.OnNoSelectionMade -= PrimaryRankChoice_NoSelectionMade;
         m_CardRankChoicesSecondary.OnSelectRank -= RankChoice_SelectRank;
@@ -65,14 +71,6 @@ public class HandSelectionUI : TransitionableUIBase
         m_RoyalFlushChoices.OnSelectSuit -= RoyalFlushChoice_SelectSuit;
         m_RoyalFlushChoices.OnNoSelectionMade -= RoyalFlushChoice_NoSelectionMade;
     }
-
-    protected override void Start()
-    {
-        RegisterForEvents();
-        base.Start();
-    }
-
-    private void OnDestroy() { UnregisterFromEvents(); }
 
     private void HandTypeUI_NeedCardRankChoicesPrimary(Hand selectedHand)
     {

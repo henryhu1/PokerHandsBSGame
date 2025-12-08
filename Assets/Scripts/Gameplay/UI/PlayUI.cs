@@ -10,6 +10,8 @@ public class PlayUI : MonoBehaviour
     [SerializeField] private HandTypeUI handTypeUI;
     [SerializeField] private OrderCardsUI orderCardsUI;
 
+    private TransitionableUIBase handTypeAnimatable;
+
     [Header("Listening Events")]
     [SerializeField] private VoidEventChannelSO OnCameraInPosition;
     [SerializeField] private VoidEventChannelSO OnNextRoundStarting;
@@ -23,6 +25,8 @@ public class PlayUI : MonoBehaviour
             Destroy(Instance.gameObject);
         }
         Instance = this;
+
+        handTypeAnimatable = handTypeUI.GetComponent<TransitionableUIBase>();
     }
 
     private void Start()
@@ -61,7 +65,7 @@ public class PlayUI : MonoBehaviour
         {
             actionsUI.StartAnimation();
             handSelectionUI.StartAnimation();
-            handTypeUI.StartAnimation();
+            handTypeAnimatable.StartAnimation();
             orderCardsUI.Show();
         }
     }
@@ -72,7 +76,7 @@ public class PlayUI : MonoBehaviour
         {
             actionsUI.StartAnimation();
             handSelectionUI.StartAnimation();
-            handTypeUI.StartAnimation();
+            handTypeAnimatable.StartAnimation();
             orderCardsUI.Hide();
         }
     }

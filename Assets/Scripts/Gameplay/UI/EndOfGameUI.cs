@@ -70,27 +70,29 @@ public class EndOfGameUI : TransitionableUIBase
         m_optionsUI.SetActive(GameManager.Instance.IsHost);
     }
 
-    protected override void RegisterForEvents()
+    private void OnEnable()
     {
-        GameManager.Instance.RegisterEndOfGameUICallbacks();
         OnInitializeNewGame.OnEventRaised += InitializeNewGame;
     }
 
-    protected override void Start()
+    private void OnDisable()
     {
-        RegisterForEvents();
-        base.Start();
+        OnInitializeNewGame.OnEventRaised -= InitializeNewGame;
+    }
+
+    private void Start()
+    {
+        GameManager.Instance.RegisterEndOfGameUICallbacks();
     }
 
     private void OnDestroy()
     {
         GameManager.Instance.UnregisterEndOfGameUICallbacks();
-        OnInitializeNewGame.OnEventRaised -= InitializeNewGame;
     }
 
     public void DisplayGameResults(int myPosition, List<PlayerData> eliminationOrder)
     {
-        m_restartGameOption.gameObject.SetActive(GameManager.Instance.m_connectedClientIds.Count != 1);
+        m_restartGameOption.SetActive(GameManager.Instance.m_connectedClientIds.Count != 1);
         for (int i = 0; i < eliminationOrder.Count; i++)
         {
             PlayerData playerData = eliminationOrder[i];

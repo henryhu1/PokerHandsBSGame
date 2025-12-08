@@ -368,9 +368,8 @@ public class GameManager : NetworkBehaviour
             NextRoundUI.Instance.SetNumberOfPlayersReadyText(newValue);
         };
 
-        m_inPlayClientIds.OnListChanged += (NetworkListEvent<ulong> changeEvent) =>
+        m_inPlayClientIds.OnListChanged += changeEvent =>
         {
-            NextRoundUI.Instance.SetTotalNumberOfPlayersToBeReady(m_inPlayClientIds.Count);
             if (changeEvent.Type == NetworkListEvent<ulong>.EventType.Remove && changeEvent.Value == NetworkManager.Singleton.LocalClientId)
             {
                 NextRoundUI.Instance.SetCanBeReady(false);
@@ -388,7 +387,7 @@ public class GameManager : NetworkBehaviour
 
     public void RegisterActionsUIObservers()
     {
-        m_inPlayClientIds.OnListChanged += (NetworkListEvent<ulong> changeEvent) =>
+        m_inPlayClientIds.OnListChanged += changeEvent =>
         {
             if (changeEvent.Type == NetworkListEvent<ulong>.EventType.Remove && changeEvent.Value == NetworkManager.Singleton.LocalClientId)
             {
@@ -675,7 +674,8 @@ public class GameManager : NetworkBehaviour
         if (!m_inPlayClientIds.Contains(serverRpcParams.Receive.SenderClientId)) { return; }
 
         int change = isPlayerReady ? 1 : -1;
-        m_playersReadyForNextRound.Value += change;
+        int playersNowReady = Mathf.Max(m_playersReadyForNextRound.Value + change, 0);
+        m_playersReadyForNextRound.Value = playersNowReady;
         if (m_playersReadyForNextRound.Value >= m_inPlayClientIds.Count)
         {
             m_playersReadyForNextRound.Value = 0;

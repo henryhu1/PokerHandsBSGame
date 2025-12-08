@@ -23,7 +23,7 @@ public class ExistingHandsUI : TransitionableUIBase
         m_ExistingHandItems = new List<ExistingHandItemUI>();
     }
 
-    protected override void RegisterForEvents()
+    private void OnEnable()
     {
         OnNextRoundStarting.OnEventRaised += NextRoundStarting;
         OnGameWon.OnEventRaised += GameWon;
@@ -31,36 +31,12 @@ public class ExistingHandsUI : TransitionableUIBase
         OnDisplayAllHandsInPlay.OnEventRaised += DisplayAllHandsInPlay;
     }
 
-    private void UnregisterFromEvents()
+    private void OnDisable()
     {
         OnNextRoundStarting.OnEventRaised -= NextRoundStarting;
         OnGameWon.OnEventRaised -= GameWon;
         OnInitializeNewGame.OnEventRaised -= InitializeNewGame;
         OnDisplayAllHandsInPlay.OnEventRaised -= DisplayAllHandsInPlay;
-    }
-
-    protected override void Start()
-    {
-        RegisterForEvents();
-        base.Start();
-    }
-
-    private void OnDestroy()
-    {
-        UnregisterFromEvents();
-    }
-
-    // TODO: refactor TransitionableUIBase to not setActive on the UI gameObject
-    private void OnEnable()
-    {
-        // OnNextRoundStarting.OnEventRaised += NextRoundStarting;
-        // OnDisplayAllHandsInPlay.OnEventRaised += DisplayAllHandsInPlay;
-    }
-
-    private void OnDisable()
-    {
-        // OnNextRoundStarting.OnEventRaised -= NextRoundStarting;
-        // OnDisplayAllHandsInPlay.OnEventRaised -= DisplayAllHandsInPlay;
     }
 
     private void DisplayAllHandsInPlay(List<PokerHand> allHandsInPlay)

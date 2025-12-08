@@ -27,7 +27,7 @@ public class PlayedHandLogUI : TransitionableUIBase
         m_PlayedHandLogItems = new List<PlayedHandLogItemUI>();
     }
 
-    protected override void RegisterForEvents()
+    private void OnEnable()
     {
         AllOpponentCards.Instance.OnUnselectAllOpponentHand += AllOpponentCards_UnselectAllOpponentHand;
         AllOpponentCards.Instance.OnMouseEnterOpponentHand += AllOpponentCards_MouseEnterOpponentHand;
@@ -42,7 +42,7 @@ public class PlayedHandLogUI : TransitionableUIBase
         OnDisplayPlayedHandsPresent.OnEventRaised += DisplayPlayedHandsPresent;
     }
 
-    private void UnregisterForEvents()
+    private void OnDisable()
     {
         AllOpponentCards.Instance.OnUnselectAllOpponentHand -= AllOpponentCards_UnselectAllOpponentHand;
         AllOpponentCards.Instance.OnMouseEnterOpponentHand -= AllOpponentCards_MouseEnterOpponentHand;
@@ -56,30 +56,6 @@ public class PlayedHandLogUI : TransitionableUIBase
         OnInitializeNewGame.OnEventRaised -= InitializeNewGame;
         OnDisplayPlayedHandsPresent.OnEventRaised -= DisplayPlayedHandsPresent;
     }
-
-    protected override void Start()
-    {
-        RegisterForEvents();
-        base.Start();
-    }
-
-    private void OnDestroy() { UnregisterForEvents(); }
-
-    // private void OnEnable()
-    // {
-    //     OnSelectOpponentHand.OnEventRaised += AllOpponentCards_SelectOpponentHand;
-    //     OnCameraInPosition.OnEventRaised += CameraRotationLookAtTarget_CameraInPosition;
-    //     OnInitializeNewGame.OnEventRaised += InitializeNewGame;
-    //     OnDisplayPlayedHandsPresent.OnEventRaised += DisplayPlayedHandsPresent;
-    // }
-
-    // private void OnDisable()
-    // {
-    //     OnSelectOpponentHand.OnEventRaised -= AllOpponentCards_SelectOpponentHand;
-    //     OnCameraInPosition.OnEventRaised -= CameraRotationLookAtTarget_CameraInPosition;
-    //     OnInitializeNewGame.OnEventRaised -= InitializeNewGame;
-    //     OnDisplayPlayedHandsPresent.OnEventRaised -= DisplayPlayedHandsPresent;
-    // }
 
     private void DisplayPlayedHandsPresent(List<bool> playedHandsPresent)
     {

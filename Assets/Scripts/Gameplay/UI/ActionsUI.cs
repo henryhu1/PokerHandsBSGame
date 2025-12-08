@@ -48,26 +48,19 @@ public class ActionsUI : TransitionableUIBase
         m_TurnNotification.gameObject.SetActive(m_PlayButton.enabled);
     }
 
-    protected override void RegisterForEvents()
+    private void OnEnable()
     {
         TurnManager.Instance.OnNextPlayerTurn += TurnManager_NextPlayerTurn;
     }
 
-    private void UnregisterFromEvents()
+    private void OnDisable()
     {
         TurnManager.Instance.OnNextPlayerTurn -= TurnManager_NextPlayerTurn;
     }
 
-    protected override void Start()
+    private void Start()
     {
-        RegisterForEvents();
         GameManager.Instance.RegisterActionsUIObservers();
-        base.Start();
-    }
-
-    private void OnDestroy()
-    {
-        UnregisterFromEvents();
     }
 
     private void TurnManager_NextPlayerTurn(bool isPlayerTurn, bool wasPlayersTurnPreviously)

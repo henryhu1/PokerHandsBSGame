@@ -14,10 +14,10 @@ public class EndOfRoundResultUI : TransitionableUIBase
     [SerializeField] private IntEventChannelSO OnEndOfRoundResult;
     [SerializeField] private VoidEventChannelSO OnGameWon;
 
-    private static Color s_safeColor = new Color(0, 0.9f, 0, 0.8f);
-    private static Color s_loserColor = new Color(0.9f, 0, 0, 0.8f);
+    private static Color s_safeColor = new(0, 0.9f, 0, 0.8f);
+    private static Color s_loserColor = new(0.9f, 0, 0, 0.8f);
 
-    private static Dictionary<RoundResultTypes, string> s_roundResultMessages = new Dictionary<RoundResultTypes, string>
+    private static Dictionary<RoundResultTypes, string> s_roundResultMessages = new()
     {
         { RoundResultTypes.Safe, "Safe!!" },
         { RoundResultTypes.CorrectBS, "You got it right!!" },
@@ -25,7 +25,7 @@ public class EndOfRoundResultUI : TransitionableUIBase
         { RoundResultTypes.WrongBS, "You got it wrong..." },
     };
 
-    private static Dictionary<RoundResultTypes, Color> s_roundResultColors = new Dictionary<RoundResultTypes, Color>
+    private static Dictionary<RoundResultTypes, Color> s_roundResultColors = new()
     {
         { RoundResultTypes.Safe, s_safeColor },
         { RoundResultTypes.CorrectBS, s_safeColor },
@@ -33,14 +33,14 @@ public class EndOfRoundResultUI : TransitionableUIBase
         { RoundResultTypes.WrongBS, s_loserColor },
     };
 
-    protected override void RegisterForEvents()
+    private void OnEnable()
     {
         OnEndOfRoundResult.OnEventRaised += EndOfRoundResult;
         OnNextRoundStarting.OnEventRaised += NextRoundStarting;
         OnGameWon.OnEventRaised += GameWon;
     }
 
-    private void UnregisterFromEvents()
+    private void OnDisable()
     {
         OnEndOfRoundResult.OnEventRaised -= EndOfRoundResult;
         OnNextRoundStarting.OnEventRaised -= NextRoundStarting;
@@ -49,6 +49,8 @@ public class EndOfRoundResultUI : TransitionableUIBase
 
     private void EndOfRoundResult(int roundResultValue)
     {
+        if (!IsOffScreen()) return;
+
         RoundResultTypes roundResult = (RoundResultTypes) roundResultValue;
         m_panel.color = s_roundResultColors[roundResult];
         m_endOfRoundText.text = s_roundResultMessages[roundResult];
@@ -57,27 +59,11 @@ public class EndOfRoundResultUI : TransitionableUIBase
 
     private void NextRoundStarting()
     {
-        if (gameObject.activeInHierarchy) StartAnimation();
+        if (!IsOffScreen()) StartAnimation();
     }
 
     private void GameWon()
     {
-        if (gameObject.activeInHierarchy) StartAnimation();
-    }
-
-    protected override void Awake()
-    {
-        base.Awake();
-    }
-
-    protected override void Start()
-    {
-        RegisterForEvents();
-        base.Start();
-    }
-
-    private void OnDestroy()
-    {
-        UnregisterFromEvents();
+        if (!IsOffScreen()) StartAnimation();
     }
 }

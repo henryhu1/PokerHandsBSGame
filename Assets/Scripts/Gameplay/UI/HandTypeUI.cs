@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class HandTypeUI : ToggleSelectionableTransitionableUIBase<Hand>
+public class HandTypeUI : ToggleSelectionableUIBase<Hand>
 {
     public static HandTypeUI Instance { get; private set; }
 
@@ -44,10 +44,8 @@ public class HandTypeUI : ToggleSelectionableTransitionableUIBase<Hand>
     [Header("Listening Events")]
     [SerializeField] private BoolEventChannelSO OnAreFlushesAllowed;
 
-    protected override void Awake()
+    private void Awake()
     {
-        base.Awake();
-
         if (Instance != this && Instance != null)
         {
             Destroy(Instance.gameObject);
@@ -114,14 +112,14 @@ public class HandTypeUI : ToggleSelectionableTransitionableUIBase<Hand>
         }
     }
 
-    protected override void RegisterForEvents()
+    private void Start()
     {
-        // GameManager.Instance.OnUpdatePlayableHands += GameManager_UpdatePlayableHands;
+        HandSelectionUI.Instance.RegisterHandTypeUICallbacks();
     }
 
-    protected override void Start() {
-        RegisterForEvents();
-        base.Start();
+    private void OnDestroy()
+    {
+        HandSelectionUI.Instance.UnregisterHandTypeUICallbacks();
     }
 
     private void OnEnable()

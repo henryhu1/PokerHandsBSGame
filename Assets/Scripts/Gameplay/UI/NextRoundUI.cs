@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -37,11 +36,10 @@ public class NextRoundUI : TransitionableUIBase
         Instance = this;
 
         m_canBeReady = GameManager.Instance.IsNotOut();
-        m_totalPlayersToBeReady = GameManager.Instance.m_inPlayClientIds.Count;
-        m_playersReadyText.text = $"0/{m_totalPlayersToBeReady}";
+        ResetTotalPlayersText();
         m_toggleText.text = k_readyText;
 
-        m_readyForNextRoundToggle.onValueChanged.AddListener((bool isOn) =>
+        m_readyForNextRoundToggle.onValueChanged.AddListener(isOn =>
         {
             string toggleText = isOn ? k_unreadyText : k_readyText;
             m_toggleText.text = toggleText;
@@ -52,16 +50,15 @@ public class NextRoundUI : TransitionableUIBase
         });
     }
 
-    protected override void RegisterForEvents()
+    private void OnEnable()
     {
-        GameManager.Instance.RegisterNextRoundUIObservers();
         OnRoundEnded.OnEventRaised += EndOfRound;
         OnPlayerLeft.OnEventRaised += PlayerLeft;
         OnNextRoundStarting.OnEventRaised += NextRoundStarting;
         OnGameWon.OnEventRaised += GameWon;
     }
 
-    private void UnregisterFromEvents()
+    private void OnDisable()
     {
         OnRoundEnded.OnEventRaised -= EndOfRound;
         OnPlayerLeft.OnEventRaised -= PlayerLeft;
@@ -69,18 +66,16 @@ public class NextRoundUI : TransitionableUIBase
         OnGameWon.OnEventRaised -= GameWon;
     }
 
-    protected override void Start()
+    private void Start()
     {
-        RegisterForEvents();
-        base.Start();
+        GameManager.Instance.RegisterNextRoundUIObservers();
     }
-
-    private void OnDestroy() { UnregisterFromEvents(); }
 
     private void EndOfRound()
     {
+        ResetTotalPlayersText();
         m_playerLeftText.gameObject.SetActive(false);
-        if (transform.position != m_originalPosition)
+        if (IsOffScreen())
         {
             m_toggleText.text = k_readyText;
             m_readyForNextRoundToggle.enabled = m_canBeReady;
@@ -91,9 +86,10 @@ public class NextRoundUI : TransitionableUIBase
 
     private void PlayerLeft(string playerLeftName)
     {
+        ResetTotalPlayersText();
         m_playerLeftText.gameObject.SetActive(true);
         m_playerLeftText.text = $"{playerLeftName} has left";
-        if (transform.position != m_originalPosition)
+        if (IsOffScreen())
         {
             m_toggleText.text = k_readyText;
             m_readyForNextRoundToggle.enabled = m_canBeReady;
@@ -104,7 +100,7 @@ public class NextRoundUI : TransitionableUIBase
 
     private void NextRoundStarting()
     {
-        if (transform.position != m_offScreenPosition)
+        if (!IsOffScreen())
         {
             m_toggleText.text = k_readyText;
             m_readyForNextRoundToggle.enabled = false;
@@ -115,7 +111,7 @@ public class NextRoundUI : TransitionableUIBase
 
     private void GameWon()
     {
-        if (transform.position != m_offScreenPosition)
+        if (!IsOffScreen())
         {
             m_toggleText.text = k_readyText;
             m_readyForNextRoundToggle.enabled = false;
@@ -124,15 +120,15 @@ public class NextRoundUI : TransitionableUIBase
         }
     }
 
+    private void ResetTotalPlayersText()
+    {
+        m_totalPlayersToBeReady = GameManager.Instance.m_inPlayClientIds.Count;
+        m_playersReadyText.text = $"0/{m_totalPlayersToBeReady}";
+    }
+
     public void SetNumberOfPlayersReadyText(int numberOfPlayersReady)
     {
         m_playersReadyText.text = $"{numberOfPlayersReady}/{m_totalPlayersToBeReady}";
-    }
-
-    public void SetTotalNumberOfPlayersToBeReady(int numberOfPlayersToBeReady)
-    {
-        m_totalPlayersToBeReady = numberOfPlayersToBeReady;
-        m_playersReadyText.text = $"0/{m_totalPlayersToBeReady}";
     }
 
     public void SetCanBeReady(bool canBeReady)

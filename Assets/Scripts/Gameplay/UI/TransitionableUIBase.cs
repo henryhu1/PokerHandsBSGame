@@ -1,103 +1,79 @@
-using System.Collections;
+using DG.Tweening;
 using UnityEngine;
 
-public abstract class TransitionableUIBase : MonoBehaviour, IAnimatable
+public class TransitionableUIBase : MonoBehaviour, IAnimatable
 {
-    [SerializeField] private RectTransform rectTransform;
     [SerializeField] private TransitionInDirection m_inDirection;
-    [SerializeField] private AnimationCurve movementCurve;
+    [SerializeField] private Ease easingFunction = Ease.OutCubic;
     [SerializeField] private float m_movementDuration;
     [SerializeField] private float m_startDelay = 0f;
-    [SerializeField] protected bool m_startOffScreen = true;
-    protected Vector3 m_originalPosition;
-    protected Vector3 m_offScreenPosition;
-    protected Vector3 m_transitionStartPosition;
-    protected Coroutine m_transitioningCoroutine;
+    private RectTransform transitioningRect;
 
-    protected abstract void RegisterForEvents();
+    protected bool isOffScreen = true;
+    protected Vector3 m_originalPosition;
+    protected Sequence transitioningSequence;
 
     protected virtual void Awake()
     {
-        m_originalPosition = transform.position;
-        m_transitionStartPosition = transform.position;
-        float width = rectTransform.sizeDelta.x;
-        float height = rectTransform.sizeDelta.y;
-        switch (m_inDirection)
-        {
-            case TransitionInDirection.Left:
-                m_offScreenPosition = new Vector3(Screen.width + width / 2, transform.position.y, 0);
-                break;
-            case TransitionInDirection.Right:
-                m_offScreenPosition = new Vector3(-width / 2, transform.position.y, 0);
-                break;
-            case TransitionInDirection.Up:
-                m_offScreenPosition = new Vector3(transform.position.x, -height / 2, 0);
-                break;
-            case TransitionInDirection.Down:
-                m_offScreenPosition = new Vector3(transform.position.x, Screen.height + height / 2, 0);
-                break;
-        }
-        if (m_startOffScreen)
-        {
-            transform.position = m_offScreenPosition;
-        }
+        transitioningRect = GetComponent<RectTransform>();
+
+        m_originalPosition = transitioningRect.position;
+
+        transitioningRect.position = GetOffScreenPosition();
+        isOffScreen = true;
 
         // InGameUI.Instance.OnShowUI += StartDoTransition;
     }
 
-    protected virtual void Start()
+    public bool IsOffScreen()
     {
-        // gameObject.SetActive(!m_startOffScreen);
+        return isOffScreen;
     }
 
-    public IEnumerator DoAnimation()
+    private Vector3 GetOffScreenPosition()
     {
-        m_transitionStartPosition = transform.position;
-        Vector3 finalPosition = m_originalPosition;
-        if (transform.position == m_originalPosition)
+        float width = transitioningRect.sizeDelta.x;
+        float height = transitioningRect.sizeDelta.y;
+        return m_inDirection switch
         {
-            finalPosition = m_offScreenPosition;
-        }
-        else
+            TransitionInDirection.Left => new Vector3(Screen.width + width / 2, transform.position.y, 0),
+            TransitionInDirection.Right => new Vector3(-width / 2, transform.position.y, 0),
+            TransitionInDirection.Up => new Vector3(transform.position.x, -height / 2, 0),
+            TransitionInDirection.Down => new Vector3(transform.position.x, Screen.height + height / 2, 0),
+            _ => new Vector3(Screen.width * 2, Screen.height * 2, 0),
+        };
+    }   
+
+    private Sequence GetTransitionSequence()
+    {
+        Sequence newSequence = DOTween.Sequence();
+
+        if (m_startDelay > 0 && isOffScreen)
         {
-            yield return new WaitForSeconds(m_startDelay);
-        }
-        float time = 0f;
-
-        while (time < m_movementDuration)
-        {
-            time += Time.deltaTime;
-
-            float step = time / m_movementDuration;
-            float curveStep = movementCurve.Evaluate(step);
-            transform.position = Vector3.Lerp(m_transitionStartPosition, finalPosition, curveStep);
-
-            yield return null;
+            newSequence.AppendInterval(m_startDelay);
         }
 
-        m_transitioningCoroutine = null;
-        transform.position = finalPosition;
-        m_transitionStartPosition = finalPosition;
-        if (transform.position == m_offScreenPosition)
-        {
-            gameObject.SetActive(false);
-        }
+        Vector3 finalPosition = isOffScreen ? m_originalPosition : GetOffScreenPosition();
+        newSequence.Append(transitioningRect.DOMove(finalPosition, m_movementDuration).SetEase(easingFunction));
+
+        newSequence.Pause();
+        newSequence.OnComplete(() => isOffScreen = !isOffScreen);
+        return newSequence;
     }
 
     public void StartAnimation()
     {
         StopAnimation();
-        gameObject.SetActive(true);
-        m_transitioningCoroutine = StartCoroutine(DoAnimation());
+        transitioningSequence = GetTransitionSequence();
+        transitioningSequence.Play();
     }
 
     public void StopAnimation()
     {
-        if (m_transitioningCoroutine != null)
+        if (transitioningSequence != null && transitioningSequence.IsPlaying())
         {
-            StopCoroutine(m_transitioningCoroutine);
-            m_transitioningCoroutine = null;
-            transform.position = m_transitionStartPosition;
+            transitioningSequence.Kill();
+            transitioningRect.position = m_originalPosition;
         }
     }
 }
