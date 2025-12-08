@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
 
-public abstract class ResizableUIBase : MonoBehaviour, IAnimatable
+public class ResizableUIBase : MonoBehaviour, IAnimatable
 {
     public static Dictionary<ResizingSide, Vector2> s_DirectionToScale = new()
     {
@@ -30,7 +30,7 @@ public abstract class ResizableUIBase : MonoBehaviour, IAnimatable
         // triggerUITransition.RegisterCallback(StartDoScale);
     }
 
-    public Tween GetResizeTween()
+    private Tween GetResizeTween()
     {
         Vector2 finalSize;
         if (resizingRect.sizeDelta == originalSize)

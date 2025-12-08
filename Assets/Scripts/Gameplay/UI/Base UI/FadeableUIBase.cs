@@ -2,7 +2,7 @@ using DG.Tweening;
 using TMPro;
 using UnityEngine;
 
-public abstract class FadableUIBase : MonoBehaviour, IAnimatable
+public class FadableUIBase : MonoBehaviour, IAnimatable
 {
     [SerializeField] private float fadeInDuration;
     [SerializeField] private float freezeDuration = 1f;

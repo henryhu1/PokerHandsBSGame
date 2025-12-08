@@ -19,7 +19,7 @@ public class RotatableUIBase : MonoBehaviour, IAnimatable
         rotatedRotation = rotatingRect.eulerAngles + new Vector3(0, 0, rotationAmount);
     }
 
-    public Tween GetRotationTween()
+    private Tween GetRotationTween()
     {
         Vector3 finalRotation;
         if (rotatingRect.eulerAngles == rotatedRotation)
