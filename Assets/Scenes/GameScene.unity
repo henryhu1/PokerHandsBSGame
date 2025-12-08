@@ -177,36 +177,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8fd15fd0210cbae4aa0a715327c7e91a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rectTransform: {fileID: 28843490}
   m_inDirection: 1
-  movementCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 2
-      outSlope: 2
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
+  easingFunction: 9
   m_movementDuration: 0.3
   m_startDelay: 0
-  m_startOffScreen: 1
-  playedHandLogUI: {fileID: 185631651}
+  playedHandLogUI: {fileID: 675409744}
   m_ExistingHandItemUIPrefab: {fileID: 2974480545192426266, guid: 15e921e503bcfae4c8d8d0293168f201, type: 3}
   m_LogContent: {fileID: 1227972764}
   OnNextRoundStarting: {fileID: 11400000, guid: 8733d489064045b499db4c6848ba08fe, type: 2}
@@ -361,95 +336,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 116334397}
   m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1 &122745692
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 122745693}
-  - component: {fileID: 122745694}
-  m_Layer: 5
-  m_Name: EndOfGameUI
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!224 &122745693
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 122745692}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 404821314}
-  - {fileID: 320430156}
-  m_Father: {fileID: 1436354789}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 300, y: 430}
-  m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &122745694
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 122745692}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e542438d5e7f26e40af01686cdb62c1e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  rectTransform: {fileID: 122745693}
-  m_inDirection: 3
-  movementCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 2
-      outSlope: 2
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  m_movementDuration: 0.3
-  m_startDelay: 0
-  m_startOffScreen: 1
-  m_resultItemUIPrefab: {fileID: 1430230165520938723, guid: 4a3c0c3fdf5c7d3438c3da284a9f0ee9, type: 3}
-  m_resultContent: {fileID: 2099348112}
-  m_optionsUI: {fileID: 320430155}
-  m_restartGameOption: {fileID: 1297540088}
-  m_gameModeButton: {fileID: 1490243483}
-  m_gameModeText: {fileID: 1490243482}
-  m_restartButton: {fileID: 1762345639}
-  m_exitButton: {fileID: 932586330}
-  OnRestartGame: {fileID: 11400000, guid: b65207f71c9799243bd25a7dbf6caea8, type: 2}
-  OnInitializeNewGame: {fileID: 11400000, guid: 819f300a5119a584b85d32c1537c7b44, type: 2}
 --- !u!1001 &125995620
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -887,9 +773,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 185631650}
-  - component: {fileID: 185631651}
   m_Layer: 5
-  m_Name: PlayedHandLogUI
+  m_Name: Scroll Rect
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -902,67 +787,19 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 185631649}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1571333040}
-  m_Father: {fileID: 1436354789}
+  m_Father: {fileID: 675409743}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 210, y: -60}
-  m_SizeDelta: {x: 400, y: 100}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &185631651
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 185631649}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 339b428f9070bc84db9e6ad2aad8c728, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  rectTransform: {fileID: 185631650}
-  m_inDirection: 3
-  movementCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 2
-      outSlope: 2
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  m_movementDuration: 0.3
-  m_startDelay: 0
-  m_startOffScreen: 1
-  m_PlayedHandLogItemUIPrefab: {fileID: 6540639121345542175, guid: 78a39f36983f0c441b98b965cf5a8527, type: 3}
-  m_LogContent: {fileID: 1373818246}
-  OnSelectOpponentHand: {fileID: 11400000, guid: b1000c471aa09ba4697f0ab65776bc85, type: 2}
-  OnCameraInPosition: {fileID: 11400000, guid: d148c00a7f17d814fb021a5aa433be23, type: 2}
-  OnInitializeNewGame: {fileID: 11400000, guid: 819f300a5119a584b85d32c1537c7b44, type: 2}
-  OnDisplayPlayedHandsPresent: {fileID: 11400000, guid: 238d720b52f89e94c906038b27840ab8, type: 2}
-  OnGameWon: {fileID: 11400000, guid: f9f16b67881813b4e8404a8da0ec5b53, type: 2}
 --- !u!1001 &216998695
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1218,7 +1055,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1503270652}
-  m_Father: {fileID: 1915432408}
+  m_Father: {fileID: 1613621822}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 0}
@@ -1432,13 +1269,13 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 320430155}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 615674783}
-  m_Father: {fileID: 122745693}
+  m_Father: {fileID: 983124418}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
@@ -1615,13 +1452,13 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 404821313}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1679136193}
-  m_Father: {fileID: 122745693}
+  m_Father: {fileID: 983124418}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
@@ -1739,6 +1576,63 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 6702721160794595862, guid: c553033270f688147ba2d4ff07548fce, type: 3}
   m_PrefabInstance: {fileID: 413399010}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &419008309
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 419008310}
+  - component: {fileID: 419008311}
+  m_Layer: 5
+  m_Name: HandSelectionUI
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &419008310
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 419008309}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 543125902}
+  m_Father: {fileID: 1119809240}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 141, y: 235}
+  m_SizeDelta: {x: 280, y: 310}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &419008311
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 419008309}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2355d8e3a0aad6b4487a4b439c92d76e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_inDirection: 1
+  easingFunction: 9
+  m_movementDuration: 0.3
+  m_startDelay: 0
+  m_CardRankChoicesPrimary: {fileID: 2251826167964725903}
+  m_CardRankChoicesSecondary: {fileID: 880032745}
+  m_CardSuitChoices: {fileID: 1841442212}
+  m_RoyalFlushChoices: {fileID: 1609307290}
 --- !u!1 &439793998
 GameObject:
   m_ObjectHideFlags: 0
@@ -2341,9 +2235,8 @@ GameObject:
   - component: {fileID: 543125902}
   - component: {fileID: 543125905}
   - component: {fileID: 543125904}
-  - component: {fileID: 543125903}
   m_Layer: 5
-  m_Name: HandSelectionUI
+  m_Name: Panel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2365,58 +2258,13 @@ RectTransform:
   - {fileID: 880032743}
   - {fileID: 1841442211}
   - {fileID: 1609307289}
-  m_Father: {fileID: 1119809240}
+  m_Father: {fileID: 419008310}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 140, y: 235}
-  m_SizeDelta: {x: 280, y: 310}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &543125903
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 543125901}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2355d8e3a0aad6b4487a4b439c92d76e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  rectTransform: {fileID: 543125902}
-  m_inDirection: 1
-  movementCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 2
-      outSlope: 2
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  m_movementDuration: 0.3
-  m_startDelay: 0
-  m_startOffScreen: 1
-  m_CardRankChoicesPrimary: {fileID: 2251826167964725903}
-  m_CardRankChoicesSecondary: {fileID: 880032745}
-  m_CardSuitChoices: {fileID: 1841442212}
-  m_RoyalFlushChoices: {fileID: 1609307290}
 --- !u!114 &543125904
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4010,6 +3858,66 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 673923681}
   m_CullTransparentMesh: 1
+--- !u!1 &675409742
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 675409743}
+  - component: {fileID: 675409744}
+  m_Layer: 5
+  m_Name: PlayedHandLogUI
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &675409743
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 675409742}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 185631650}
+  m_Father: {fileID: 1436354789}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 210, y: -60}
+  m_SizeDelta: {x: 400, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &675409744
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 675409742}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 339b428f9070bc84db9e6ad2aad8c728, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_inDirection: 3
+  easingFunction: 9
+  m_movementDuration: 0.3
+  m_startDelay: 0
+  m_PlayedHandLogItemUIPrefab: {fileID: 6540639121345542175, guid: 78a39f36983f0c441b98b965cf5a8527, type: 3}
+  m_LogContent: {fileID: 1373818246}
+  OnSelectOpponentHand: {fileID: 11400000, guid: b1000c471aa09ba4697f0ab65776bc85, type: 2}
+  OnCameraInPosition: {fileID: 11400000, guid: d148c00a7f17d814fb021a5aa433be23, type: 2}
+  OnInitializeNewGame: {fileID: 11400000, guid: 819f300a5119a584b85d32c1537c7b44, type: 2}
+  OnDisplayPlayedHandsPresent: {fileID: 11400000, guid: 238d720b52f89e94c906038b27840ab8, type: 2}
+  OnGameWon: {fileID: 11400000, guid: f9f16b67881813b4e8404a8da0ec5b53, type: 2}
 --- !u!1 &693450690
 GameObject:
   m_ObjectHideFlags: 0
@@ -6453,6 +6361,70 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: -20, y: -20}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &983124417
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 983124418}
+  - component: {fileID: 983124419}
+  m_Layer: 5
+  m_Name: EndOfGameUI
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &983124418
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 983124417}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 404821314}
+  - {fileID: 320430156}
+  m_Father: {fileID: 1436354789}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 300, y: 430}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &983124419
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 983124417}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e542438d5e7f26e40af01686cdb62c1e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_inDirection: 3
+  easingFunction: 9
+  m_movementDuration: 0.3
+  m_startDelay: 0
+  m_resultItemUIPrefab: {fileID: 1430230165520938723, guid: 4a3c0c3fdf5c7d3438c3da284a9f0ee9, type: 3}
+  m_resultContent: {fileID: 2099348112}
+  m_optionsUI: {fileID: 320430155}
+  m_restartGameOption: {fileID: 1297540088}
+  m_gameModeButton: {fileID: 1490243483}
+  m_gameModeText: {fileID: 1490243482}
+  m_restartButton: {fileID: 1762345639}
+  m_exitButton: {fileID: 932586330}
+  OnRestartGame: {fileID: 11400000, guid: b65207f71c9799243bd25a7dbf6caea8, type: 2}
+  OnInitializeNewGame: {fileID: 11400000, guid: 819f300a5119a584b85d32c1537c7b44, type: 2}
 --- !u!1 &988086536
 GameObject:
   m_ObjectHideFlags: 0
@@ -7120,8 +7092,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: -185, y: 26}
-  m_SizeDelta: {x: 250, y: 0}
+  m_AnchoredPosition: {x: -185, y: 65}
+  m_SizeDelta: {x: 250, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1091671754
 CanvasRenderer:
@@ -7143,35 +7115,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 81063d22007364b41b772858b2595a33, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rectTransform: {fileID: 1091671751}
   m_inDirection: 0
-  movementCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 2
-      outSlope: 2
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
+  easingFunction: 9
   m_movementDuration: 0.3
   m_startDelay: 1.5
-  m_startOffScreen: 1
   m_readyForNextRoundToggle: {fileID: 541105585}
   m_playersReadyText: {fileID: 1713848269}
   m_toggleText: {fileID: 1087090016}
@@ -7353,7 +7300,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 543125902}
+  - {fileID: 419008310}
   - {fileID: 1887481976}
   - {fileID: 1915432408}
   - {fileID: 961002737}
@@ -7377,7 +7324,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   actionsUI: {fileID: 1915432409}
-  handSelectionUI: {fileID: 543125903}
+  handSelectionUI: {fileID: 419008311}
   handTypeUI: {fileID: 1887481977}
   orderCardsUI: {fileID: 961002738}
   OnCameraInPosition: {fileID: 11400000, guid: d148c00a7f17d814fb021a5aa433be23, type: 2}
@@ -8653,10 +8600,10 @@ RectTransform:
   m_Children:
   - {fileID: 1119809240}
   - {fileID: 1091671751}
-  - {fileID: 185631650}
+  - {fileID: 675409743}
   - {fileID: 28843490}
   - {fileID: 464508763}
-  - {fileID: 122745693}
+  - {fileID: 983124418}
   - {fileID: 2096773828}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -10003,6 +9950,7 @@ RectTransform:
   - {fileID: 606115327}
   - {fileID: 1400341615}
   - {fileID: 799949578}
+  - {fileID: 258329151}
   m_Father: {fileID: 1915432408}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -11285,6 +11233,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1887481976}
   - component: {fileID: 1887481977}
+  - component: {fileID: 1887481978}
   m_Layer: 5
   m_Name: HandTypeUI
   m_TagString: Untagged
@@ -11325,35 +11274,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_ToggleGroup: {fileID: 848157226}
-  rectTransform: {fileID: 1887481976}
-  m_inDirection: 2
-  movementCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 2
-      outSlope: 2
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  m_movementDuration: 0.3
-  m_startDelay: 0
-  m_startOffScreen: 1
   m_HighCardToggle: {fileID: 5711372269444001759}
   m_PairToggle: {fileID: 136369678}
   m_TwoPairToggle: {fileID: 1612227300}
@@ -11365,6 +11285,22 @@ MonoBehaviour:
   m_StraightFlushToggle: {fileID: 2085783624}
   m_RoyalFlushToggle: {fileID: 1915036998}
   OnAreFlushesAllowed: {fileID: 11400000, guid: 8c9401edf44e961428c524b26779534d, type: 2}
+--- !u!114 &1887481978
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1887481975}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ebadba633d9a6c944946730553fb1351, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TransitionableUIBase
+  m_inDirection: 2
+  easingFunction: 9
+  m_movementDuration: 0.3
+  m_startDelay: 0
 --- !u!1001 &1915036996
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -11528,7 +11464,6 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1613621822}
-  - {fileID: 258329151}
   m_Father: {fileID: 1119809240}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
@@ -11548,35 +11483,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fa52ee155d4ddb04ea99b43cc9ed8810, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rectTransform: {fileID: 1915432408}
   m_inDirection: 2
-  movementCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 2
-      outSlope: 2
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
+  easingFunction: 9
   m_movementDuration: 0.3
   m_startDelay: 0
-  m_startOffScreen: 1
   m_PlayButton: {fileID: 616119100}
   m_BullshitButton: {fileID: 1824853006}
   m_Outline: {fileID: 1613621823}
@@ -12084,11 +11994,11 @@ RectTransform:
   - {fileID: 1283520057}
   m_Father: {fileID: 1091671751}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0}
-  m_AnchorMax: {x: 0.5, y: 0}
-  m_AnchoredPosition: {x: 0, y: -13.410004}
-  m_SizeDelta: {x: 250, y: 0}
-  m_Pivot: {x: 0.5, y: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2070143794
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12349,35 +12259,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c920f7ed07a1194e86e3e5bfb4a81f6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rectTransform: {fileID: 2096773828}
   m_inDirection: 0
-  movementCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 2
-      outSlope: 2
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
+  easingFunction: 9
   m_movementDuration: 0.3
   m_startDelay: 0
-  m_startOffScreen: 1
   m_endOfRoundText: {fileID: 967944549}
   m_panel: {fileID: 1631509120}
   OnNextRoundStarting: {fileID: 11400000, guid: 8733d489064045b499db4c6848ba08fe, type: 2}
