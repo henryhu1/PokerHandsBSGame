@@ -22,6 +22,7 @@ public class CardManager : NetworkBehaviour
     [Header("Firing Events")]
     [SerializeField] private UlongEventChannelSO OnPlayerOut;
     [SerializeField] private BoolEventChannelSO OnAreFlushesAllowed;
+    [SerializeField] private PlayerCardInfoListEventChannelSO OnRevealAllCards;
 
     [Header("Listening Events")]
     [SerializeField] private UlongEventChannelSO OnClientLoadedScene;
@@ -186,25 +187,26 @@ public class CardManager : NetworkBehaviour
 
     [ClientRpc]
     public void RevealCardInfoToPlayerClientRpc(
-        PlayerCardInfo[] otherClientsInfo,
+        PlayerCardInfo[] allPlayerCards,
         ulong[] clientOrder,
         ClientRpcParams clientRpcParams = default
     )
     {
         Assert.AreNotEqual(clientOrder.Count(), 0);
         Assert.AreEqual(clientOrder[0], NetworkManager.Singleton.LocalClientId);
-        Assert.AreEqual(otherClientsInfo.Count(), clientOrder.Count());
+        Assert.AreEqual(allPlayerCards.Count(), clientOrder.Count());
 
         // TODO: why not do this server-side? Giving client work to do
         List<PlayerCardInfo> opponentCards = CardInfoHelper<PlayerCardInfo>.OrderDataByID(
             NetworkManager.Singleton.LocalClientId,
-            otherClientsInfo,
-            otherClientsInfo.Select(clientInfo => clientInfo.clientId).ToArray(),
+            allPlayerCards,
+            allPlayerCards.Select(clientInfo => clientInfo.clientId).ToArray(),
             clientOrder
         );
         if (clientOrder.Length > 1)
         {
             allOpponentCards.DisplayOpponentCards(opponentCards);
+            OnRevealAllCards.RaiseEvent(allPlayerCards.ToList());
         }
     }
 
