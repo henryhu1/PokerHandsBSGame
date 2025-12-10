@@ -10,6 +10,8 @@ public class PlayUI : MonoBehaviour
     [SerializeField] private HandTypeUI handTypeUI;
     [SerializeField] private OrderCardsUI orderCardsUI;
 
+    private TransitionableUIBase actionsAnimatable;
+    private TransitionableUIBase handSelectionAnimatable;
     private TransitionableUIBase handTypeAnimatable;
 
     [Header("Listening Events")]
@@ -25,12 +27,14 @@ public class PlayUI : MonoBehaviour
             Destroy(Instance.gameObject);
         }
         Instance = this;
-
-        handTypeAnimatable = handTypeUI.GetComponent<TransitionableUIBase>();
     }
 
     private void Start()
     {
+        actionsAnimatable = actionsUI.GetComponent<TransitionableUIBase>();
+        handSelectionAnimatable = handSelectionUI.GetComponent<TransitionableUIBase>();
+        handTypeAnimatable = handTypeUI.GetComponent<TransitionableUIBase>();
+
         GameManager.Instance.RegisterPlayUIObservers();
         if (!GameManager.Instance.IsNotOut())
         {
@@ -63,8 +67,8 @@ public class PlayUI : MonoBehaviour
     {
         if (GameManager.Instance.IsNotOut())
         {
-            actionsUI.StartAnimation();
-            handSelectionUI.StartAnimation();
+            actionsAnimatable.StartAnimation();
+            handSelectionAnimatable.StartAnimation();
             handTypeAnimatable.StartAnimation();
             orderCardsUI.Show();
         }
@@ -74,8 +78,8 @@ public class PlayUI : MonoBehaviour
     {
         if (GameManager.Instance.IsNotOut())
         {
-            actionsUI.StartAnimation();
-            handSelectionUI.StartAnimation();
+            actionsAnimatable.StartAnimation();
+            handSelectionAnimatable.StartAnimation();
             handTypeAnimatable.StartAnimation();
             orderCardsUI.Hide();
         }

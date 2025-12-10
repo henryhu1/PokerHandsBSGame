@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class ActionsUI : TransitionableUIBase
+public class ActionsUI : MonoBehaviour
 {
     // TODO: remove Singleton?
     public static ActionsUI Instance { get; private set; }
@@ -14,10 +14,8 @@ public class ActionsUI : TransitionableUIBase
     [SerializeField] private GameObject m_TurnNotification;
     private bool m_isPlayerOut;
 
-    protected override void Awake()
+    private void Awake()
     {
-        base.Awake();
-
         if (Instance != this && Instance != null)
         {
             Destroy(Instance.gameObject);

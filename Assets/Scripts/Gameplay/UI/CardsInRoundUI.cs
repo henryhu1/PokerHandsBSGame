@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class CardsInRoundUI : TransitionableUIBase
+public class CardsInRoundUI : MonoBehaviour
 {
     [Header("Card Registry")]
     [SerializeField] private CardRegistrySO cardRegistry;
@@ -11,6 +11,8 @@ public class CardsInRoundUI : TransitionableUIBase
     [SerializeField] private PlayerHandUIItem playerHandPrefab;
     [SerializeField] private GameObject scrollContent;
 
+    private TransitionableUIBase animatable;
+
     [Header("Listening Events")]
     [SerializeField] private PlayerCardInfoListEventChannelSO OnRevealAllCards;
     [SerializeField] private VoidEventChannelSO OnNextRoundStarting;
@@ -18,18 +20,28 @@ public class CardsInRoundUI : TransitionableUIBase
 
     private List<PlayerHandUIItem> playerHands = new();
 
+    private void Awake()
+    {
+        animatable = GetComponent<TransitionableUIBase>();
+    }
+
     private void OnEnable()
     {
         OnRevealAllCards.OnEventRaised += FillCardsInRound;
-        OnNextRoundStarting.OnEventRaised += StartAnimation;
-        OnGameWon.OnEventRaised += StartAnimation;
+        OnNextRoundStarting.OnEventRaised += MoveOffScreen;
+        OnGameWon.OnEventRaised += MoveOffScreen;
     }
 
     private void OnDisable()
     {
         OnRevealAllCards.OnEventRaised -= FillCardsInRound;
-        OnNextRoundStarting.OnEventRaised -= StartAnimation;
-        OnGameWon.OnEventRaised -= StartAnimation;
+        OnNextRoundStarting.OnEventRaised -= MoveOffScreen;
+        OnGameWon.OnEventRaised -= MoveOffScreen;
+    }
+
+    private void MoveOffScreen()
+    {
+        if (!animatable.IsOffScreen()) animatable.StartAnimation();
     }
 
     private void FillCardsInRound(List<PlayerCardInfo> allCardInfo)
@@ -60,6 +72,6 @@ public class CardsInRoundUI : TransitionableUIBase
             uiItems++;
         }
 
-        StartAnimation();
+        animatable.StartAnimation();
     }
 }

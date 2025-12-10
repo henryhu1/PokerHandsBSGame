@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ExistingHandsUI : TransitionableUIBase
+public class ExistingHandsUI : MonoBehaviour
 {
     [Header("UI")]
     [SerializeField] private PlayedHandLogUI playedHandLogUI;
@@ -14,12 +14,12 @@ public class ExistingHandsUI : TransitionableUIBase
     [SerializeField] private PokerHandListEventChannelSO OnDisplayAllHandsInPlay;
     [SerializeField] private VoidEventChannelSO OnGameWon;
 
+    private TransitionableUIBase animatable;
     private List<ExistingHandItemUI> m_ExistingHandItems;
 
-    protected override void Awake()
+    private void Awake()
     {
-        base.Awake();
-
+        animatable = GetComponent<TransitionableUIBase>();
         m_ExistingHandItems = new List<ExistingHandItemUI>();
     }
 
@@ -49,12 +49,12 @@ public class ExistingHandsUI : TransitionableUIBase
             existingHandItem.GiveExistingHandItem(hand, playedHandInfo.Item1, playedHandInfo.Item2 + 1);
             m_ExistingHandItems.Add(existingHandItem);
         }
-        StartAnimation();
+        animatable.StartAnimation();
     }
 
     private void GameWon()
     {
-        StartAnimation();
+        animatable.StartAnimation();
     }
 
     private void ClearContent()
@@ -65,7 +65,7 @@ public class ExistingHandsUI : TransitionableUIBase
 
     private void NextRoundStarting()
     {
-        StartAnimation();
+        animatable.StartAnimation();
         ClearContent();
     }
 

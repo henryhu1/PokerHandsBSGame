@@ -3,7 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class EndOfGameUI : TransitionableUIBase
+public class EndOfGameUI : MonoBehaviour
 {
     public static EndOfGameUI Instance { get; private set; }
 
@@ -17,6 +17,7 @@ public class EndOfGameUI : TransitionableUIBase
     [SerializeField] private Button m_exitButton;
     private GameType m_selectedGameType;
     private List<ResultItemUI> m_resultItems;
+    private TransitionableUIBase animatable;
 
     [HideInInspector]
     public delegate void ExitGameDelegateHandler();
@@ -29,10 +30,8 @@ public class EndOfGameUI : TransitionableUIBase
     [Header("Listening Events")]
     [SerializeField] private VoidEventChannelSO OnInitializeNewGame;
 
-    protected override void Awake()
+    private void Awake()
     {
-        base.Awake();
-
         if (Instance != this && Instance != null)
         {
             Destroy(Instance.gameObject);
@@ -41,6 +40,7 @@ public class EndOfGameUI : TransitionableUIBase
 
         m_selectedGameType = GameManager.Instance.SelectedGameType;
         m_resultItems = new List<ResultItemUI>();
+        animatable = GetComponent<TransitionableUIBase>();
 
         m_gameModeButton.onClick.AddListener(() =>
         {
@@ -106,13 +106,13 @@ public class EndOfGameUI : TransitionableUIBase
 
             m_resultItems.Add(resultItemUI);
         }
-        StartAnimation();
+        animatable.StartAnimation();
     }
 
     private void InitializeNewGame()
     {
         foreach (ResultItemUI resultItemUI in m_resultItems) Destroy(resultItemUI.gameObject);
         m_resultItems.Clear();
-        StartAnimation();
+        animatable.StartAnimation();
     }
 }

@@ -1,7 +1,7 @@
 using CardTraitExtensions;
 using UnityEngine;
 
-public class HandSelectionUI : TransitionableUIBase
+public class HandSelectionUI : MonoBehaviour
 {
     // TODO: remove Singleton?
     public static HandSelectionUI Instance { get; private set; }
@@ -17,10 +17,8 @@ public class HandSelectionUI : TransitionableUIBase
     private Suit? m_selectedSuit;
     private Hand? m_selectedHand;
 
-    protected override void Awake()
+    private void Awake()
     {
-        base.Awake();
-
         if (Instance != this && Instance != null)
         {
             Destroy(Instance.gameObject);

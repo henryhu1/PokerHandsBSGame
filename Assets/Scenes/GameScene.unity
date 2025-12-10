@@ -129,6 +129,7 @@ GameObject:
   m_Component:
   - component: {fileID: 19325485}
   - component: {fileID: 19325486}
+  - component: {fileID: 19325487}
   m_Layer: 5
   m_Name: CardsInRoundUI
   m_TagString: Untagged
@@ -168,16 +169,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 97192cddfc71cf84bb6a8831a088c9ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CardsInRoundUI
-  m_inDirection: 3
-  easingFunction: 9
-  m_movementDuration: 1
-  m_startDelay: 0
   cardRegistry: {fileID: 11400000, guid: dcd23699215c6b5418d1ab4edfc95314, type: 2}
   playerHandPrefab: {fileID: 956270702839947679, guid: 3025ed966b29bfd4f9bcc9ee1b234d07, type: 3}
   scrollContent: {fileID: 1191898182}
   OnRevealAllCards: {fileID: 11400000, guid: b21124bf7f4845443b4cec3cb40203ce, type: 2}
   OnNextRoundStarting: {fileID: 11400000, guid: 8733d489064045b499db4c6848ba08fe, type: 2}
   OnGameWon: {fileID: 11400000, guid: f9f16b67881813b4e8404a8da0ec5b53, type: 2}
+--- !u!114 &19325487
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 19325484}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ebadba633d9a6c944946730553fb1351, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TransitionableUIBase
+  m_inDirection: 3
+  easingFunction: 9
+  m_movementDuration: 0.3
+  m_startDelay: 1.5
+  transitioningRect: {fileID: 39927094}
 --- !u!1 &28843489
 GameObject:
   m_ObjectHideFlags: 0
@@ -189,6 +203,7 @@ GameObject:
   - component: {fileID: 28843490}
   - component: {fileID: 28843492}
   - component: {fileID: 28843494}
+  - component: {fileID: 28843495}
   m_Layer: 5
   m_Name: ExistingHandsUI
   m_TagString: Untagged
@@ -236,10 +251,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8fd15fd0210cbae4aa0a715327c7e91a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_inDirection: 1
-  easingFunction: 9
-  m_movementDuration: 0.3
-  m_startDelay: 0
   playedHandLogUI: {fileID: 675409744}
   m_ExistingHandItemUIPrefab: {fileID: 2974480545192426266, guid: 15e921e503bcfae4c8d8d0293168f201, type: 3}
   m_LogContent: {fileID: 1227972764}
@@ -247,6 +258,23 @@ MonoBehaviour:
   OnInitializeNewGame: {fileID: 11400000, guid: 819f300a5119a584b85d32c1537c7b44, type: 2}
   OnDisplayAllHandsInPlay: {fileID: 11400000, guid: 41bf55ca0669b40418ad49f73a3c1331, type: 2}
   OnGameWon: {fileID: 11400000, guid: f9f16b67881813b4e8404a8da0ec5b53, type: 2}
+--- !u!114 &28843495
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 28843489}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ebadba633d9a6c944946730553fb1351, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TransitionableUIBase
+  m_inDirection: 1
+  easingFunction: 9
+  m_movementDuration: 0.3
+  m_startDelay: 0
+  transitioningRect: {fileID: 1573028241}
 --- !u!1 &39927093
 GameObject:
   m_ObjectHideFlags: 0
@@ -1537,7 +1565,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 615674783}
-  m_Father: {fileID: 983124418}
+  m_Father: {fileID: 569326931}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
@@ -1720,12 +1748,12 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1679136193}
-  m_Father: {fileID: 983124418}
+  m_Father: {fileID: 569326931}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: -162.5}
-  m_SizeDelta: {x: 0, y: 325}
+  m_SizeDelta: {x: 100, y: 325}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &408816305
 GameObject:
@@ -1848,6 +1876,7 @@ GameObject:
   m_Component:
   - component: {fileID: 419008310}
   - component: {fileID: 419008311}
+  - component: {fileID: 419008312}
   m_Layer: 5
   m_Name: HandSelectionUI
   m_TagString: Untagged
@@ -1887,14 +1916,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2355d8e3a0aad6b4487a4b439c92d76e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_inDirection: 1
-  easingFunction: 9
-  m_movementDuration: 0.3
-  m_startDelay: 0
   m_CardRankChoicesPrimary: {fileID: 2251826167964725903}
   m_CardRankChoicesSecondary: {fileID: 880032745}
   m_CardSuitChoices: {fileID: 1841442212}
   m_RoyalFlushChoices: {fileID: 1609307290}
+--- !u!114 &419008312
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 419008309}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ebadba633d9a6c944946730553fb1351, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TransitionableUIBase
+  m_inDirection: 1
+  easingFunction: 9
+  m_movementDuration: 0.3
+  m_startDelay: 0
+  transitioningRect: {fileID: 543125902}
 --- !u!1 &439793998
 GameObject:
   m_ObjectHideFlags: 0
@@ -2562,6 +2604,43 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 543125901}
   m_CullTransparentMesh: 1
+--- !u!1 &569326930
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 569326931}
+  m_Layer: 5
+  m_Name: Panel
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &569326931
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 569326930}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 404821314}
+  - {fileID: 320430156}
+  m_Father: {fileID: 983124418}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 200, y: 430}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1001 &572915608
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4239,6 +4318,7 @@ GameObject:
   m_Component:
   - component: {fileID: 675409743}
   - component: {fileID: 675409744}
+  - component: {fileID: 675409745}
   m_Layer: 5
   m_Name: PlayedHandLogUI
   m_TagString: Untagged
@@ -4278,10 +4358,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 339b428f9070bc84db9e6ad2aad8c728, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_inDirection: 3
-  easingFunction: 9
-  m_movementDuration: 0.3
-  m_startDelay: 0
   m_PlayedHandLogItemUIPrefab: {fileID: 6540639121345542175, guid: 78a39f36983f0c441b98b965cf5a8527, type: 3}
   m_LogContent: {fileID: 1373818246}
   OnSelectOpponentHand: {fileID: 11400000, guid: b1000c471aa09ba4697f0ab65776bc85, type: 2}
@@ -4289,6 +4365,23 @@ MonoBehaviour:
   OnInitializeNewGame: {fileID: 11400000, guid: 819f300a5119a584b85d32c1537c7b44, type: 2}
   OnDisplayPlayedHandsPresent: {fileID: 11400000, guid: 238d720b52f89e94c906038b27840ab8, type: 2}
   OnGameWon: {fileID: 11400000, guid: f9f16b67881813b4e8404a8da0ec5b53, type: 2}
+--- !u!114 &675409745
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 675409742}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ebadba633d9a6c944946730553fb1351, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TransitionableUIBase
+  m_inDirection: 3
+  easingFunction: 9
+  m_movementDuration: 0.3
+  m_startDelay: 0
+  transitioningRect: {fileID: 185631650}
 --- !u!1 &693450690
 GameObject:
   m_ObjectHideFlags: 0
@@ -6935,6 +7028,7 @@ GameObject:
   m_Component:
   - component: {fileID: 983124418}
   - component: {fileID: 983124419}
+  - component: {fileID: 983124420}
   m_Layer: 5
   m_Name: EndOfGameUI
   m_TagString: Untagged
@@ -6954,8 +7048,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 404821314}
-  - {fileID: 320430156}
+  - {fileID: 569326931}
   m_Father: {fileID: 1436354789}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -6975,10 +7068,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e542438d5e7f26e40af01686cdb62c1e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_inDirection: 3
-  easingFunction: 9
-  m_movementDuration: 0.3
-  m_startDelay: 0
   m_resultItemUIPrefab: {fileID: 1430230165520938723, guid: 4a3c0c3fdf5c7d3438c3da284a9f0ee9, type: 3}
   m_resultContent: {fileID: 2099348112}
   m_optionsUI: {fileID: 320430155}
@@ -6989,6 +7078,23 @@ MonoBehaviour:
   m_exitButton: {fileID: 932586330}
   OnRestartGame: {fileID: 11400000, guid: b65207f71c9799243bd25a7dbf6caea8, type: 2}
   OnInitializeNewGame: {fileID: 11400000, guid: 819f300a5119a584b85d32c1537c7b44, type: 2}
+--- !u!114 &983124420
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 983124417}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ebadba633d9a6c944946730553fb1351, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TransitionableUIBase
+  m_inDirection: 3
+  easingFunction: 9
+  m_movementDuration: 0.3
+  m_startDelay: 0
+  transitioningRect: {fileID: 569326931}
 --- !u!1 &988086536
 GameObject:
   m_ObjectHideFlags: 0
@@ -7632,6 +7738,7 @@ GameObject:
   - component: {fileID: 1091671751}
   - component: {fileID: 1091671754}
   - component: {fileID: 1091671755}
+  - component: {fileID: 1091671756}
   m_Layer: 5
   m_Name: NextRoundUI
   m_TagString: Untagged
@@ -7679,10 +7786,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 81063d22007364b41b772858b2595a33, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_inDirection: 0
-  easingFunction: 9
-  m_movementDuration: 0.3
-  m_startDelay: 1.5
   m_readyForNextRoundToggle: {fileID: 541105585}
   m_playersReadyText: {fileID: 1713848269}
   m_toggleText: {fileID: 1087090016}
@@ -7691,6 +7794,23 @@ MonoBehaviour:
   OnRoundEnded: {fileID: 11400000, guid: 2efb75451219c1549b19941a68f213b7, type: 2}
   OnPlayerLeft: {fileID: 11400000, guid: e764b6f002e5ea340aefa0bedf3a899b, type: 2}
   OnGameWon: {fileID: 11400000, guid: f9f16b67881813b4e8404a8da0ec5b53, type: 2}
+--- !u!114 &1091671756
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1091671750}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ebadba633d9a6c944946730553fb1351, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TransitionableUIBase
+  m_inDirection: 0
+  easingFunction: 9
+  m_movementDuration: 0.3
+  m_startDelay: 1.5
+  transitioningRect: {fileID: 2070143793}
 --- !u!1001 &1093140784
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -12326,6 +12446,7 @@ MonoBehaviour:
   easingFunction: 9
   m_movementDuration: 0.3
   m_startDelay: 0
+  transitioningRect: {fileID: 848157225}
 --- !u!1001 &1915036996
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -12469,6 +12590,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1915432408}
   - component: {fileID: 1915432409}
+  - component: {fileID: 1915432410}
   m_Layer: 5
   m_Name: ActionsUI
   m_TagString: Untagged
@@ -12508,15 +12630,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fa52ee155d4ddb04ea99b43cc9ed8810, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_inDirection: 2
-  easingFunction: 9
-  m_movementDuration: 0.3
-  m_startDelay: 0
   m_PlayButton: {fileID: 616119100}
   m_BullshitButton: {fileID: 1824853006}
   m_Outline: {fileID: 1613621823}
   m_InvalidPlayNotif: {fileID: 799949579}
   m_TurnNotification: {fileID: 258329150}
+--- !u!114 &1915432410
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1915432407}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ebadba633d9a6c944946730553fb1351, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TransitionableUIBase
+  m_inDirection: 2
+  easingFunction: 9
+  m_movementDuration: 0.3
+  m_startDelay: 0
+  transitioningRect: {fileID: 1613621822}
 --- !u!1001 &1935333191
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -13320,6 +13455,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2096773828}
   - component: {fileID: 2096773829}
+  - component: {fileID: 2096773830}
   m_Layer: 5
   m_Name: EndOfRoundResultUI
   m_TagString: Untagged
@@ -13359,15 +13495,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c920f7ed07a1194e86e3e5bfb4a81f6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_inDirection: 0
-  easingFunction: 9
-  m_movementDuration: 0.3
-  m_startDelay: 0
   m_endOfRoundText: {fileID: 967944549}
   m_panel: {fileID: 1631509120}
   OnNextRoundStarting: {fileID: 11400000, guid: 8733d489064045b499db4c6848ba08fe, type: 2}
   OnEndOfRoundResult: {fileID: 11400000, guid: 959dc2eeedd1166479b4b96fadbc9ed5, type: 2}
   OnGameWon: {fileID: 11400000, guid: f9f16b67881813b4e8404a8da0ec5b53, type: 2}
+--- !u!114 &2096773830
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2096773827}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ebadba633d9a6c944946730553fb1351, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TransitionableUIBase
+  m_inDirection: 0
+  easingFunction: 9
+  m_movementDuration: 0.3
+  m_startDelay: 0
+  transitioningRect: {fileID: 1631509119}
 --- !u!1 &2099348112
 GameObject:
   m_ObjectHideFlags: 0

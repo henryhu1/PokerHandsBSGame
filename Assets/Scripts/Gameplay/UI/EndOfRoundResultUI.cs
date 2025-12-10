@@ -3,11 +3,13 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class EndOfRoundResultUI : TransitionableUIBase
+public class EndOfRoundResultUI : MonoBehaviour
 {
     [Header("UI")]
     [SerializeField] private TextMeshProUGUI m_endOfRoundText;
     [SerializeField] private Image m_panel;
+
+    private TransitionableUIBase animatable;
 
     [Header("Listening Events")]
     [SerializeField] private VoidEventChannelSO OnNextRoundStarting;
@@ -33,6 +35,11 @@ public class EndOfRoundResultUI : TransitionableUIBase
         { RoundResultTypes.WrongBS, s_loserColor },
     };
 
+    private void Awake()
+    {
+        animatable = GetComponent<TransitionableUIBase>();
+    }
+
     private void OnEnable()
     {
         OnEndOfRoundResult.OnEventRaised += EndOfRoundResult;
@@ -49,21 +56,21 @@ public class EndOfRoundResultUI : TransitionableUIBase
 
     private void EndOfRoundResult(int roundResultValue)
     {
-        if (!IsOffScreen()) return;
+        if (!animatable.IsOffScreen()) return;
 
         RoundResultTypes roundResult = (RoundResultTypes) roundResultValue;
         m_panel.color = s_roundResultColors[roundResult];
         m_endOfRoundText.text = s_roundResultMessages[roundResult];
-        StartAnimation();
+        animatable.StartAnimation();
     }
 
     private void NextRoundStarting()
     {
-        if (!IsOffScreen()) StartAnimation();
+        if (!animatable.IsOffScreen()) animatable.StartAnimation();
     }
 
     private void GameWon()
     {
-        if (!IsOffScreen()) StartAnimation();
+        if (!animatable.IsOffScreen()) animatable.StartAnimation();
     }
 }

@@ -2,7 +2,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class NextRoundUI : TransitionableUIBase
+public class NextRoundUI : MonoBehaviour
 {
     // TODO: remove Singleton
     public static NextRoundUI Instance { get; private set; }
@@ -19,21 +19,23 @@ public class NextRoundUI : TransitionableUIBase
     [SerializeField] private StringEventChannelSO OnPlayerLeft;
     [SerializeField] private VoidEventChannelSO OnGameWon;
 
+    private TransitionableUIBase animatable;
+
     private const string k_readyText = "Ready";
     private const string k_unreadyText = "Unready";
 
     private bool m_canBeReady;
     private int m_totalPlayersToBeReady;
 
-    protected override void Awake()
+    private void Awake()
     {
-        base.Awake();
-
         if (Instance != this && Instance != null)
         {
             Destroy(Instance.gameObject);
         }
         Instance = this;
+
+        animatable = GetComponent<TransitionableUIBase>();
 
         m_canBeReady = GameManager.Instance.IsNotOut();
         ResetTotalPlayersText();
@@ -75,12 +77,12 @@ public class NextRoundUI : TransitionableUIBase
     {
         ResetTotalPlayersText();
         m_playerLeftText.gameObject.SetActive(false);
-        if (IsOffScreen())
+        if (animatable.IsOffScreen())
         {
             m_toggleText.text = k_readyText;
             m_readyForNextRoundToggle.enabled = m_canBeReady;
             m_readyForNextRoundToggle.isOn = false;
-            StartAnimation();
+            animatable.StartAnimation();
         }
     }
 
@@ -89,34 +91,34 @@ public class NextRoundUI : TransitionableUIBase
         ResetTotalPlayersText();
         m_playerLeftText.gameObject.SetActive(true);
         m_playerLeftText.text = $"{playerLeftName} has left";
-        if (IsOffScreen())
+        if (animatable.IsOffScreen())
         {
             m_toggleText.text = k_readyText;
             m_readyForNextRoundToggle.enabled = m_canBeReady;
             m_readyForNextRoundToggle.isOn = false;
-            StartAnimation();
+            animatable.StartAnimation();
         }
     }
 
     private void NextRoundStarting()
     {
-        if (!IsOffScreen())
+        if (!animatable.IsOffScreen())
         {
             m_toggleText.text = k_readyText;
             m_readyForNextRoundToggle.enabled = false;
             m_readyForNextRoundToggle.isOn = false;
-            StartAnimation();
+            animatable.StartAnimation();
         }
     }
 
     private void GameWon()
     {
-        if (!IsOffScreen())
+        if (!animatable.IsOffScreen())
         {
             m_toggleText.text = k_readyText;
             m_readyForNextRoundToggle.enabled = false;
             m_readyForNextRoundToggle.isOn = false;
-            StartAnimation();
+            animatable.StartAnimation();
         }
     }
 
