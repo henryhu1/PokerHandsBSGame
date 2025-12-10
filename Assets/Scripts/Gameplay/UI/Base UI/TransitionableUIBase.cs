@@ -7,7 +7,9 @@ public class TransitionableUIBase : MonoBehaviour, IAnimatable
     [SerializeField] private Ease easingFunction = Ease.OutCubic;
     [SerializeField] private float m_movementDuration;
     [SerializeField] private float m_startDelay = 0f;
-    private RectTransform transitioningRect;
+    [SerializeField] private RectTransform transitioningRect;
+
+    private Vector2 size;
 
     protected bool isOffScreen = true;
     protected Vector3 m_originalPosition;
@@ -15,14 +17,18 @@ public class TransitionableUIBase : MonoBehaviour, IAnimatable
 
     protected virtual void Awake()
     {
-        transitioningRect = GetComponent<RectTransform>();
-
         m_originalPosition = transitioningRect.position;
+        size = GetComponent<RectTransform>().sizeDelta;
 
+        // InGameUI.Instance.OnShowUI += StartDoTransition;
+    }
+
+    private void Start()
+    {
         transitioningRect.position = GetOffScreenPosition();
         isOffScreen = true;
 
-        // InGameUI.Instance.OnShowUI += StartDoTransition;
+        transitioningRect.gameObject.SetActive(false);
     }
 
     public bool IsOffScreen()
@@ -32,8 +38,8 @@ public class TransitionableUIBase : MonoBehaviour, IAnimatable
 
     private Vector3 GetOffScreenPosition()
     {
-        float width = transitioningRect.sizeDelta.x;
-        float height = transitioningRect.sizeDelta.y;
+        float width = size.x;
+        float height = size.y;
         return m_inDirection switch
         {
             TransitionInDirection.Left => new Vector3(Screen.width + width / 2, transform.position.y, 0),
@@ -57,13 +63,20 @@ public class TransitionableUIBase : MonoBehaviour, IAnimatable
         newSequence.Append(transitioningRect.DOMove(finalPosition, m_movementDuration).SetEase(easingFunction));
 
         newSequence.Pause();
-        newSequence.OnComplete(() => isOffScreen = !isOffScreen);
+        newSequence.OnComplete(() => {
+            isOffScreen = !isOffScreen;
+            if (isOffScreen)
+            {
+                transitioningRect.gameObject.SetActive(false);
+            }
+        });
         return newSequence;
     }
 
     public void StartAnimation()
     {
         StopAnimation();
+        transitioningRect.gameObject.SetActive(true);
         transitioningSequence = GetTransitionSequence();
         transitioningSequence.Play();
     }
@@ -74,6 +87,7 @@ public class TransitionableUIBase : MonoBehaviour, IAnimatable
         {
             transitioningSequence.Kill();
             transitioningRect.position = m_originalPosition;
+            transitioningRect.gameObject.SetActive(false);
         }
     }
 }
