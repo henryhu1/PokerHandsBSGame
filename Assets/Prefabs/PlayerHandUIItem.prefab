@@ -372,6 +372,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8e6459351eaff0f4f9c0c61baee967ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHandUIItem
+  playerNameText: {fileID: 8237258048814277376}
   cardSlots:
   - {fileID: 4695910633535897524}
   - {fileID: 8019116359307433984}

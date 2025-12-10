@@ -10,14 +10,6 @@ public class PlayerHandUIItem : MonoBehaviour
     [SerializeField] private TextMeshProUGUI playerNameText;
     [SerializeField] private RawImage[] cardSlots;
 
-    private void OnEnable()
-    {
-        foreach (RawImage cardSlot in cardSlots)
-        {
-            cardSlot.gameObject.SetActive(false);
-        }
-    }
-
     public void ShowCardImages(string playerName, List<Texture2D> images)
     {
         playerNameText.text = playerName;
