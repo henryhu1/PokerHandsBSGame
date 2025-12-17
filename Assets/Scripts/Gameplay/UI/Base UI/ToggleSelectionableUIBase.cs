@@ -1,17 +1,15 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
 public abstract class ToggleSelectionableUIBase<T> : MonoBehaviour
 {
-    private ToggleColors m_ToggleColors = new ToggleColors();
+    private ToggleColors m_ToggleColors = new();
 
     [SerializeField] protected ToggleGroup m_ToggleGroup;
 
     protected List<Toggle> m_Toggles;
     protected Dictionary<Toggle, T> m_ToggleDictionary;
-    // protected Dictionary<Toggle, int> m_ToggleLevels;
 
     [HideInInspector]
     public delegate void NoSelectionMadeDelegateHandler();
@@ -21,10 +19,10 @@ public abstract class ToggleSelectionableUIBase<T> : MonoBehaviour
     protected void SetToggleColor(Toggle toggle)
     {
         ColorBlock toggleColorBlock = toggle.colors;
-        toggleColorBlock.normalColor = m_ToggleColors.ToggleColorNormal;
-        toggleColorBlock.highlightedColor = m_ToggleColors.ToggleColorHighlighted;
-        toggleColorBlock.pressedColor = m_ToggleColors.ToggleColorPressed;
-        toggleColorBlock.selectedColor = m_ToggleColors.ToggleColorSelected;
+        toggleColorBlock.normalColor = m_ToggleColors.toggleColorNormal;
+        toggleColorBlock.highlightedColor = m_ToggleColors.toggleColorHighlighted;
+        toggleColorBlock.pressedColor = m_ToggleColors.toggleColorPressed;
+        toggleColorBlock.selectedColor = m_ToggleColors.toggleColorSelected;
         m_ToggleColors.ChangeToggleColors(toggle.colors);
         toggle.colors = toggleColorBlock;
     }
