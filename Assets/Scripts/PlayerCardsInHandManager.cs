@@ -83,6 +83,8 @@ public class PlayerCardsInHandManager : MonoBehaviour
 
     public void HandleCardDrag(Vector3 pos)
     {
+        if (cardDraggingIndex == -1) return;
+
         Vector3 slot;
         for (int i = 0; i < positions.Count; i++)
         {
