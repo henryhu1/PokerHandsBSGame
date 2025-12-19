@@ -7,12 +7,10 @@ public class PlayUI : MonoBehaviour
     [Header("UI Children")]
     [SerializeField] private ActionsUI actionsUI;
     [SerializeField] private HandSelectionUI handSelectionUI;
-    [SerializeField] private HandTypeUI handTypeUI;
     [SerializeField] private OrderCardsUI orderCardsUI;
 
     private TransitionableUIBase actionsAnimatable;
     private TransitionableUIBase handSelectionAnimatable;
-    private TransitionableUIBase handTypeAnimatable;
 
     [Header("Listening Events")]
     [SerializeField] private VoidEventChannelSO OnCameraInPosition;
@@ -33,7 +31,6 @@ public class PlayUI : MonoBehaviour
     {
         actionsAnimatable = actionsUI.GetComponent<TransitionableUIBase>();
         handSelectionAnimatable = handSelectionUI.GetComponent<TransitionableUIBase>();
-        handTypeAnimatable = handTypeUI.GetComponent<TransitionableUIBase>();
 
         GameManager.Instance.RegisterPlayUIObservers();
         if (!GameManager.Instance.IsNotOut())
@@ -69,7 +66,6 @@ public class PlayUI : MonoBehaviour
         {
             actionsAnimatable.StartAnimation();
             handSelectionAnimatable.StartAnimation();
-            handTypeAnimatable.StartAnimation();
             orderCardsUI.Show();
         }
     }
@@ -80,7 +76,6 @@ public class PlayUI : MonoBehaviour
         {
             actionsAnimatable.StartAnimation();
             handSelectionAnimatable.StartAnimation();
-            handTypeAnimatable.StartAnimation();
             orderCardsUI.Hide();
         }
     }
