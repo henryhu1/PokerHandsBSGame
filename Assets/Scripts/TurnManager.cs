@@ -35,10 +35,8 @@ public class TurnManager : NetworkBehaviour
     [HideInInspector]
     public event TurnOrderDecidedDelegateHandler OnTurnOrderDecided;
 
-    [HideInInspector]
-    public delegate void NextPlayerTurnDelegateHandler(bool isPlayerTurn, bool wasPlayerTurnPreviously = false);
-    [HideInInspector]
-    public event NextPlayerTurnDelegateHandler OnNextPlayerTurn;
+    [Header("Firing Events")]
+    [SerializeField] private BoolEventChannelSO OnNextPlayerTurn;
 
     [Header("Listening Events")]
     [SerializeField] private UlongEventChannelSO OnPlayerOut;
@@ -62,7 +60,8 @@ public class TurnManager : NetworkBehaviour
 
         m_currentTurnClientId.OnValueChanged += (oldValue, newValue) =>
         {
-            OnNextPlayerTurn?.Invoke(NetworkManager.Singleton.LocalClientId == newValue, !GameManager.Instance.IsBeginningOfRound() && NetworkManager.Singleton.LocalClientId == oldValue);
+            OnNextPlayerTurn.RaiseEvent(NetworkManager.Singleton.LocalClientId == newValue);
+            // wasPlayersTurnPreviously = !GameManager.Instance.IsBeginningOfRound() && NetworkManager.Singleton.LocalClientId == oldValue
         };
 
         if (IsServer)
@@ -249,6 +248,6 @@ public class TurnManager : NetworkBehaviour
     [ClientRpc]
     public void NextRoundClientRpc()
     {
-        OnNextPlayerTurn?.Invoke(NetworkManager.Singleton.LocalClientId == m_currentTurnClientId.Value);
+        OnNextPlayerTurn.RaiseEvent(NetworkManager.Singleton.LocalClientId == m_currentTurnClientId.Value);
     }
 }

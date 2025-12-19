@@ -6,12 +6,19 @@ public class ActionsUI : MonoBehaviour
     // TODO: remove Singleton?
     public static ActionsUI Instance { get; private set; }
 
+    [Header("Hand selection")]
+    [SerializeField] private HandSelectionUI handSelectionUI;
+
     [Header("UI")]
     [SerializeField] private Button m_PlayButton;
     [SerializeField] private Button m_BullshitButton;
     [SerializeField] private Outline m_Outline;
     [SerializeField] private InvalidPlayMessageUI m_InvalidPlayNotif;
     [SerializeField] private GameObject m_TurnNotification;
+
+    [Header("Listening Events")]
+    [SerializeField] private BoolEventChannelSO OnNextPlayerTurn;
+
     private bool m_isPlayerOut;
 
     private void Awake()
@@ -22,10 +29,9 @@ public class ActionsUI : MonoBehaviour
         }
         Instance = this;
 
-
         m_PlayButton.onClick.AddListener(() =>
         {
-            PokerHand playingPokerHand = HandSelectionUI.Instance.GetSelection();
+            PokerHand playingPokerHand = handSelectionUI.GetSelection();
             if (playingPokerHand != null)
             {
                 // TODO: clients have the last played hand, playable hand check can be done client side?
@@ -43,17 +49,17 @@ public class ActionsUI : MonoBehaviour
         m_PlayButton.enabled = GameManager.Instance.IsHost; // TODO: flimsy how based on host the play button enables, change to actual turn logic?
         m_BullshitButton.enabled = !GameManager.Instance.IsBeginningOfRound();
         m_Outline.enabled = m_PlayButton.enabled;
-        m_TurnNotification.gameObject.SetActive(m_PlayButton.enabled);
+        m_TurnNotification.SetActive(m_PlayButton.enabled);
     }
 
     private void OnEnable()
     {
-        TurnManager.Instance.OnNextPlayerTurn += TurnManager_NextPlayerTurn;
+        OnNextPlayerTurn.OnEventRaised += TurnManager_NextPlayerTurn;
     }
 
     private void OnDisable()
     {
-        TurnManager.Instance.OnNextPlayerTurn -= TurnManager_NextPlayerTurn;
+        OnNextPlayerTurn.OnEventRaised -= TurnManager_NextPlayerTurn;
     }
 
     private void Start()
@@ -61,9 +67,9 @@ public class ActionsUI : MonoBehaviour
         GameManager.Instance.RegisterActionsUIObservers();
     }
 
-    private void TurnManager_NextPlayerTurn(bool isPlayerTurn, bool wasPlayersTurnPreviously)
+    private void TurnManager_NextPlayerTurn(bool isPlayerTurn)
     {
-        SetTurnActions(isPlayerTurn, wasPlayersTurnPreviously);
+        SetTurnActions(isPlayerTurn);
     }
 
     public void SetPlayerOut()
@@ -76,11 +82,13 @@ public class ActionsUI : MonoBehaviour
         m_isPlayerOut = false;
     }
 
-    private void SetTurnActions(bool isPlayerTurn, bool wasPlayersTurnPreviously)
+    private void SetTurnActions(bool isPlayerTurn)
     {
+        bool wasPlayerTurn = m_PlayButton.enabled;
+
         m_PlayButton.enabled = !m_isPlayerOut && isPlayerTurn;
-        m_BullshitButton.enabled = !m_isPlayerOut && !GameManager.Instance.IsBeginningOfRound() && !wasPlayersTurnPreviously;
+        m_BullshitButton.enabled = !m_isPlayerOut && !GameManager.Instance.IsBeginningOfRound() && !wasPlayerTurn;
         m_Outline.enabled = m_PlayButton.enabled;
-        m_TurnNotification.gameObject.SetActive(m_PlayButton.enabled);
+        m_TurnNotification.SetActive(m_PlayButton.enabled);
     }
 }
