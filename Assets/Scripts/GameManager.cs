@@ -547,11 +547,11 @@ public class GameManager : NetworkBehaviour
 
         ulong senderClientId = serverRpcParams.Receive.SenderClientId;
         bool isHandTooLow = m_playedHandLog.Count != 0 && !m_playedHandLog.Last().IsPokerHandBetter(hand);
-        bool isNotAllowedFlushPlay = hand.Hand == Hand.Flush && !CardManager.Instance.IsFlushAllowedToBePlayed();
+        bool isNotAllowedFlushPlay = hand.GetHandType() == HandType.Flush && !CardManager.Instance.IsFlushAllowedToBePlayed();
         if (isHandTooLow || isNotAllowedFlushPlay)
         {
             InvalidPlays invalidPlay = isHandTooLow ? InvalidPlays.HandTooLow : InvalidPlays.FlushNotAllowed;
-            ClientRpcParams clientRpcParams = new ClientRpcParams
+            ClientRpcParams clientRpcParams = new()
             {
                 Send = new ClientRpcSendParams
                 {
@@ -625,7 +625,7 @@ public class GameManager : NetworkBehaviour
 
         if (m_lastRoundLosingClientId != callingBullshitClientId)
         {
-            ClientRpcParams bullshitterClientRpcParams = new ClientRpcParams
+            ClientRpcParams bullshitterClientRpcParams = new()
             {
                 Send = new ClientRpcSendParams
                 {

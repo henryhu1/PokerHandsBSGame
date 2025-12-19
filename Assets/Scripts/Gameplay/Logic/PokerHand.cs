@@ -5,59 +5,47 @@ using Unity.Netcode;
 [Serializable]
 public class PokerHand : INetworkSerializable, IComparable<PokerHand> // UIMainScene.IUIInfoContent
 {
-    protected Hand m_hand;
-    public Hand Hand
-    {
-        get { return m_hand; }
-        set { m_hand = value; }
-    }
-    protected Rank m_rankPrimary;
-    public Rank RankPrimary
-    {
-        get { return m_rankPrimary; }
-        set { m_rankPrimary = value; }
-    }
-    protected Rank m_rankSecondary;
-    public Rank RankSecondary
-    {
-        get { return m_rankSecondary; }
-        set { m_rankSecondary = value; }
-    }
-    protected Suit m_suit;
-    public Suit Suit
-    {
-        get { return m_suit; }
-        set { m_suit = value; }
-    }
+    protected HandType handType;
+    protected Rank rankPrimary;
+    protected Rank rankSecondary;
+    protected Suit suit;
 
     public PokerHand() { }
 
-    protected PokerHand(Hand hand)
+    protected PokerHand(HandType handType)
     {
-        m_hand = hand;
+        this.handType = handType;
     }
 
     public virtual string GetStringRepresentation()
     {
-        return m_hand.GetReadableHandString();
+        return handType.GetReadableHandString();
     }
 
     public int GetHandStrength()
     {
-        return (int)m_hand;
+        return (int)handType;
     }
+
+    public HandType GetHandType() { return handType; }
+
+    public Rank GetPrimaryRank() { return rankPrimary; }
+
+    public Rank GetSecondaryRank() { return rankSecondary; }
+
+    public Suit GetSuit() { return suit; }
 
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {
-        serializer.SerializeValue(ref m_hand);
-        serializer.SerializeValue(ref m_rankPrimary);
-        serializer.SerializeValue(ref m_rankSecondary);
-        serializer.SerializeValue(ref m_suit);
+        serializer.SerializeValue(ref handType);
+        serializer.SerializeValue(ref rankPrimary);
+        serializer.SerializeValue(ref rankSecondary);
+        serializer.SerializeValue(ref suit);
     }
 
     public override string ToString()
     {
-        return $"{m_hand} {m_rankPrimary} {m_rankSecondary} {m_suit}";
+        return $"{handType} {rankPrimary} {rankSecondary} {suit}";
     }
 
     public int CompareTo(PokerHand other)
@@ -69,44 +57,44 @@ public class PokerHand : INetworkSerializable, IComparable<PokerHand> // UIMainS
 
     public bool Equals(PokerHand other)
     {
-        return m_hand == other.m_hand &&
-            m_rankPrimary == other.m_rankPrimary &&
-            m_rankSecondary == other.m_rankSecondary &&
-            m_suit == other.m_suit;
+        return handType == other.handType &&
+            rankPrimary == other.rankPrimary &&
+            rankSecondary == other.rankSecondary &&
+            suit == other.suit;
     }
 
     public static bool operator <(PokerHand left, PokerHand right)
     {
-        if (left.m_hand == right.m_hand)
+        if (left.handType == right.handType)
         {
-            if (left.m_rankPrimary == right.m_rankPrimary)
+            if (left.rankPrimary == right.rankPrimary)
             {
-                if (left.m_rankSecondary == right.m_rankSecondary)
+                if (left.rankSecondary == right.rankSecondary)
                 {
                     return false;
                 }
-                return left.m_rankSecondary < right.m_rankSecondary;
+                return left.rankSecondary < right.rankSecondary;
             }
-            return left.m_rankPrimary < right.m_rankPrimary;
+            return left.rankPrimary < right.rankPrimary;
         }
-        return left.m_hand < right.m_hand;
+        return left.handType < right.handType;
     }
 
     public static bool operator >(PokerHand left, PokerHand right)
     {
-        if (left.m_hand == right.m_hand)
+        if (left.handType == right.handType)
         {
-            if (left.m_rankPrimary == right.m_rankPrimary)
+            if (left.rankPrimary == right.rankPrimary)
             {
-                if (left.m_rankSecondary == right.m_rankSecondary)
+                if (left.rankSecondary == right.rankSecondary)
                 {
                     return false;
                 }
-                return left.m_rankSecondary > right.m_rankSecondary;
+                return left.rankSecondary > right.rankSecondary;
             }
-            return left.m_rankPrimary > right.m_rankPrimary;
+            return left.rankPrimary > right.rankPrimary;
         }
-        return left.m_hand > right.m_hand;
+        return left.handType > right.handType;
     }
 }
 
@@ -114,9 +102,9 @@ public class SingleRankHand : PokerHand
 {
     public SingleRankHand() : base() { }
 
-    public SingleRankHand(Hand hand, Rank rankPrimary) : base(hand)
+    public SingleRankHand(HandType hand, Rank rankPrimary) : base(hand)
     {
-        m_rankPrimary = rankPrimary;
+        this.rankPrimary = rankPrimary;
     }
 }
 
@@ -124,10 +112,10 @@ public class DoubleRankHand : PokerHand
 {
     public DoubleRankHand() : base() { }
 
-    public DoubleRankHand(Hand hand, Rank rankPrimary, Rank rankSecondary) : base(hand)
+    public DoubleRankHand(HandType hand, Rank rankPrimary, Rank rankSecondary) : base(hand)
     {
-        m_rankPrimary = rankPrimary;
-        m_rankSecondary = rankSecondary;
+        this.rankPrimary = rankPrimary;
+        this.rankSecondary = rankSecondary;
     }
 }
 
@@ -135,10 +123,10 @@ public class RankSuitHand : PokerHand
 {
     public RankSuitHand() : base() { }
 
-    public RankSuitHand(Hand hand, Rank rankPrimary, Suit suit) : base(hand)
+    public RankSuitHand(HandType hand, Rank rankPrimary, Suit suit) : base(hand)
     {
-        m_rankPrimary = rankPrimary;
-        m_suit = suit;
+        this.rankPrimary = rankPrimary;
+        this.suit = suit;
     }
 }
 
@@ -146,9 +134,9 @@ public class SuitHand : PokerHand
 {
     public SuitHand() : base() { }
 
-    public SuitHand(Hand hand, Suit suit) : base(hand)
+    public SuitHand(HandType hand, Suit suit) : base(hand)
     {
-        m_suit = suit;
+        this.suit = suit;
     }
 }
 
@@ -156,13 +144,13 @@ public class HighCard : SingleRankHand
 {
     public HighCard() : base() { }
 
-    public HighCard(Rank rankPrimary) : base(Hand.HighCard, rankPrimary) { }
+    public HighCard(Rank rankPrimary) : base(HandType.HighCard, rankPrimary) { }
 
-    public HighCard(PokerHand pokerHand) : base(Hand.HighCard, pokerHand.RankPrimary) { }
+    public HighCard(PokerHand pokerHand) : base(HandType.HighCard, pokerHand.GetPrimaryRank()) { }
 
     public override string GetStringRepresentation()
     {
-        return base.GetStringRepresentation() + $" {m_rankPrimary}";
+        return base.GetStringRepresentation() + $" {rankPrimary}";
     }
 }
 
@@ -170,13 +158,13 @@ public class Pair : SingleRankHand
 {
     public Pair() : base() { }
 
-    public Pair(Rank rankPrimary) : base(Hand.Pair, rankPrimary) { }
+    public Pair(Rank rankPrimary) : base(HandType.Pair, rankPrimary) { }
 
-    public Pair(PokerHand pokerHand) : base(Hand.Pair, pokerHand.RankPrimary) { }
+    public Pair(PokerHand pokerHand) : base(HandType.Pair, pokerHand.GetPrimaryRank()) { }
 
     public override string GetStringRepresentation()
     {
-        return base.GetStringRepresentation() + $" of {m_rankPrimary}";
+        return base.GetStringRepresentation() + $" of {rankPrimary}";
     }
 }
 
@@ -184,15 +172,15 @@ public class TwoPair : DoubleRankHand
 {
     public TwoPair() : base() { }
 
-    public TwoPair(Rank rankPrimary, Rank rankSecondary) : base(Hand.TwoPair, rankPrimary, rankSecondary) { }
+    public TwoPair(Rank rankPrimary, Rank rankSecondary) : base(HandType.TwoPair, rankPrimary, rankSecondary) { }
 
-    public TwoPair(PokerHand pokerHand) : base(Hand.TwoPair, pokerHand.RankPrimary, pokerHand.RankSecondary) { }
+    public TwoPair(PokerHand pokerHand) : base(HandType.TwoPair, pokerHand.GetPrimaryRank(), pokerHand.GetSecondaryRank()) { }
 
-    public TwoPair(Pair pair1, Pair pair2) : base(Hand.TwoPair, pair1.RankPrimary, pair2.RankPrimary) { }
+    public TwoPair(Pair pair1, Pair pair2) : base(HandType.TwoPair, pair1.GetPrimaryRank(), pair2.GetPrimaryRank()) { }
 
     public override string GetStringRepresentation()
     {
-        return base.GetStringRepresentation() + $" {m_rankPrimary} {m_rankSecondary}";
+        return base.GetStringRepresentation() + $" {rankPrimary} {rankSecondary}";
     }
 }
 
@@ -200,13 +188,13 @@ public class ThreeOfAKind : SingleRankHand
 {
     public ThreeOfAKind() : base() { }
 
-    public ThreeOfAKind(Rank rankPrimary) : base(Hand.ThreeOfAKind, rankPrimary) { }
+    public ThreeOfAKind(Rank rankPrimary) : base(HandType.ThreeOfAKind, rankPrimary) { }
 
-    public ThreeOfAKind(PokerHand pokerHand) : base(Hand.ThreeOfAKind, pokerHand.RankPrimary) { }
+    public ThreeOfAKind(PokerHand pokerHand) : base(HandType.ThreeOfAKind, pokerHand.GetPrimaryRank()) { }
 
     public override string GetStringRepresentation()
     {
-        return base.GetStringRepresentation() + $" {m_rankPrimary}";
+        return base.GetStringRepresentation() + $" {rankPrimary}";
     }
 }
 
@@ -216,13 +204,13 @@ public class Straight : SingleRankHand
 
     public Straight() : base() { }
 
-    public Straight(Rank rankPrimary) : base(Hand.Straight, rankPrimary) { }
+    public Straight(Rank rankPrimary) : base(HandType.Straight, rankPrimary) { }
 
-    public Straight(PokerHand pokerHand) : base(Hand.Straight, pokerHand.RankPrimary) { }
+    public Straight(PokerHand pokerHand) : base(HandType.Straight, pokerHand.GetPrimaryRank()) { }
 
     public override string GetStringRepresentation()
     {
-        return base.GetStringRepresentation() + $" to {m_rankPrimary}";
+        return base.GetStringRepresentation() + $" to {rankPrimary}";
     }
 }
 
@@ -232,13 +220,13 @@ public class Flush : RankSuitHand
 
     public Flush() : base() { }
 
-    public Flush(Rank rankPrimary, Suit suit) : base(Hand.Flush, rankPrimary, suit) { }
+    public Flush(Rank rankPrimary, Suit suit) : base(HandType.Flush, rankPrimary, suit) { }
 
-    public Flush(PokerHand pokerHand) : base(Hand.Flush, pokerHand.RankPrimary, pokerHand.Suit) { }
+    public Flush(PokerHand pokerHand) : base(HandType.Flush, pokerHand.GetPrimaryRank(), pokerHand.GetSuit()) { }
 
     public override string GetStringRepresentation()
     {
-        return base.GetStringRepresentation() + $" {m_suit} high card {m_rankPrimary}";
+        return base.GetStringRepresentation() + $" {suit} high card {rankPrimary}";
     }
 }
 
@@ -246,15 +234,15 @@ public class FullHouse : DoubleRankHand
 {
     public FullHouse() : base() { }
 
-    public FullHouse(Rank rankPrimary, Rank rankSecondary) : base(Hand.FullHouse, rankPrimary, rankSecondary) { }
+    public FullHouse(Rank rankPrimary, Rank rankSecondary) : base(HandType.FullHouse, rankPrimary, rankSecondary) { }
 
-    public FullHouse(PokerHand pokerHand) : base(Hand.FullHouse, pokerHand.RankPrimary, pokerHand.RankSecondary) { }
+    public FullHouse(PokerHand pokerHand) : base(HandType.FullHouse, pokerHand.GetPrimaryRank(), pokerHand.GetSecondaryRank()) { }
 
-    public FullHouse(ThreeOfAKind triple, Pair pair) : base(Hand.FullHouse, triple.RankPrimary, pair.RankPrimary) { }
+    public FullHouse(ThreeOfAKind triple, Pair pair) : base(HandType.FullHouse, triple.GetPrimaryRank(), pair.GetPrimaryRank()) { }
 
     public override string GetStringRepresentation()
     {
-        return base.GetStringRepresentation() + $" {m_rankPrimary} over {m_rankSecondary}";
+        return base.GetStringRepresentation() + $" {rankPrimary} over {rankSecondary}";
     }
 }
 
@@ -262,13 +250,13 @@ public class FourOfAKind : SingleRankHand
 {
     public FourOfAKind() : base() { }
 
-    public FourOfAKind(Rank rankPrimary) : base(Hand.FourOfAKind, rankPrimary) { }
+    public FourOfAKind(Rank rankPrimary) : base(HandType.FourOfAKind, rankPrimary) { }
 
-    public FourOfAKind(PokerHand pokerHand) : base(Hand.FourOfAKind, pokerHand.RankPrimary) { }
+    public FourOfAKind(PokerHand pokerHand) : base(HandType.FourOfAKind, pokerHand.GetPrimaryRank()) { }
 
     public override string GetStringRepresentation()
     {
-        return base.GetStringRepresentation() + $" {m_rankPrimary}";
+        return base.GetStringRepresentation() + $" {rankPrimary}";
     }
 }
 
@@ -278,13 +266,13 @@ public class StraightFlush : RankSuitHand
 
     public StraightFlush() : base() { }
 
-    public StraightFlush(Rank rankPrimary, Suit suit) : base(Hand.StraightFlush, rankPrimary, suit) { }
+    public StraightFlush(Rank rankPrimary, Suit suit) : base(HandType.StraightFlush, rankPrimary, suit) { }
 
-    public StraightFlush(PokerHand pokerHand) : base(Hand.StraightFlush, pokerHand.RankPrimary, pokerHand.Suit) { }
+    public StraightFlush(PokerHand pokerHand) : base(HandType.StraightFlush, pokerHand.GetPrimaryRank(), pokerHand.GetSuit()) { }
 
     public override string GetStringRepresentation()
     {
-        return base.GetStringRepresentation() + $" {m_suit} to {m_rankPrimary}";
+        return base.GetStringRepresentation() + $" {suit} to {rankPrimary}";
     }
 }
 
@@ -292,13 +280,13 @@ public class RoyalFlush : SuitHand
 {
     public RoyalFlush() : base() { }
 
-    public RoyalFlush(Suit suit) : base(Hand.RoyalFlush, suit) { }
+    public RoyalFlush(Suit suit) : base(HandType.RoyalFlush, suit) { }
 
-    public RoyalFlush(PokerHand pokerHand) : base(Hand.RoyalFlush, pokerHand.Suit) { }
+    public RoyalFlush(PokerHand pokerHand) : base(HandType.RoyalFlush, pokerHand.GetSuit()) { }
 
     public override string GetStringRepresentation()
     {
-        return base.GetStringRepresentation() + $" {m_suit}";
+        return base.GetStringRepresentation() + $" {suit}";
     }
 
     public static bool operator <(RoyalFlush left, RoyalFlush right)

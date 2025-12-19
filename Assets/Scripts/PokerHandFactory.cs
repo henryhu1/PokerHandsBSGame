@@ -1,14 +1,14 @@
 public static class PokerHandFactory
 {
-    public static PokerHand CreatePokerHand(Hand hand, Rank? primaryRank, Rank? secondaryRank, Suit? suit)
+    public static PokerHand CreatePokerHand(HandType hand, Rank? primaryRank, Rank? secondaryRank, Suit? suit)
     {
         switch (hand)
         {
-            case Hand.HighCard:
+            case HandType.HighCard:
                 return new HighCard((Rank)primaryRank);
-            case Hand.Pair:
+            case HandType.Pair:
                 return new Pair((Rank)primaryRank);
-            case Hand.TwoPair:
+            case HandType.TwoPair:
                 if ((Rank)primaryRank < (Rank)secondaryRank)
                 {
                     return new TwoPair((Rank)secondaryRank, (Rank)primaryRank);
@@ -17,19 +17,19 @@ public static class PokerHandFactory
                 {
                     return new TwoPair((Rank)primaryRank, (Rank)secondaryRank);
                 }
-            case Hand.ThreeOfAKind:
+            case HandType.ThreeOfAKind:
                 return new ThreeOfAKind((Rank)primaryRank);
-            case Hand.Straight:
+            case HandType.Straight:
                 return new Straight((Rank)primaryRank);
-            case Hand.Flush:
+            case HandType.Flush:
                 return new Flush((Rank)primaryRank, (Suit)suit);
-            case Hand.FullHouse:
+            case HandType.FullHouse:
                 return new FullHouse((Rank)primaryRank, (Rank)secondaryRank);
-            case Hand.FourOfAKind:
+            case HandType.FourOfAKind:
                 return new FourOfAKind((Rank)primaryRank);
-            case Hand.StraightFlush:
+            case HandType.StraightFlush:
                 return new StraightFlush((Rank)primaryRank, (Suit)suit);
-            case Hand.RoyalFlush:
+            case HandType.RoyalFlush:
                 return new RoyalFlush((Suit)suit);
             default:
                 return null;
@@ -38,30 +38,19 @@ public static class PokerHandFactory
 
     public static PokerHand InferPokerHandType(PokerHand pokerHand)
     {
-        switch (pokerHand.Hand)
+        return pokerHand.GetHandType() switch
         {
-            case Hand.HighCard:
-                return new HighCard(pokerHand);
-            case Hand.Pair:
-                return new Pair(pokerHand);
-            case Hand.TwoPair:
-                return new TwoPair(pokerHand);
-            case Hand.ThreeOfAKind:
-                return new ThreeOfAKind(pokerHand);
-            case Hand.Straight:
-                return new Straight(pokerHand);
-            case Hand.Flush:
-                return new Flush(pokerHand);
-            case Hand.FullHouse:
-                return new FullHouse(pokerHand);
-            case Hand.FourOfAKind:
-                return new FourOfAKind(pokerHand);
-            case Hand.StraightFlush:
-                return new StraightFlush(pokerHand);
-            case Hand.RoyalFlush:
-                return new RoyalFlush(pokerHand);
-            default:
-                return null;
-        }
+            HandType.HighCard => new HighCard(pokerHand),
+            HandType.Pair => new Pair(pokerHand),
+            HandType.TwoPair => new TwoPair(pokerHand),
+            HandType.ThreeOfAKind => new ThreeOfAKind(pokerHand),
+            HandType.Straight => new Straight(pokerHand),
+            HandType.Flush => new Flush(pokerHand),
+            HandType.FullHouse => new FullHouse(pokerHand),
+            HandType.FourOfAKind => new FourOfAKind(pokerHand),
+            HandType.StraightFlush => new StraightFlush(pokerHand),
+            HandType.RoyalFlush => new RoyalFlush(pokerHand),
+            _ => null,
+        };
     }
 }

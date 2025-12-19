@@ -120,7 +120,7 @@ public class HandsInPlay
             }
             for (int  k = 0; k < triplesInPlay.Count; k++)
             {
-                if (triplesInPlay.ElementAt(k).RankPrimary != pairsInPlay.ElementAt(i).RankPrimary)
+                if (triplesInPlay.ElementAt(k).GetPrimaryRank() != pairsInPlay.ElementAt(i).GetPrimaryRank())
                 {
                     m_handsInPlay.Add(new FullHouse(triplesInPlay.ElementAt(k), pairsInPlay.ElementAt(i)));
                 }
