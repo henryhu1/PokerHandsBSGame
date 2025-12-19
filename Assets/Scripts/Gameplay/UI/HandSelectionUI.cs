@@ -7,15 +7,21 @@ public class HandSelectionUI : MonoBehaviour
     public static HandSelectionUI Instance { get; private set; }
 
     [Header("UI")]
-    [SerializeField] private CardRankChoicesUI m_CardRankChoicesPrimary;
-    [SerializeField] private CardRankChoicesUI m_CardRankChoicesSecondary;
-    [SerializeField] private CardSuitChoicesUI m_CardSuitChoices;
-    [SerializeField] private CardSuitChoicesUI m_RoyalFlushChoices;
+    [SerializeField] private CardRankChoicesUI cardRankChoicesPrimary;
+    [SerializeField] private CardRankChoicesUI cardRankChoicesSecondary;
+    [SerializeField] private CardSuitChoicesUI cardSuitChoices;
 
-    private Rank? m_selectedPrimaryRank;
-    private Rank? m_selectedSecondaryRank;
-    private Suit? m_selectedSuit;
-    private Hand? m_selectedHand;
+    [Header("Listening Events")]
+    [SerializeField] private HandTypeEventChannelSO OnSelectHandType;
+    [SerializeField] private VoidEventChannelSO OnNoSelectionHand;
+    [SerializeField] private VoidEventChannelSO OnNoSelectionPrimaryRank;
+    [SerializeField] private VoidEventChannelSO OnNoSelectionSecondaryRank;
+    [SerializeField] private VoidEventChannelSO OnNoSelectionSuit;
+
+    private Rank? selectedPrimaryRank;
+    private Rank? selectedSecondaryRank;
+    private Suit? selectedSuit;
+    private HandType? selectedHand;
 
     private void Awake()
     {
@@ -28,92 +34,67 @@ public class HandSelectionUI : MonoBehaviour
         ResetAllSelections();
     }
 
-    public void RegisterHandTypeUICallbacks()
-    {
-        HandTypeUI.Instance.OnNeedCardRankChoicesPrimary += HandTypeUI_NeedCardRankChoicesPrimary;
-        HandTypeUI.Instance.OnNeedCardRankChoicesSecondary += HandTypeUI_NeedCardRankChoicesSecondary;
-        HandTypeUI.Instance.OnNeedCardSuitChoices += HandTypeUI_NeedCardSuitChoices;
-        HandTypeUI.Instance.OnNeedRoyalFlushChoices += HandTypeUI_NeedRoyalFlushChoices;
-        HandTypeUI.Instance.OnNoSelectionMade += HandTypeUI_NoSelectionMade;
-    }
-
-    public void UnregisterHandTypeUICallbacks()
-    {
-        HandTypeUI.Instance.OnNeedCardRankChoicesPrimary -= HandTypeUI_NeedCardRankChoicesPrimary;
-        HandTypeUI.Instance.OnNeedCardRankChoicesSecondary -= HandTypeUI_NeedCardRankChoicesSecondary;
-        HandTypeUI.Instance.OnNeedCardSuitChoices -= HandTypeUI_NeedCardSuitChoices;
-        HandTypeUI.Instance.OnNeedRoyalFlushChoices -= HandTypeUI_NeedRoyalFlushChoices;
-        HandTypeUI.Instance.OnNoSelectionMade -= HandTypeUI_NoSelectionMade;
-    }
-
     private void OnEnable()
     {
-        m_CardRankChoicesPrimary.OnSelectRank += RankChoice_SelectRank;
-        m_CardRankChoicesPrimary.OnNoSelectionMade += PrimaryRankChoice_NoSelectionMade;
-        m_CardRankChoicesSecondary.OnSelectRank += RankChoice_SelectRank;
-        m_CardRankChoicesSecondary.OnNoSelectionMade += SecondaryRankChoice_NoSelectionMade;
-        m_CardSuitChoices.OnSelectSuit += SuitChoice_SelectSuit;
-        m_CardSuitChoices.OnNoSelectionMade += SuitChoice_NoSelectionMade;
-        m_RoyalFlushChoices.OnSelectSuit += RoyalFlushChoice_SelectSuit;
-        m_RoyalFlushChoices.OnNoSelectionMade += RoyalFlushChoice_NoSelectionMade;
+        cardRankChoicesPrimary.OnSelectRank += RankChoice_SelectRank;
+        OnNoSelectionPrimaryRank.OnEventRaised += PrimaryRankChoice_NoSelectionMade;
+        cardRankChoicesSecondary.OnSelectRank += RankChoice_SelectRank;
+        OnNoSelectionSecondaryRank.OnEventRaised += SecondaryRankChoice_NoSelectionMade;
+        cardSuitChoices.OnSelectSuit += SuitChoice_SelectSuit;
+        OnNoSelectionSuit.OnEventRaised += SuitChoice_NoSelectionMade;
+
+        OnSelectHandType.OnEventRaised += HandleHandTypeSelection;
+        OnNoSelectionHand.OnEventRaised += HandTypeUI_NoSelectionMade;
     }
 
     private void OnDisable()
     {
-        m_CardRankChoicesPrimary.OnSelectRank -= RankChoice_SelectRank;
-        m_CardRankChoicesPrimary.OnNoSelectionMade -= PrimaryRankChoice_NoSelectionMade;
-        m_CardRankChoicesSecondary.OnSelectRank -= RankChoice_SelectRank;
-        m_CardRankChoicesSecondary.OnNoSelectionMade -= SecondaryRankChoice_NoSelectionMade;
-        m_CardSuitChoices.OnSelectSuit -= SuitChoice_SelectSuit;
-        m_CardSuitChoices.OnNoSelectionMade -= SuitChoice_NoSelectionMade;
-        m_RoyalFlushChoices.OnSelectSuit -= RoyalFlushChoice_SelectSuit;
-        m_RoyalFlushChoices.OnNoSelectionMade -= RoyalFlushChoice_NoSelectionMade;
+        cardRankChoicesPrimary.OnSelectRank -= RankChoice_SelectRank;
+        OnNoSelectionPrimaryRank.OnEventRaised -= PrimaryRankChoice_NoSelectionMade;
+        cardRankChoicesSecondary.OnSelectRank -= RankChoice_SelectRank;
+        OnNoSelectionSecondaryRank.OnEventRaised -= SecondaryRankChoice_NoSelectionMade;
+        cardSuitChoices.OnSelectSuit -= SuitChoice_SelectSuit;
+        OnNoSelectionSuit.OnEventRaised -= SuitChoice_NoSelectionMade;
+
+        OnSelectHandType.OnEventRaised -= HandleHandTypeSelection;
+        OnNoSelectionHand.OnEventRaised -= HandTypeUI_NoSelectionMade;
     }
 
-    private void HandTypeUI_NeedCardRankChoicesPrimary(Hand selectedHand)
+    private void HandleHandTypeSelection(HandType newHandSelected)
     {
         ResetAllSelections();
-        m_selectedHand = selectedHand;
+        selectedHand = newHandSelected;
 
-        m_CardRankChoicesPrimary.Show();
-        m_CardRankChoicesPrimary.ChoosingRankFor = selectedHand;
-        m_CardRankChoicesPrimary.EnableRankToggles();
-    }
+        switch (selectedHand)
+        {
+            case HandType.RoyalFlush:
+                cardSuitChoices.Show(HandType.RoyalFlush);
+                break;
+            case HandType.TwoPair:
+            case HandType.FullHouse:
+                cardRankChoicesSecondary.Show();
+                // TODO: ensure lower level hands are not allowed to be selected
+                cardRankChoicesSecondary.ChoosingRankFor = newHandSelected;
+                cardRankChoicesSecondary.EnableRankToggles();
 
-    private void HandTypeUI_NeedCardRankChoicesSecondary(Hand selectedHand, bool isFullHouse)
-    {
-        ResetAllSelections();
-        m_selectedHand = selectedHand;
+                cardRankChoicesPrimary.Show();
+                cardRankChoicesPrimary.ChoosingRankFor = newHandSelected;
+                cardRankChoicesPrimary.EnableRankToggles();
+                break;
+            case HandType.Flush:
+            case HandType.StraightFlush:
+                cardSuitChoices.Show(newHandSelected);
 
-        m_CardRankChoicesSecondary.Show();
-        // TODO: ensure lower level hands are not allowed to be selected
-        m_CardRankChoicesSecondary.ChoosingRankFor = selectedHand;
-        m_CardRankChoicesSecondary.EnableRankToggles();
-
-        m_CardRankChoicesPrimary.Show();
-        m_CardRankChoicesPrimary.ChoosingRankFor = selectedHand;
-        m_CardRankChoicesPrimary.EnableRankToggles();
-    }
-
-    private void HandTypeUI_NeedCardSuitChoices(Hand selectedHand)
-    {
-        ResetAllSelections();
-        m_selectedHand = selectedHand;
-
-        m_CardSuitChoices.Show();
-        m_CardSuitChoices.ChoosingSuitFor = selectedHand;
-
-        m_CardRankChoicesPrimary.Show();
-        m_CardRankChoicesPrimary.ChoosingRankFor = selectedHand;
-        m_CardRankChoicesPrimary.EnableRankToggles();
-    }
-
-    private void HandTypeUI_NeedRoyalFlushChoices()
-    {
-        ResetAllSelections();
-        m_selectedHand = Hand.RoyalFlush;
-
-        m_RoyalFlushChoices.Show();
+                cardRankChoicesPrimary.Show();
+                cardRankChoicesPrimary.ChoosingRankFor = newHandSelected;
+                cardRankChoicesPrimary.EnableRankToggles();
+                break;
+            default:
+                cardRankChoicesPrimary.Show();
+                cardRankChoicesPrimary.ChoosingRankFor = newHandSelected;
+                cardRankChoicesPrimary.EnableRankToggles();
+                break;
+        }
     }
 
     private void HandTypeUI_NoSelectionMade()
@@ -126,98 +107,85 @@ public class HandSelectionUI : MonoBehaviour
 #if UNITY_EDITOR
         Debug.Log($"rank selected, primary={isPrimary} rank={selectedRank}");
 #endif
-        // bool isTwoPairSelection = m_selectedHand != null && m_selectedHand.Equals(Hand.TwoPair);
+        // bool isTwoPairSelection = selectedHand != null && selectedHand.Equals(Hand.TwoPair);
         if (isPrimary)
         {
-            m_selectedPrimaryRank = selectedRank;
-            if (selectedRank == m_selectedSecondaryRank) // || (isTwoPairSelection && selectedRank < m_selectedSecondaryRank))
+            selectedPrimaryRank = selectedRank;
+            if (selectedRank == selectedSecondaryRank) // || (isTwoPairSelection && selectedRank < selectedSecondaryRank))
             {
 #if UNITY_EDITOR
                 Debug.Log("must reset secondary rank selection");
 #endif
-                m_CardRankChoicesSecondary.ResetSelection();
-                // m_CardRankChoicesPrimary.EnableRankToggles();
-                m_selectedSecondaryRank = null;
+                cardRankChoicesSecondary.ResetSelection();
+                // CardRankChoicesPrimary.EnableRankToggles();
+                selectedSecondaryRank = null;
             }
             // if (isTwoPairSelection)
             // {
-            //     m_CardRankChoicesSecondary.DarkenDownTo(selectedRank);
+            //     CardRankChoicesSecondary.DarkenDownTo(selectedRank);
             // }
         }
         else
         {
-            m_selectedSecondaryRank = selectedRank;
-            if (selectedRank == m_selectedPrimaryRank) // || (isTwoPairSelection && selectedRank > m_selectedPrimaryRank))
+            selectedSecondaryRank = selectedRank;
+            if (selectedRank == selectedPrimaryRank) // || (isTwoPairSelection && selectedRank > selectedPrimaryRank))
             {
 #if UNITY_EDITOR
                 Debug.Log("must reset primary rank selection");
 #endif
-                m_CardRankChoicesPrimary.ResetSelection();
-                // m_CardRankChoicesSecondary.EnableRankToggles();
-                m_selectedPrimaryRank = null;
+                cardRankChoicesPrimary.ResetSelection();
+                // CardRankChoicesSecondary.EnableRankToggles();
+                selectedPrimaryRank = null;
             }
             // if (isTwoPairSelection)
             // {
-            //     m_CardRankChoicesPrimary.DarkenUpTo(selectedRank);
+            //     CardRankChoicesPrimary.DarkenUpTo(selectedRank);
             // }
         }
     }
 
     private void PrimaryRankChoice_NoSelectionMade()
     {
-        m_selectedPrimaryRank = null;
+        selectedPrimaryRank = null;
     }
 
     private void SecondaryRankChoice_NoSelectionMade()
     {
-        m_selectedSecondaryRank = null;
+        selectedSecondaryRank = null;
     }
 
     private void SuitChoice_SelectSuit(Suit selectedSuit)
     {
-        m_selectedSuit = selectedSuit;
+        this.selectedSuit = selectedSuit;
     }
 
     private void SuitChoice_NoSelectionMade()
     {
-        m_selectedSuit = null;
-    }
-
-    private void RoyalFlushChoice_SelectSuit(Suit selectedSuit)
-    {
-        // m_selectedRoyalFlush = selectedSuit;
-        m_selectedSuit = selectedSuit;
-    }
-
-    private void RoyalFlushChoice_NoSelectionMade()
-    {
-        // m_selectedRoyalFlush = null;
-        m_selectedSuit = null;
+        selectedSuit = null;
     }
 
     private void ResetAllSelections()
     {
-        m_selectedPrimaryRank = null;
-        m_CardRankChoicesPrimary.Hide();
-        m_selectedSecondaryRank = null;
-        m_CardRankChoicesSecondary.Hide();
-        m_selectedSuit = null;
-        m_CardSuitChoices.Hide();
-        m_RoyalFlushChoices.Hide();
+        selectedPrimaryRank = null;
+        cardRankChoicesPrimary.Hide();
+        selectedSecondaryRank = null;
+        cardRankChoicesSecondary.Hide();
+        selectedSuit = null;
+        cardSuitChoices.Hide();
     }
 
     public PokerHand GetSelection()
     {
-        bool? selectionsMade = m_selectedHand?.IsSelectionCorrect(m_selectedPrimaryRank, m_selectedSecondaryRank, m_selectedSuit);
+        bool? selectionsMade = selectedHand?.IsSelectionCorrect(selectedPrimaryRank, selectedSecondaryRank, selectedSuit);
         if (selectionsMade.HasValue && selectionsMade.Value)
         {
 #if UNITY_EDITOR
-            Debug.Log($"Hand={m_selectedHand} PRank={m_selectedPrimaryRank} SRank={m_selectedSecondaryRank} Suit={m_selectedSuit}: This hand is allowed to be played");
+            Debug.Log($"Hand={selectedHand} PRank={selectedPrimaryRank} SRank={selectedSecondaryRank} Suit={selectedSuit}: This hand is allowed to be played");
 #endif
-            return PokerHandFactory.CreatePokerHand((Hand)m_selectedHand, m_selectedPrimaryRank, m_selectedSecondaryRank, m_selectedSuit);
+            return PokerHandFactory.CreatePokerHand((HandType)selectedHand, selectedPrimaryRank, selectedSecondaryRank, selectedSuit);
         }
 #if UNITY_EDITOR
-        Debug.Log($"Hand={m_selectedHand} PRank={m_selectedPrimaryRank} SRank={m_selectedSecondaryRank} Suit={m_selectedSuit}: Not a valid hand");
+        Debug.Log($"Hand={selectedHand} PRank={selectedPrimaryRank} SRank={selectedSecondaryRank} Suit={selectedSuit}: Not a valid hand");
 #endif
         return null;
     }

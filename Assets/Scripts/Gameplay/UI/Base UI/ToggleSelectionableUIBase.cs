@@ -1,29 +1,44 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public abstract class ToggleSelectionableUIBase<T> : MonoBehaviour
+public abstract class ToggleSelectionableUIBase<T> : MonoBehaviour where T : Enum
 {
-    private ToggleColors m_ToggleColors = new();
+    private ToggleColors toggleColors = new();
 
-    [SerializeField] protected ToggleGroup m_ToggleGroup;
+    [SerializeField] protected ToggleGroup toggleGroup;
 
-    protected List<Toggle> m_Toggles;
-    protected Dictionary<Toggle, T> m_ToggleDictionary;
+    [Serializable]
+    protected class ToggleMapEntry
+    {
+        public Toggle toggle;
+        public T type;
+    }
 
-    [HideInInspector]
-    public delegate void NoSelectionMadeDelegateHandler();
-    [HideInInspector]
-    public event NoSelectionMadeDelegateHandler OnNoSelectionMade;
+    [SerializeField] private ToggleMapEntry[] toggleMap;
+
+    protected Dictionary<Toggle, T> toggleDictionary = new();
+
+    [Header("Firing Events")]
+    [SerializeField] private VoidEventChannelSO OnNoSelectionMade;
+
+    protected virtual void Awake()
+    {
+        foreach (ToggleMapEntry toggleEntry in toggleMap)
+        {
+            toggleDictionary.Add(toggleEntry.toggle, toggleEntry.type);
+        }
+    }
 
     protected void SetToggleColor(Toggle toggle)
     {
         ColorBlock toggleColorBlock = toggle.colors;
-        toggleColorBlock.normalColor = m_ToggleColors.toggleColorNormal;
-        toggleColorBlock.highlightedColor = m_ToggleColors.toggleColorHighlighted;
-        toggleColorBlock.pressedColor = m_ToggleColors.toggleColorPressed;
-        toggleColorBlock.selectedColor = m_ToggleColors.toggleColorSelected;
-        m_ToggleColors.ChangeToggleColors(toggle.colors);
+        toggleColorBlock.normalColor = toggleColors.toggleColorNormal;
+        toggleColorBlock.highlightedColor = toggleColors.toggleColorHighlighted;
+        toggleColorBlock.pressedColor = toggleColors.toggleColorPressed;
+        toggleColorBlock.selectedColor = toggleColors.toggleColorSelected;
+        toggleColors.ChangeToggleColors(toggle.colors);
         toggle.colors = toggleColorBlock;
     }
 
@@ -42,31 +57,47 @@ public abstract class ToggleSelectionableUIBase<T> : MonoBehaviour
 
     public void InvokeNoSelectionMade()
     {
-        OnNoSelectionMade?.Invoke();
+        OnNoSelectionMade.RaiseEvent();
     }
 
     public void ResetSelection()
     {
-        m_ToggleGroup.SetAllTogglesOff();
+        toggleGroup.SetAllTogglesOff();
     }
 
-    protected void EnableTogglesToAtLeast(int level = 0)
+    protected Toggle FindToggle(T value)
     {
-        EnableTogglesTo(level);
-    }
-
-    protected void EnableTogglesToAtMost(int level = int.MaxValue)
-    {
-        EnableTogglesTo(level, false);
-    }
-
-    private void EnableTogglesTo(int level = 0, bool higherLevel = true)
-    {
-        for (int i = 0; i < m_Toggles.Count; i++)
+        foreach (var toggleEntry in toggleDictionary)
         {
-            bool shouldEnable = higherLevel ? i >= level : i <= level;
-            m_Toggles[i].enabled = shouldEnable;
-            m_Toggles[i].image.color = shouldEnable ? Color.white : ToggleColors.k_DisabledColor;
+            if (toggleEntry.Value.Equals(value))
+            {
+                return toggleEntry.Key;
+            }
+        }
+        return null;
+    }
+
+    protected void EnableTogglesToAtLeast(T level)
+    {
+        foreach (var toggleEntry in toggleDictionary)
+        {
+            Toggle toggle = toggleEntry.Key;
+            T type = toggleEntry.Value;
+            bool shouldEnable = type.CompareTo(level) >= 0;
+            toggle.enabled = shouldEnable;
+            toggle.image.color = shouldEnable ? Color.white : ToggleColors.k_DisabledColor;
+        }
+    }
+
+    protected void EnableTogglesToAtMost(T level)
+    {
+        foreach (var toggleEntry in toggleDictionary)
+        {
+            Toggle toggle = toggleEntry.Key;
+            T type = toggleEntry.Value;
+            bool shouldEnable = type.CompareTo(level) <= 0;
+            toggle.enabled = shouldEnable;
+            toggle.image.color = shouldEnable ? Color.white : ToggleColors.k_DisabledColor;
         }
     }
 
