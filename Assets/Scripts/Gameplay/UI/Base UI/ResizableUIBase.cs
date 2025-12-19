@@ -25,7 +25,19 @@ public class ResizableUIBase : MonoBehaviour, IAnimatable
     protected virtual void Awake()
     {
         originalSize = resizingRect.sizeDelta;
-        resizedSize = Vector2.Scale(s_DirectionToScale[sideToChange], change);
+        Vector2 scaled = Vector2.Scale(s_DirectionToScale[sideToChange], change);
+        if (sideToChange == ResizingSide.Vertical)
+        {
+            resizedSize = new(originalSize.x, scaled.y);
+        }
+        else if (sideToChange == ResizingSide.Horizontal)
+        {
+            resizedSize = new(scaled.x, originalSize.y);
+        }
+        else
+        {
+            resizedSize = scaled;
+        }
 
         // triggerUITransition.RegisterCallback(StartDoScale);
     }
