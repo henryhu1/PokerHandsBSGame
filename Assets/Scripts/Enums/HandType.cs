@@ -1,4 +1,4 @@
-public enum Hand
+public enum HandType
 {
     HighCard = 1,
     Pair = 2,
