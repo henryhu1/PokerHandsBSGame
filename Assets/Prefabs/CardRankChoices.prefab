@@ -3417,20 +3417,34 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7fe04780d37b36f47b843ea1c596fcfc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_ToggleGroup: {fileID: 4635181325455546737}
-  m_TwoToggle: {fileID: 3270834211055777763}
-  m_ThreeToggle: {fileID: 6100025231834524874}
-  m_FourToggle: {fileID: 518543853953814601}
-  m_FiveToggle: {fileID: 3317524174777078623}
-  m_SixToggle: {fileID: 7320668211521035089}
-  m_SevenToggle: {fileID: 6157625521159579411}
-  m_EightToggle: {fileID: 6684313090825356685}
-  m_NineTiggle: {fileID: 2710826191908192656}
-  m_TenToggle: {fileID: 6889891823924033935}
-  m_JackToggle: {fileID: 4774175185056825616}
-  m_QueenToggle: {fileID: 8169569465407663047}
-  m_KingToggle: {fileID: 5310058358338048342}
-  m_AceToggle: {fileID: 1865635205012295677}
+  toggleGroup: {fileID: 4635181325455546737}
+  toggleMap:
+  - toggle: {fileID: 1865635205012295677}
+    type: 14
+  - toggle: {fileID: 5310058358338048342}
+    type: 13
+  - toggle: {fileID: 8169569465407663047}
+    type: 12
+  - toggle: {fileID: 4774175185056825616}
+    type: 11
+  - toggle: {fileID: 6889891823924033935}
+    type: 10
+  - toggle: {fileID: 2710826191908192656}
+    type: 9
+  - toggle: {fileID: 6684313090825356685}
+    type: 8
+  - toggle: {fileID: 6157625521159579411}
+    type: 7
+  - toggle: {fileID: 7320668211521035089}
+    type: 6
+  - toggle: {fileID: 3317524174777078623}
+    type: 5
+  - toggle: {fileID: 518543853953814601}
+    type: 4
+  - toggle: {fileID: 6100025231834524874}
+    type: 3
+  - toggle: {fileID: 3270834211055777763}
+    type: 2
   m_isPrimaryRankChoice: 0
   m_byThreeText: {fileID: 7182776253501973435}
   m_byTwoText: {fileID: 6771345906824919185}
