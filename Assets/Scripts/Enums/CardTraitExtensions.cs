@@ -45,7 +45,7 @@ namespace CardTraitExtensions
             { HandType.Flush, s_RankSuitSelections },
             { HandType.FullHouse, s_TwoRanksSelections },
             { HandType.FourOfAKind, s_OneRankSelections },
-            { HandType.StraightFlush, s_OneRankSelections },
+            { HandType.StraightFlush, s_RankSuitSelections },
             { HandType.RoyalFlush, s_SuitSelections },
         };
 
