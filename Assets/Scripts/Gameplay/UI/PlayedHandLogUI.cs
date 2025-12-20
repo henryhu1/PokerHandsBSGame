@@ -98,7 +98,7 @@ public class PlayedHandLogUI : MonoBehaviour
     private void GameManager_AddToCardLog(PlayedHandLogItem playedHandLogItem)
     {
         PlayedHandLogItemUI cardLogItem = Instantiate(m_PlayedHandLogItemUIPrefab, m_LogContent.transform);
-        cardLogItem.GiveLogItem(playedHandLogItem);
+        cardLogItem.GiveLogItem(m_PlayedHandLogItems.Count + 1, playedHandLogItem);
 
         m_PlayedHandLogItems.Add(cardLogItem);
     }
