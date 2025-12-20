@@ -16,6 +16,10 @@ public class ActionsUI : MonoBehaviour
     [SerializeField] private InvalidPlayMessageUI m_InvalidPlayNotif;
     [SerializeField] private GameObject m_TurnNotification;
 
+    [Header("Firing Events")]
+    [SerializeField] private IntEventChannelSO OnInvalidPlay;
+    [SerializeField] private PokerHandEventChannelSO OnSendPokerHandToPlay;
+
     [Header("Listening Events")]
     [SerializeField] private BoolEventChannelSO OnNextPlayerTurn;
 
@@ -32,9 +36,21 @@ public class ActionsUI : MonoBehaviour
         m_PlayButton.onClick.AddListener(() =>
         {
             PokerHand playingPokerHand = handSelectionUI.GetSelection();
-            if (playingPokerHand != null)
+            if (playingPokerHand == null)
             {
-                // TODO: clients have the last played hand, playable hand check can be done client side?
+                return;
+            }
+            else if (GameManager.Instance.IsHandLowerThanLastPlayed(playingPokerHand))
+            {
+                OnInvalidPlay.RaiseEvent((int)InvalidPlays.HandTooLow);
+            }
+            else if (playingPokerHand.GetHandType() == HandType.Flush && !CardManager.Instance.IsFlushAllowedToBePlayed())
+            {
+                OnInvalidPlay.RaiseEvent((int)InvalidPlays.FlushNotAllowed);
+            }
+            else
+            {
+                OnSendPokerHandToPlay.RaiseEvent(playingPokerHand);
                 GameManager.Instance.TryPlayingHandServerRpc(playingPokerHand);
             }
         });
