@@ -842,6 +842,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 525638692}
     m_Modifications:
+    - target: {fileID: 1301020665648205440, guid: c42e9405fb55598448139e84109eee2b, type: 3}
+      propertyPath: 'm_ActiveFontFeatures.Array.data[0]'
+      value: 1801810542
+      objectReference: {fileID: 0}
+    - target: {fileID: 2168465292662412174, guid: c42e9405fb55598448139e84109eee2b, type: 3}
+      propertyPath: 'm_ActiveFontFeatures.Array.data[0]'
+      value: 1801810542
+      objectReference: {fileID: 0}
     - target: {fileID: 3532292388835528778, guid: c42e9405fb55598448139e84109eee2b, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -925,6 +933,10 @@ PrefabInstance:
     - target: {fileID: 3532292388835528778, guid: c42e9405fb55598448139e84109eee2b, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7264664206166433071, guid: c42e9405fb55598448139e84109eee2b, type: 3}
+      propertyPath: 'm_ActiveFontFeatures.Array.data[0]'
+      value: 1801810542
       objectReference: {fileID: 0}
     - target: {fileID: 8179869074814265626, guid: c42e9405fb55598448139e84109eee2b, type: 3}
       propertyPath: m_Name
@@ -4135,6 +4147,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 525638692}
     m_Modifications:
+    - target: {fileID: 1301020665648205440, guid: c42e9405fb55598448139e84109eee2b, type: 3}
+      propertyPath: 'm_ActiveFontFeatures.Array.data[0]'
+      value: 1801810542
+      objectReference: {fileID: 0}
+    - target: {fileID: 2168465292662412174, guid: c42e9405fb55598448139e84109eee2b, type: 3}
+      propertyPath: 'm_ActiveFontFeatures.Array.data[0]'
+      value: 1801810542
+      objectReference: {fileID: 0}
     - target: {fileID: 3532292388835528778, guid: c42e9405fb55598448139e84109eee2b, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -4218,6 +4238,10 @@ PrefabInstance:
     - target: {fileID: 3532292388835528778, guid: c42e9405fb55598448139e84109eee2b, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7264664206166433071, guid: c42e9405fb55598448139e84109eee2b, type: 3}
+      propertyPath: 'm_ActiveFontFeatures.Array.data[0]'
+      value: 1801810542
       objectReference: {fileID: 0}
     - target: {fileID: 8179869074814265626, guid: c42e9405fb55598448139e84109eee2b, type: 3}
       propertyPath: m_Name
