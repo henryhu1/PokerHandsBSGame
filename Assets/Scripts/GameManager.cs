@@ -46,6 +46,7 @@ public class GameManager : NetworkBehaviour
 
     // TODO: every player has their own play log... only the server should have the log
     //   and clients just populate their log UI with the new play
+    //   or: make this a NetworkList since the played hands should be in sync across all players
     private List<PlayedHandLogItem> m_playedHandLog;
     public NetworkVariable<int> m_playersReadyForNextRound { get; } = new NetworkVariable<int>(0);
 
@@ -67,12 +68,6 @@ public class GameManager : NetworkBehaviour
     //private float m_TimeRemainingInCurrentTurn;
     ///////////////////////////////////////////////////////
 
-    // TODO: disable selection of lower than last played hand?
-    //[HideInInspector]
-    //public delegate void UpdatePlayableHandsDelegateHandler(PokerHand playedHand);
-    //[HideInInspector]
-    //public event UpdatePlayableHandsDelegateHandler OnUpdatePlayableHands;
-
     [HideInInspector]
     public delegate void AddToCardLogDelegateHandler(PlayedHandLogItem playedHandLogItem);
     [HideInInspector]
@@ -89,6 +84,7 @@ public class GameManager : NetworkBehaviour
 
     [Header("Firing Events")]
     [SerializeField] private IntEventChannelSO OnInvalidPlay;
+    [SerializeField] private PokerHandEventChannelSO OnUpdatePlayableHands;
     [SerializeField] private StringEventChannelSO OnPlayerLeft;
     [SerializeField] private VoidEventChannelSO OnInitializeNewGame;
     [SerializeField] private PokerHandListEventChannelSO OnDisplayAllHandsInPlay;
@@ -470,6 +466,18 @@ public class GameManager : NetworkBehaviour
         return m_playedHandLog.Count == 0;
     }
 
+    public PokerHand GetLastPlayedHand()
+    {
+        if (m_playedHandLog.Count == 0) return null;
+
+        return m_playedHandLog.Last().m_playedHand;
+    }
+
+    public bool IsHandLowerThanLastPlayed(PokerHand pokerHand)
+    {
+        return m_playedHandLog.Count != 0 && !m_playedHandLog.Last().IsPokerHandBetter(pokerHand);
+    }
+
     public void InitializeSettings(GameType gameType, int numberOfPlayers, float timeForTurn = 10f)
     {
 #if UNITY_EDITOR
@@ -542,11 +550,11 @@ public class GameManager : NetworkBehaviour
     {
         PokerHand hand = PokerHandFactory.InferPokerHandType(playedHand);
 #if UNITY_EDITOR
-        Debug.Log($"Server received play #{m_playedHandLog.Count}: {hand.GetStringRepresentation()}");
+        Debug.Log($"Server received play #{m_playedHandLog.Count}: {hand.GetStringRepresentation()} ({hand.GetHandType()} {hand.GetPrimaryRank()} {hand.GetSecondaryRank()} {hand.GetSuit()})");
 #endif
 
         ulong senderClientId = serverRpcParams.Receive.SenderClientId;
-        bool isHandTooLow = m_playedHandLog.Count != 0 && !m_playedHandLog.Last().IsPokerHandBetter(hand);
+        bool isHandTooLow = IsHandLowerThanLastPlayed(hand);
         bool isNotAllowedFlushPlay = hand.GetHandType() == HandType.Flush && !CardManager.Instance.IsFlushAllowedToBePlayed();
         if (isHandTooLow || isNotAllowedFlushPlay)
         {
@@ -582,9 +590,10 @@ public class GameManager : NetworkBehaviour
         Debug.Log($"Client updated with play #{m_playedHandLog.Count}: {hand.GetStringRepresentation()}");
 #endif
 
-        PlayedHandLogItem playedHandLogItem = new PlayedHandLogItem(hand, playedHandClientId, playedHandPlayerId, playerName);
+        PlayedHandLogItem playedHandLogItem = new(hand, playedHandClientId, playedHandPlayerId, playerName);
         m_playedHandLog.Add(playedHandLogItem);
         OnAddToCardLog?.Invoke(playedHandLogItem);
+        OnUpdatePlayableHands.RaiseEvent(hand);
     }
 
     [ClientRpc]

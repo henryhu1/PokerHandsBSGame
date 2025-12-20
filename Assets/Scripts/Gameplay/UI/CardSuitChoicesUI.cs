@@ -24,13 +24,6 @@ public class CardSuitChoicesUI : ToggleSelectionableUIBase<Suit>
                 {
                     OnSelectSuit?.Invoke(toggleDictionary[toggle]);
                 }
-                else
-                {
-                    if (toggleGroup.GetFirstActiveToggle() == null)
-                    {
-                        InvokeNoSelectionMade();
-                    }
-                }
             });
         }
     }

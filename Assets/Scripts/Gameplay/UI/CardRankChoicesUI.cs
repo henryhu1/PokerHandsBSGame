@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,28 +14,13 @@ public class CardRankChoicesUI : ToggleSelectionableUIBase<Rank>
     };
 
     [SerializeField] private bool m_isPrimaryRankChoice = false;
-    // TODO: limit what hands you choose rank for
-    private HandType m_choosingRankFor;
-    public HandType ChoosingRankFor
-    {
-        get { return m_choosingRankFor; }
-        set { m_choosingRankFor = value; }
-    }
 
-    [SerializeField] private TextMeshProUGUI m_byThreeText;
-    [SerializeField] private TextMeshProUGUI m_byTwoText;
-
-    [HideInInspector]
-    public delegate void SelectRankDelegateHandler(bool isPrimary, Rank selectedRank);
-    [HideInInspector]
-    public event SelectRankDelegateHandler OnSelectRank;
+    [Header("Firing Events")]
+    [SerializeField] private RankEventChannelSO OnSelectRank;
 
     protected override void Awake()
     {
         base.Awake();
-
-        m_byThreeText.gameObject.SetActive(false);
-        m_byTwoText.gameObject.SetActive(false);
 
         foreach (var toggleEntry in toggleDictionary) {
             Toggle toggle = toggleEntry.Key;
@@ -46,61 +30,80 @@ public class CardRankChoicesUI : ToggleSelectionableUIBase<Rank>
                 if (isOn)
                 {
                     // Rank selected, passing if this is the primary rank
-                    OnSelectRank?.Invoke(m_isPrimaryRankChoice, toggleDictionary[toggle]);
-                    if (ChoosingRankFor == HandType.FullHouse)
-                    {
-                        if (m_isPrimaryRankChoice)
-                        {
-                            m_byThreeText.gameObject.SetActive(true);
-                            Vector3 textPosition = m_byThreeText.transform.position;
-                            m_byThreeText.transform.position = new Vector3(textPosition.x, toggle.transform.position.y, textPosition.z);
-                        }
-                        else
-                        {
-                            m_byTwoText.gameObject.SetActive(true);
-                            Vector3 textPosition = m_byTwoText.transform.position;
-                            m_byTwoText.transform.position = new Vector3(textPosition.x, toggle.transform.position.y, textPosition.z);
-                        }
-                    }
-                    else
-                    {
-                        m_byThreeText.gameObject.SetActive(false);
-                        m_byTwoText.gameObject.SetActive(false);
-                    }
-                }
-                else
-                {
-                    if (toggleGroup.GetFirstActiveToggle() == null)
-                    {
-                        InvokeNoSelectionMade();
-                        m_byThreeText.gameObject.SetActive(false);
-                        m_byTwoText.gameObject.SetActive(false);
-                    }
+                    OnSelectRank.RaiseEvent(toggleDictionary[toggle]);
                 }
             });
         }
     }
 
-    public void EnableRankToggles()
+    private void DisableUnplayableRanks(PokerHand lowerBoundHand)
     {
-        if (s_HandTypeRankLowerBounds.TryGetValue(ChoosingRankFor, out Rank rankBound)) {
-            EnableTogglesToAtLeast(rankBound);
+        Rank lowerBoundRank;
+        Rank primaryRank = lowerBoundHand.GetPrimaryRank();
+        Rank secondaryRank = lowerBoundHand.GetSecondaryRank();
+        if (m_isPrimaryRankChoice)
+        {
+            if (lowerBoundHand is DoubleRankHand)
+            {
+                if (primaryRank == Rank.Two && secondaryRank == Rank.Ace)
+                {
+                    lowerBoundRank = primaryRank;
+                }
+                else
+                {
+                    lowerBoundRank = primaryRank - 1;
+                }
+            }
+            else
+            {
+                lowerBoundRank = primaryRank;
+            }
         }
-        //else if (ChoosingRankFor == HandType.TwoPair)
-        //{
-        //    if (m_isPrimaryRankChoice)
-        //    {
-        //        EnableTogglesToAtLeast(RankToToggleIndex(m_ToggleDictionary[ThreeToggle]));
-        //    }
-        //    else
-        //    {
-        //        EnableTogglesToAtMost(RankToToggleIndex(m_ToggleDictionary[KingToggle]));
-        //    }
-        //}
         else
         {
-            EnableTogglesToAtLeast(Rank.Two);
+            lowerBoundRank = secondaryRank;
         }
+
+        if (lowerBoundRank != Rank.Ace)
+        {
+            EnableTogglesToAtLeast(lowerBoundRank + 1);
+        }
+        else
+        {
+            DisableAllTogglesInteractability();
+        }
+    }
+
+    public void Show(HandType choosingRankForHandType)
+    {
+        PokerHand lastPlayedHand = GameManager.Instance.GetLastPlayedHand();
+        if (lastPlayedHand != null && choosingRankForHandType == lastPlayedHand.GetHandType())
+        {
+            DisableUnplayableRanks(lastPlayedHand);
+        }
+        else
+        {
+            if (s_HandTypeRankLowerBounds.TryGetValue(choosingRankForHandType, out Rank rankBound))
+            {
+                EnableTogglesToAtLeast(rankBound);
+            }
+            else if (choosingRankForHandType == HandType.TwoPair)
+            {
+                if (m_isPrimaryRankChoice)
+                {
+                    EnableTogglesToAtLeast(Rank.Three);
+                }
+                else
+                {
+                    EnableTogglesToAtMost(Rank.King);
+                }
+            }
+            else
+            {
+                EnableTogglesToAtLeast(Rank.Two);
+            }
+        }
+        Show();
     }
 
     public void DarkenDownTo(Rank highestRank)
@@ -108,7 +111,7 @@ public class CardRankChoicesUI : ToggleSelectionableUIBase<Rank>
         foreach (var toggleEntry in toggleDictionary)
         {
             Toggle toggle = toggleEntry.Key;
-            if (!toggle.enabled) continue;
+            if (!toggle.interactable || !toggle.enabled) continue;
 
             if (toggleDictionary[toggle] < highestRank)
             {
@@ -126,7 +129,7 @@ public class CardRankChoicesUI : ToggleSelectionableUIBase<Rank>
         foreach (var toggleEntry in toggleDictionary)
         {
             Toggle toggle = toggleEntry.Key;
-            if (!toggle.enabled) continue;
+            if (!toggle.interactable || !toggle.enabled) continue;
 
             if (toggleDictionary[toggle] > lowestRank)
             {

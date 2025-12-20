@@ -55,14 +55,10 @@ public abstract class ToggleSelectionableUIBase<T> : MonoBehaviour where T : Enu
     //    return m_ToggleDictionary[selectedToggle.First()];
     //}
 
-    public void InvokeNoSelectionMade()
-    {
-        OnNoSelectionMade.RaiseEvent();
-    }
-
     public void ResetSelection()
     {
         toggleGroup.SetAllTogglesOff();
+        OnNoSelectionMade.RaiseEvent();
     }
 
     protected Toggle FindToggle(T value)
@@ -77,6 +73,38 @@ public abstract class ToggleSelectionableUIBase<T> : MonoBehaviour where T : Enu
         return null;
     }
 
+    public Vector3 GetTogglePosition(T value)
+    {
+        Toggle toggle = FindToggle(value);
+        if (toggle == null) return Vector3.zero;
+        return toggle.transform.position;
+    }
+
+    protected void ChangeToggleInteractability(Toggle targetToggle, bool interactable)
+    {
+        if (toggleDictionary.ContainsKey(targetToggle))
+        {
+            targetToggle.interactable = interactable;
+            targetToggle.image.color = interactable ? Color.white : ToggleColors.k_DisabledColor;
+        }
+    }
+
+    protected void EnableAllTogglesInteractability()
+    {
+        foreach (var toggleEntry in toggleDictionary)
+        {
+            ChangeToggleInteractability(toggleEntry.Key, true);
+        }
+    }
+
+    protected void DisableAllTogglesInteractability()
+    {
+        foreach (var toggleEntry in toggleDictionary)
+        {
+            ChangeToggleInteractability(toggleEntry.Key, false);
+        }
+    }
+
     protected void EnableTogglesToAtLeast(T level)
     {
         foreach (var toggleEntry in toggleDictionary)
@@ -84,8 +112,7 @@ public abstract class ToggleSelectionableUIBase<T> : MonoBehaviour where T : Enu
             Toggle toggle = toggleEntry.Key;
             T type = toggleEntry.Value;
             bool shouldEnable = type.CompareTo(level) >= 0;
-            toggle.enabled = shouldEnable;
-            toggle.image.color = shouldEnable ? Color.white : ToggleColors.k_DisabledColor;
+            ChangeToggleInteractability(toggle, shouldEnable);
         }
     }
 
@@ -96,8 +123,7 @@ public abstract class ToggleSelectionableUIBase<T> : MonoBehaviour where T : Enu
             Toggle toggle = toggleEntry.Key;
             T type = toggleEntry.Value;
             bool shouldEnable = type.CompareTo(level) <= 0;
-            toggle.enabled = shouldEnable;
-            toggle.image.color = shouldEnable ? Color.white : ToggleColors.k_DisabledColor;
+            ChangeToggleInteractability(toggle, shouldEnable);
         }
     }
 
@@ -109,6 +135,7 @@ public abstract class ToggleSelectionableUIBase<T> : MonoBehaviour where T : Enu
 
     public void Hide()
     {
+        EnableAllTogglesInteractability();
         ResetSelection();
         gameObject.SetActive(false);
     }

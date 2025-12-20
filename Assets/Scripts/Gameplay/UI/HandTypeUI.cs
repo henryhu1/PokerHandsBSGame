@@ -8,6 +8,8 @@ public class HandTypeUI : ToggleSelectionableUIBase<HandType>
 
     [Header("Listening Events")]
     [SerializeField] private BoolEventChannelSO OnAreFlushesAllowed;
+    [SerializeField] private PokerHandEventChannelSO OnUpdatePlayableHands;
+    [SerializeField] private PokerHandEventChannelSO OnSendPokerHandToPlay;
 
     protected override void Awake()
     {
@@ -22,32 +24,49 @@ public class HandTypeUI : ToggleSelectionableUIBase<HandType>
                 {
                     OnSelectHandType.RaiseEvent(toggleDictionary[toggle]);
                 }
-                else
-                {
-                    if (toggleGroup.GetFirstActiveToggle() == null)
-                    {
-                        InvokeNoSelectionMade();
-                    }
-                }
             });
         }
     }
 
     private void OnEnable()
     {
+        EnableAllTogglesInteractability();
+
         OnAreFlushesAllowed.OnEventRaised += CardManager_AreFlushesAllowed;
+        OnUpdatePlayableHands.OnEventRaised += UpdatedPlayableHands;
+        OnSendPokerHandToPlay.OnEventRaised += SentPokerHandToPlay;
     }
 
     private void OnDisable()
     {
         OnAreFlushesAllowed.OnEventRaised -= CardManager_AreFlushesAllowed;
+        OnUpdatePlayableHands.OnEventRaised -= UpdatedPlayableHands;
+        OnSendPokerHandToPlay.OnEventRaised -= SentPokerHandToPlay;
     }
 
-    // TODO: disabling all hands lower than last played hand
-    //private void GameManager_UpdatePlayableHands(PokerHand playedHand)
-    //{
-    //    EnableTogglesToAtLeast();
-    //}
+    private void UpdatedPlayableHands(PokerHand playedHand)
+    {
+        HandType lastPlayed = playedHand.GetHandType();
+        Rank primaryRank = playedHand.GetPrimaryRank();
+        Rank secondaryRank = playedHand.GetSecondaryRank();
+        if (lastPlayed == HandType.RoyalFlush)
+        {
+            DisableAllTogglesInteractability();
+        }
+        else if (primaryRank == Rank.Ace && (playedHand is SingleRankHand || playedHand is RankSuitHand || secondaryRank == Rank.King))
+        {
+            EnableTogglesToAtLeast(lastPlayed + 1);
+        }
+        else
+        {
+            EnableTogglesToAtLeast(lastPlayed);
+        }
+    }
+
+    private void SentPokerHandToPlay(PokerHand playedPokerHand)
+    {
+        ResetSelection();
+    }
 
     private void CardManager_AreFlushesAllowed(bool flushesAllowed)
     {
@@ -55,7 +74,6 @@ public class HandTypeUI : ToggleSelectionableUIBase<HandType>
 
         if (flushToggle == null) return;
 
-        flushToggle.interactable = flushesAllowed;
-        flushToggle.image.color = flushesAllowed ? Color.white : ToggleColors.k_DisabledColor;
+        ChangeToggleInteractability(flushToggle, flushesAllowed);
     }
 }
