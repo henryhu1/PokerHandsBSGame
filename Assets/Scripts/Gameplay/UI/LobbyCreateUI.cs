@@ -36,10 +36,6 @@ public class LobbyCreateUI : MonoBehaviour
         }
         Instance = this;
 
-        SetToggleText<GameType>(m_gameTypeSetting);
-        SetToggleText<LobbyType>(m_lobbyTypeSetting);
-        SetToggleText<TimeForTurnType>(playerTimerSetting);
-
         m_createButton.onClick.AddListener(() => {
             LobbyManager.Instance.CreateLobby(
                 m_lobbyName,
@@ -84,17 +80,6 @@ public class LobbyCreateUI : MonoBehaviour
     private void LobbyListUI_OnCreatingNewLobby(object sender, EventArgs e)
     {
         Show();
-    }
-
-    private static void SetToggleText<T>(CreateLobbySettingTogglesUI settingToggles) where T : Enum
-    {
-        string settingName = typeof(T).Name;
-        settingToggles.SetSettingText(StringUtils.SplitCapitals(settingName));
-
-        foreach (var value in Enum.GetValues(typeof(T)))
-        {
-            settingToggles.SetToggleLabel((int)value, value.ToString());
-        }
     }
 
     private void Hide()
