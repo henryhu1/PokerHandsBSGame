@@ -38,7 +38,7 @@ public class EndOfGameUI : MonoBehaviour
         }
         Instance = this;
 
-        m_selectedGameType = GameManager.Instance.SelectedGameType;
+        m_selectedGameType = GameManager.Instance.GetGameType();
         m_resultItems = new List<ResultItemUI>();
         animatable = GetComponent<TransitionableUIBase>();
 

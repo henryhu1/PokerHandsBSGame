@@ -15,6 +15,7 @@ public class LobbyManager : MonoBehaviour
     public const string KEY_PLAYER_NAME = "PlayerName";
     public const string KEY_PLAYER_CHARACTER = "Character";
     public const string KEY_GAME_MODE = "GameType";
+    public const string KEY_TIME_FOR_PLAYER = "TimeForPlayer";
     public const string KEY_START_GAME = "Start";
 
     public static string k_DefaultLobbyName = "Lobby";
@@ -198,16 +199,17 @@ public class LobbyManager : MonoBehaviour
         }
     }
 
-    public async void CreateLobby(string lobbyName, int maxPlayers, LobbyType lobbyType, GameType gameType)
+    public async void CreateLobby(string lobbyName, int maxPlayers, LobbyType lobbyType, GameType gameType, TimeForTurnType playerTimer)
     {
         Player player = GetPlayer();
 
-        CreateLobbyOptions options = new CreateLobbyOptions
+        CreateLobbyOptions options = new()
         {
             Player = player,
             IsPrivate = lobbyType == LobbyType.Private,
             Data = new Dictionary<string, DataObject> {
                 { KEY_GAME_MODE, new DataObject(DataObject.VisibilityOptions.Public, gameType.ToString()) },
+                { KEY_TIME_FOR_PLAYER, new DataObject(DataObject.VisibilityOptions.Public, playerTimer.ToString()) },
                 { KEY_START_GAME, new DataObject(DataObject.VisibilityOptions.Member, "0") },
             }
         };
@@ -449,8 +451,9 @@ public class LobbyManager : MonoBehaviour
                 OnGameStarted?.Invoke(this, EventArgs.Empty);
 
                 GameType gameType = Enum.Parse<GameType>(m_joinedLobby.Data[KEY_GAME_MODE].Value);
+                TimeForTurnType timeForPlayer = Enum.Parse<TimeForTurnType>(m_joinedLobby.Data[KEY_TIME_FOR_PLAYER].Value);
 
-                GameManager.Instance.InitializeSettings(gameType, m_joinedLobby.Players.Count);
+                GameManager.Instance.InitializeSettings(gameType, m_joinedLobby.Players.Count, timeForPlayer);
 
                 string relayCode = await RelayManager.Instance.CreateRelay(m_joinedLobby.Players.Count);
 

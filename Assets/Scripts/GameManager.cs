@@ -13,15 +13,10 @@ public class GameManager : NetworkBehaviour
     private float m_clientConnectionCheckTimer;
 
     // Game settings
-    private GameType m_selectedGameType;
-    public GameType SelectedGameType
-    {
-        get { return m_selectedGameType; }
-        private set { m_selectedGameType = value; }
-    }
+    private GameType selectedGameType;
     private int m_numberOfPlayers;
     public int NumberOfPlayers { get { return m_numberOfPlayers; } }
-    private float m_timeForTurn;
+    private TimeForTurnType timeForTurn;
 
     private string m_localPlayerId;
     public string LocalPlayerId
@@ -342,6 +337,10 @@ public class GameManager : NetworkBehaviour
         OnPlayerOut.OnEventRaised -= CardManager_PlayerOut;
     }
 
+    public GameType GetGameType() { return selectedGameType; }
+
+    public TimeForTurnType GetTimeForPlayer() { return timeForTurn; }
+
     private void CardManager_PlayerOut(ulong losingClientId)
     {
         if (IsServer)
@@ -478,14 +477,14 @@ public class GameManager : NetworkBehaviour
         return m_playedHandLog.Count != 0 && !m_playedHandLog.Last().IsPokerHandBetter(pokerHand);
     }
 
-    public void InitializeSettings(GameType gameType, int numberOfPlayers, float timeForTurn = 10f)
+    public void InitializeSettings(GameType gameType, int numberOfPlayers, TimeForTurnType timeForTurn)
     {
 #if UNITY_EDITOR
-        Debug.Log($"creating game for {numberOfPlayers} players in {gameType} mode");
+        Debug.Log($"creating game for {numberOfPlayers} players in {gameType} mode with {timeForTurn} time to play");
 #endif
-        SelectedGameType = gameType;
+        selectedGameType = gameType;
         m_numberOfPlayers = numberOfPlayers;
-        m_timeForTurn = timeForTurn;
+        this.timeForTurn = timeForTurn;
     }
 
     private void EndGameCleanup()
@@ -508,7 +507,7 @@ public class GameManager : NetworkBehaviour
         {
             GameType gameType = (GameType) gameTypeValue;
             ulong winnerClientId = m_inPlayClientIds[0];
-            m_selectedGameType = gameType;
+            selectedGameType = gameType;
             CardManager.Instance.SetAmountOfCardsFromGameSetting();
 
             List<ulong> backInPlayClientIds = new List<ulong>(m_connectedClientIds.Keys.ToList());

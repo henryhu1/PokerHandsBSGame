@@ -120,7 +120,7 @@ public class CardGameServerManager
 
     public void ConfigureFromGameSettings()
     {
-        if (GameManager.Instance.SelectedGameType == GameType.Ascending)
+        if (GameManager.Instance.GetGameType() == GameType.Ascending)
         {
             startAmount = CardManagerConstants.AscStarting;
             endAmount = CardManagerConstants.AscLimit;

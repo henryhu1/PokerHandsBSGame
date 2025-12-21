@@ -1,6 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -19,6 +17,7 @@ public class LobbyCreateUI : MonoBehaviour
     [SerializeField] private TMP_InputField m_lobbyNameInputField;
     [SerializeField] private CreateLobbySettingTogglesUI m_lobbyTypeSetting;
     [SerializeField] private CreateLobbySettingTogglesUI m_gameTypeSetting;
+    [SerializeField] private CreateLobbySettingTogglesUI playerTimerSetting;
     // [SerializeField] private Button m_publicPrivateButton;
     // [SerializeField] private Button maxPlayersButton;
     // [SerializeField] private Button m_gameModeButton;
@@ -39,13 +38,15 @@ public class LobbyCreateUI : MonoBehaviour
 
         SetToggleText<GameType>(m_gameTypeSetting);
         SetToggleText<LobbyType>(m_lobbyTypeSetting);
+        SetToggleText<TimeForTurnType>(playerTimerSetting);
 
         m_createButton.onClick.AddListener(() => {
             LobbyManager.Instance.CreateLobby(
                 m_lobbyName,
                 m_maxPlayers,
                 (LobbyType)m_lobbyTypeSetting.GetActiveToggle(),
-                (GameType)m_gameTypeSetting.GetActiveToggle()
+                (GameType)m_gameTypeSetting.GetActiveToggle(),
+                (TimeForTurnType)playerTimerSetting.GetActiveToggle()
             );
             Hide();
         });
