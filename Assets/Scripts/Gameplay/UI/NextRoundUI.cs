@@ -11,12 +11,14 @@ public class NextRoundUI : MonoBehaviour
     [SerializeField] private Toggle m_readyForNextRoundToggle;
     [SerializeField] private TextMeshProUGUI m_playersReadyText;
     [SerializeField] private TextMeshProUGUI m_toggleText;
-    [SerializeField] private TextMeshProUGUI m_playerLeftText;
+    [SerializeField] private GameObject offendingPlayerUI;
+    [SerializeField] private TextMeshProUGUI offendingPlayerText;
 
     [Header("Listening Events")]
     [SerializeField] private VoidEventChannelSO OnNextRoundStarting;
     [SerializeField] private VoidEventChannelSO OnRoundEnded;
     [SerializeField] private StringEventChannelSO OnPlayerLeft;
+    [SerializeField] private StringEventChannelSO OnPlayerRanOutOfTime;
     [SerializeField] private VoidEventChannelSO OnGameWon;
 
     private TransitionableUIBase animatable;
@@ -39,6 +41,7 @@ public class NextRoundUI : MonoBehaviour
 
         m_canBeReady = GameManager.Instance.IsNotOut();
         ResetTotalPlayersText();
+        offendingPlayerUI.SetActive(false);
         m_toggleText.text = k_readyText;
 
         m_readyForNextRoundToggle.onValueChanged.AddListener(isOn =>
@@ -56,6 +59,7 @@ public class NextRoundUI : MonoBehaviour
     {
         OnRoundEnded.OnEventRaised += EndOfRound;
         OnPlayerLeft.OnEventRaised += PlayerLeft;
+        OnPlayerRanOutOfTime.OnEventRaised += PlayerRanOutOfTime;
         OnNextRoundStarting.OnEventRaised += NextRoundStarting;
         OnGameWon.OnEventRaised += GameWon;
     }
@@ -64,6 +68,7 @@ public class NextRoundUI : MonoBehaviour
     {
         OnRoundEnded.OnEventRaised -= EndOfRound;
         OnPlayerLeft.OnEventRaised -= PlayerLeft;
+        OnPlayerRanOutOfTime.OnEventRaised -= PlayerRanOutOfTime;
         OnNextRoundStarting.OnEventRaised -= NextRoundStarting;
         OnGameWon.OnEventRaised -= GameWon;
     }
@@ -76,56 +81,63 @@ public class NextRoundUI : MonoBehaviour
     private void EndOfRound()
     {
         ResetTotalPlayersText();
-        m_playerLeftText.gameObject.SetActive(false);
-        if (animatable.IsOffScreen())
-        {
-            m_toggleText.text = k_readyText;
-            m_readyForNextRoundToggle.enabled = m_canBeReady;
-            m_readyForNextRoundToggle.isOn = false;
-            animatable.StartAnimation();
-        }
+        offendingPlayerUI.SetActive(false);
+        // if (animatable.IsOffScreen())
+        // {
+        m_toggleText.text = k_readyText;
+        m_readyForNextRoundToggle.enabled = m_canBeReady;
+        m_readyForNextRoundToggle.isOn = false;
+        animatable.TransitionOnToScreen();
+        // }
     }
 
     private void PlayerLeft(string playerLeftName)
     {
         ResetTotalPlayersText();
-        m_playerLeftText.gameObject.SetActive(true);
-        m_playerLeftText.text = $"{playerLeftName} has left";
-        if (animatable.IsOffScreen())
-        {
-            m_toggleText.text = k_readyText;
-            m_readyForNextRoundToggle.enabled = m_canBeReady;
-            m_readyForNextRoundToggle.isOn = false;
-            animatable.StartAnimation();
-        }
+        offendingPlayerUI.SetActive(true);
+        offendingPlayerText.text = $"{playerLeftName} has left";
+    }
+
+    private void PlayerRanOutOfTime(string playerRanOutOfTimeName)
+    {
+        ResetTotalPlayersText();
+        offendingPlayerUI.SetActive(true);
+        offendingPlayerText.text = $"{playerRanOutOfTimeName} has timed out";
     }
 
     private void NextRoundStarting()
     {
-        if (!animatable.IsOffScreen())
-        {
-            m_toggleText.text = k_readyText;
-            m_readyForNextRoundToggle.enabled = false;
-            m_readyForNextRoundToggle.isOn = false;
-            animatable.StartAnimation();
-        }
+        // if (!animatable.IsOffScreen())
+        // {
+        offendingPlayerUI.SetActive(false);
+        m_toggleText.text = k_readyText;
+        m_readyForNextRoundToggle.enabled = false;
+        m_readyForNextRoundToggle.isOn = false;
+        animatable.TransitionOffScreen();
+        // }
     }
 
     private void GameWon()
     {
-        if (!animatable.IsOffScreen())
-        {
-            m_toggleText.text = k_readyText;
-            m_readyForNextRoundToggle.enabled = false;
-            m_readyForNextRoundToggle.isOn = false;
-            animatable.StartAnimation();
-        }
+        // if (!animatable.IsOffScreen())
+        // {
+        offendingPlayerUI.SetActive(false);
+        m_toggleText.text = k_readyText;
+        m_readyForNextRoundToggle.enabled = false;
+        m_readyForNextRoundToggle.isOn = false;
+        animatable.TransitionOffScreen();
+        // }
     }
 
     private void ResetTotalPlayersText()
     {
         m_totalPlayersToBeReady = GameManager.Instance.m_inPlayClientIds.Count;
         m_playersReadyText.text = $"0/{m_totalPlayersToBeReady}";
+    }
+
+    public void SetTotalPlayersToBeReady(int totalPlayers)
+    {
+        m_totalPlayersToBeReady = totalPlayers;
     }
 
     public void SetNumberOfPlayersReadyText(int numberOfPlayersReady)

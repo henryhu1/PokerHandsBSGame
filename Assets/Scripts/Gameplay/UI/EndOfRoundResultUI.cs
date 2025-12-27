@@ -56,21 +56,19 @@ public class EndOfRoundResultUI : MonoBehaviour
 
     private void EndOfRoundResult(int roundResultValue)
     {
-        if (!animatable.IsOffScreen()) return;
-
         RoundResultTypes roundResult = (RoundResultTypes) roundResultValue;
         m_panel.color = s_roundResultColors[roundResult];
         m_endOfRoundText.text = s_roundResultMessages[roundResult];
-        animatable.StartAnimation();
+        animatable.TransitionOnToScreen();
     }
 
     private void NextRoundStarting()
     {
-        if (!animatable.IsOffScreen()) animatable.StartAnimation();
+        animatable.TransitionOffScreen();
     }
 
     private void GameWon()
     {
-        if (!animatable.IsOffScreen()) animatable.StartAnimation();
+        animatable.TransitionOffScreen();
     }
 }

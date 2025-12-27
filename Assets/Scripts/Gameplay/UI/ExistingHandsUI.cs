@@ -49,12 +49,12 @@ public class ExistingHandsUI : MonoBehaviour
             existingHandItem.GiveExistingHandItem(hand, playedHandInfo.Item1, playedHandInfo.Item2 + 1);
             m_ExistingHandItems.Add(existingHandItem);
         }
-        animatable.StartAnimation();
+        animatable.TransitionOnToScreen();
     }
 
     private void GameWon()
     {
-        animatable.StartAnimation();
+        animatable.TransitionOffScreen();
     }
 
     private void ClearContent()
@@ -65,7 +65,7 @@ public class ExistingHandsUI : MonoBehaviour
 
     private void NextRoundStarting()
     {
-        animatable.StartAnimation();
+        animatable.TransitionOffScreen();
         ClearContent();
     }
 

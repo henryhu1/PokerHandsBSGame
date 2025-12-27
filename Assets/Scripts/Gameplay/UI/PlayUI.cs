@@ -32,16 +32,10 @@ public class PlayUI : MonoBehaviour
         actionsAnimatable = actionsUI.GetComponent<TransitionableUIBase>();
         handSelectionAnimatable = handSelectionUI.GetComponent<TransitionableUIBase>();
 
-        GameManager.Instance.RegisterPlayUIObservers();
         if (!GameManager.Instance.IsNotOut())
         {
             Hide();
         }
-    }
-
-    private void OnDestroy()
-    {
-        GameManager.Instance.UnregisterPlayUIObservers();
     }
 
     private void OnEnable()
@@ -62,21 +56,15 @@ public class PlayUI : MonoBehaviour
 
     public void Show()
     {
-        if (GameManager.Instance.IsNotOut())
-        {
-            actionsAnimatable.StartAnimation();
-            handSelectionAnimatable.StartAnimation();
-            orderCardsUI.Show();
-        }
+        actionsAnimatable.TransitionOnToScreen();
+        handSelectionAnimatable.TransitionOnToScreen();
+        orderCardsUI.Show();
     }
 
     public void Hide()
     {
-        if (GameManager.Instance.IsNotOut())
-        {
-            actionsAnimatable.StartAnimation();
-            handSelectionAnimatable.StartAnimation();
-            orderCardsUI.Hide();
-        }
+        actionsAnimatable.TransitionOffScreen();
+        handSelectionAnimatable.TransitionOffScreen();
+        orderCardsUI.Hide();
     }
 }

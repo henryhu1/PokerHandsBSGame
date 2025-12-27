@@ -1,7 +1,7 @@
 using DG.Tweening;
 using UnityEngine;
 
-public class TransitionableUIBase : MonoBehaviour, IAnimatable
+public class TransitionableUIBase : MonoBehaviour
 {
     [SerializeField] private TransitionInDirection m_inDirection;
     [SerializeField] private Ease easingFunction = Ease.OutCubic;
@@ -29,11 +29,6 @@ public class TransitionableUIBase : MonoBehaviour, IAnimatable
         isOffScreen = true;
 
         transitioningRect.gameObject.SetActive(false);
-    }
-
-    public bool IsOffScreen()
-    {
-        return isOffScreen;
     }
 
     private Vector3 GetOffScreenPosition()
@@ -73,21 +68,38 @@ public class TransitionableUIBase : MonoBehaviour, IAnimatable
         return newSequence;
     }
 
-    public void StartAnimation()
+    public void TransitionOnToScreen()
     {
-        StopAnimation();
+        if (!isOffScreen) return;
+
+        // StopAnimation();
         transitioningRect.gameObject.SetActive(true);
         transitioningSequence = GetTransitionSequence();
         transitioningSequence.Play();
     }
 
-    public void StopAnimation()
+    public void TransitionOffScreen()
     {
-        if (transitioningSequence != null && transitioningSequence.IsPlaying())
-        {
-            transitioningSequence.Kill();
-            transitioningRect.position = m_originalPosition;
-            transitioningRect.gameObject.SetActive(false);
-        }
+        if (isOffScreen) return;
+
+        // StopAnimation();
+        transitioningRect.gameObject.SetActive(true);
+        transitioningSequence = GetTransitionSequence();
+        transitioningSequence.Play();
     }
+
+    // public void StartAnimation()
+    // {
+    // }
+
+    // public void StopAnimation()
+    // {
+    //     if (transitioningSequence != null && transitioningSequence.IsPlaying())
+    //     {
+    //         transitioningSequence.Kill();
+    //         Vector3 finalPosition = isOffScreen ? m_originalPosition : GetOffScreenPosition();
+    //         transitioningRect.position = finalPosition;
+    //         isOffScreen = !isOffScreen;
+    //     }
+    // }
 }

@@ -36,11 +36,11 @@ public class PlayedHandLogUI : MonoBehaviour
         AllOpponentCards.Instance.OnMouseExitOpponentHand += AllOpponentCards_MouseExitOpponentHand;
         GameManager.Instance.OnAddToCardLog += GameManager_AddToCardLog;
         GameManager.Instance.OnClearCardLog += GameManager_ClearCardLog;
-        OnGameWon.OnEventRaised += animatable.StartAnimation;
+        OnGameWon.OnEventRaised += GameWon;
 
         OnSelectOpponentHand.OnEventRaised += AllOpponentCards_SelectOpponentHand;
-        OnCameraInPosition.OnEventRaised += animatable.StartAnimation;
-        OnInitializeNewGame.OnEventRaised += animatable.StartAnimation;
+        OnCameraInPosition.OnEventRaised += CameraInPosition;
+        OnInitializeNewGame.OnEventRaised += InitializeNewGame;
         OnDisplayPlayedHandsPresent.OnEventRaised += DisplayPlayedHandsPresent;
     }
 
@@ -51,11 +51,11 @@ public class PlayedHandLogUI : MonoBehaviour
         AllOpponentCards.Instance.OnMouseExitOpponentHand -= AllOpponentCards_MouseExitOpponentHand;
         GameManager.Instance.OnAddToCardLog -= GameManager_AddToCardLog;
         GameManager.Instance.OnClearCardLog -= GameManager_ClearCardLog;
-        OnGameWon.OnEventRaised -= animatable.StartAnimation;
+        OnGameWon.OnEventRaised -= GameWon;
 
         OnSelectOpponentHand.OnEventRaised -= AllOpponentCards_SelectOpponentHand;
-        OnCameraInPosition.OnEventRaised -= animatable.StartAnimation;
-        OnInitializeNewGame.OnEventRaised -= animatable.StartAnimation;
+        OnCameraInPosition.OnEventRaised -= CameraInPosition;
+        OnInitializeNewGame.OnEventRaised -= InitializeNewGame;
         OnDisplayPlayedHandsPresent.OnEventRaised -= DisplayPlayedHandsPresent;
     }
 
@@ -107,6 +107,21 @@ public class PlayedHandLogUI : MonoBehaviour
     {
         foreach (PlayedHandLogItemUI playedHandLogItemUI in m_PlayedHandLogItems) Destroy(playedHandLogItemUI.gameObject);
         m_PlayedHandLogItems.Clear();
+    }
+
+    private void GameWon()
+    {
+        animatable.TransitionOffScreen();
+    }
+
+    private void CameraInPosition()
+    {
+        animatable.TransitionOnToScreen();
+    }
+
+    private void InitializeNewGame()
+    {
+        animatable.TransitionOnToScreen();
     }
 
     public (string, int) GetPlayerAndRoundOfPlayedHand(PokerHand hand)

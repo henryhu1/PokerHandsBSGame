@@ -106,13 +106,13 @@ public class EndOfGameUI : MonoBehaviour
 
             m_resultItems.Add(resultItemUI);
         }
-        animatable.StartAnimation();
+        animatable.TransitionOnToScreen();
     }
 
     private void InitializeNewGame()
     {
         foreach (ResultItemUI resultItemUI in m_resultItems) Destroy(resultItemUI.gameObject);
         m_resultItems.Clear();
-        animatable.StartAnimation();
+        animatable.TransitionOffScreen();
     }
 }

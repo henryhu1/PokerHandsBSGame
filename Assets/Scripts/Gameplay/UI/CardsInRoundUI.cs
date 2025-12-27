@@ -41,7 +41,7 @@ public class CardsInRoundUI : MonoBehaviour
 
     private void MoveOffScreen()
     {
-        if (!animatable.IsOffScreen()) animatable.StartAnimation();
+        animatable.TransitionOffScreen();
     }
 
     private void FillCardsInRound(List<PlayerCardInfo> allCardInfo)
@@ -72,6 +72,6 @@ public class CardsInRoundUI : MonoBehaviour
             uiItems++;
         }
 
-        animatable.StartAnimation();
+        animatable.TransitionOnToScreen();
     }
 }
