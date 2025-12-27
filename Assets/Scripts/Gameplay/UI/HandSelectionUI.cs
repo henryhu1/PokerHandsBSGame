@@ -23,6 +23,7 @@ public class HandSelectionUI : MonoBehaviour
     [SerializeField] private VoidEventChannelSO OnNoSelectionSecondaryRank;
     [SerializeField] private VoidEventChannelSO OnNoSelectionSuit;
     [SerializeField] private PokerHandEventChannelSO OnUpdatePlayableHands;
+    [SerializeField] private VoidEventChannelSO OnNextRoundStarting;
 
     // TODO (1): should probably move each field to be in their toggle script
     private Rank? selectedPrimaryRank;
@@ -60,6 +61,7 @@ public class HandSelectionUI : MonoBehaviour
         OnNoSelectionHand.OnEventRaised += HandTypeUI_NoSelectionMade;
 
         OnUpdatePlayableHands.OnEventRaised += UpdatePlayableHands;
+        OnNextRoundStarting.OnEventRaised += NextRoundStarting;
     }
 
     private void OnDisable()
@@ -77,6 +79,7 @@ public class HandSelectionUI : MonoBehaviour
         OnNoSelectionHand.OnEventRaised -= HandTypeUI_NoSelectionMade;
 
         OnUpdatePlayableHands.OnEventRaised -= UpdatePlayableHands;
+        OnNextRoundStarting.OnEventRaised -= NextRoundStarting;
     }
 
     private void HandleHandTypeSelection(HandType newHandSelected)
@@ -113,6 +116,7 @@ public class HandSelectionUI : MonoBehaviour
 
     private void UpdatePlayableHands(PokerHand lastPlayedHand)
     {
+        Debug.Log($"updating selection to be better than {lastPlayedHand}");
         HandType lastPlayedHandType = lastPlayedHand.GetHandType();
         if (lastPlayedHandType == selectedHand)
         {
@@ -126,6 +130,13 @@ public class HandSelectionUI : MonoBehaviour
             selectedHand = null;
             HideAllSelections();
         }
+    }
+
+    private void NextRoundStarting()
+    {
+        cardRankChoicesPrimary.EnableAllTogglesInteractability();
+        cardRankChoicesSecondary.EnableAllTogglesInteractability();
+        cardSuitChoices.EnableAllTogglesInteractability();
     }
 
     private void HandTypeUI_NoSelectionMade()

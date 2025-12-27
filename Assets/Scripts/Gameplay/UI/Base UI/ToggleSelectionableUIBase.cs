@@ -89,7 +89,7 @@ public abstract class ToggleSelectionableUIBase<T> : MonoBehaviour where T : Enu
         }
     }
 
-    protected void EnableAllTogglesInteractability()
+    public void EnableAllTogglesInteractability()
     {
         foreach (var toggleEntry in toggleDictionary)
         {

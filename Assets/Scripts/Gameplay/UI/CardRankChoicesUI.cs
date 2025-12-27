@@ -81,26 +81,24 @@ public class CardRankChoicesUI : ToggleSelectionableUIBase<Rank>
         {
             DisableUnplayableRanks(lastPlayedHand);
         }
+        else if (s_HandTypeRankLowerBounds.TryGetValue(choosingRankForHandType, out Rank rankBound))
+        {
+            EnableTogglesToAtLeast(rankBound);
+        }
         else
         {
-            if (s_HandTypeRankLowerBounds.TryGetValue(choosingRankForHandType, out Rank rankBound))
+            EnableAllTogglesInteractability();
+        }
+
+        if (choosingRankForHandType == HandType.TwoPair)
+        {
+            if (m_isPrimaryRankChoice)
             {
-                EnableTogglesToAtLeast(rankBound);
-            }
-            else if (choosingRankForHandType == HandType.TwoPair)
-            {
-                if (m_isPrimaryRankChoice)
-                {
-                    EnableTogglesToAtLeast(Rank.Three);
-                }
-                else
-                {
-                    EnableTogglesToAtMost(Rank.King);
-                }
+                ChangeToggleInteractability(FindToggle(Rank.Three), false);
             }
             else
             {
-                EnableTogglesToAtLeast(Rank.Two);
+                ChangeToggleInteractability(FindToggle(Rank.King), false);
             }
         }
         Show();
