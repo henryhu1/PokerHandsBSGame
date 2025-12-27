@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Services.Authentication;
@@ -36,7 +35,7 @@ public class LobbyManager : MonoBehaviour
     public event EventHandler<LobbyEventArgs> OnJoinedLobby;
     public event EventHandler<LobbyEventArgs> OnJoinedLobbyUpdate;
     public event EventHandler<LobbyEventArgs> OnKickedFromLobby;
-    public event EventHandler<LobbyEventArgs> OnLobbyGameTypeChanged;
+    public event EventHandler<LobbyEventArgs> OnLobbyChanged;
     public class LobbyEventArgs : EventArgs
     {
         public Lobby lobby;
@@ -419,7 +418,8 @@ public class LobbyManager : MonoBehaviour
         }
     }
 
-    public async void UpdateLobbyGameType(GameType gameType)
+    // TODO: generalize update lobby call
+    private async void UpdateLobbyGameType(GameType gameType)
     {
         try
         {
@@ -432,7 +432,32 @@ public class LobbyManager : MonoBehaviour
 
             m_joinedLobby = lobby;
 
-            OnLobbyGameTypeChanged?.Invoke(this, new LobbyEventArgs { lobby = m_joinedLobby });
+            OnLobbyChanged?.Invoke(this, new LobbyEventArgs { lobby = m_joinedLobby });
+        }
+        catch (LobbyServiceException e)
+        {
+#if UNITY_EDITOR
+            Debug.LogError(e.Message);
+#endif
+        }
+    }
+
+    public async void UpdateTimeForTurn(TimeForTurnType timeForTurnType)
+    {
+        if (!IsLobbyHost()) return;
+
+        try
+        {
+            Lobby lobby = await Lobbies.Instance.UpdateLobbyAsync(m_joinedLobby.Id, new UpdateLobbyOptions
+            {
+                Data = new Dictionary<string, DataObject> {
+                    { KEY_TIME_FOR_PLAYER, new DataObject(DataObject.VisibilityOptions.Public, timeForTurnType.ToString()) }
+                }
+            });
+
+            m_joinedLobby = lobby;
+
+            OnLobbyChanged?.Invoke(this, new LobbyEventArgs { lobby = m_joinedLobby });
         }
         catch (LobbyServiceException e)
         {
