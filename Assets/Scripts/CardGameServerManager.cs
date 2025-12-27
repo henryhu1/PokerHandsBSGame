@@ -108,6 +108,14 @@ public class CardGameServerManager
         return isPlayerOut;
     }
 
+    public void SetPlayerOut(ulong clientId)
+    {
+        PlayerCardInfo clientCardInfo = clientCards[clientId];
+        clientCardInfo.amountOfCards = 0;
+        clientCardInfo.cards.Clear();
+        clientCards[clientId] = clientCardInfo;
+    }
+
     public void RemovePlayer(ulong clientId)
     {
         clientCards.Remove(clientId);
