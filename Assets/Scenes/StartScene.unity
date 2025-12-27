@@ -344,6 +344,7 @@ MonoBehaviour:
   OnInvalidPlay: {fileID: 11400000, guid: 09b02b6f2cc7fb54e90d78cadf28c517, type: 2}
   OnUpdatePlayableHands: {fileID: 11400000, guid: d41ef8b59aead7940a78ac7d27b185d7, type: 2}
   OnPlayerLeft: {fileID: 11400000, guid: e764b6f002e5ea340aefa0bedf3a899b, type: 2}
+  OnPlayerRanOutOfTime: {fileID: 11400000, guid: c839ebc367e62a341b74426f93fd3496, type: 2}
   OnInitializeNewGame: {fileID: 11400000, guid: 819f300a5119a584b85d32c1537c7b44, type: 2}
   OnDisplayAllHandsInPlay: {fileID: 11400000, guid: 41bf55ca0669b40418ad49f73a3c1331, type: 2}
   OnDisplayPlayedHandsPresent: {fileID: 11400000, guid: 238d720b52f89e94c906038b27840ab8, type: 2}
