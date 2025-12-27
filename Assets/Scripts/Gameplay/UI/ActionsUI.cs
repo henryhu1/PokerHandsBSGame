@@ -44,10 +44,6 @@ public class ActionsUI : MonoBehaviour
             {
                 OnInvalidPlay.RaiseEvent((int)InvalidPlays.HandTooLow);
             }
-            else if (playingPokerHand.GetHandType() == HandType.Flush && !CardManager.Instance.IsFlushAllowedToBePlayed())
-            {
-                OnInvalidPlay.RaiseEvent((int)InvalidPlays.FlushNotAllowed);
-            }
             else
             {
                 OnSendPokerHandToPlay.RaiseEvent(playingPokerHand);
