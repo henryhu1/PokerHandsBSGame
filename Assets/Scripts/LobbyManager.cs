@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Services.Authentication;
@@ -15,6 +14,7 @@ public class LobbyManager : MonoBehaviour
     public const string KEY_PLAYER_NAME = "PlayerName";
     public const string KEY_PLAYER_CHARACTER = "Character";
     public const string KEY_GAME_MODE = "GameType";
+    public const string KEY_TIME_FOR_PLAYER = "TimeForPlayer";
     public const string KEY_START_GAME = "Start";
 
     public static string k_DefaultLobbyName = "Lobby";
@@ -35,7 +35,7 @@ public class LobbyManager : MonoBehaviour
     public event EventHandler<LobbyEventArgs> OnJoinedLobby;
     public event EventHandler<LobbyEventArgs> OnJoinedLobbyUpdate;
     public event EventHandler<LobbyEventArgs> OnKickedFromLobby;
-    public event EventHandler<LobbyEventArgs> OnLobbyGameTypeChanged;
+    public event EventHandler<LobbyEventArgs> OnLobbyChanged;
     public class LobbyEventArgs : EventArgs
     {
         public Lobby lobby;
@@ -198,16 +198,17 @@ public class LobbyManager : MonoBehaviour
         }
     }
 
-    public async void CreateLobby(string lobbyName, int maxPlayers, LobbyType lobbyType, GameType gameType)
+    public async void CreateLobby(string lobbyName, int maxPlayers, LobbyType lobbyType, GameType gameType, TimeForTurnType playerTimer)
     {
         Player player = GetPlayer();
 
-        CreateLobbyOptions options = new CreateLobbyOptions
+        CreateLobbyOptions options = new()
         {
             Player = player,
             IsPrivate = lobbyType == LobbyType.Private,
             Data = new Dictionary<string, DataObject> {
                 { KEY_GAME_MODE, new DataObject(DataObject.VisibilityOptions.Public, gameType.ToString()) },
+                { KEY_TIME_FOR_PLAYER, new DataObject(DataObject.VisibilityOptions.Public, playerTimer.ToString()) },
                 { KEY_START_GAME, new DataObject(DataObject.VisibilityOptions.Member, "0") },
             }
         };
@@ -417,7 +418,8 @@ public class LobbyManager : MonoBehaviour
         }
     }
 
-    public async void UpdateLobbyGameType(GameType gameType)
+    // TODO: generalize update lobby call
+    private async void UpdateLobbyGameType(GameType gameType)
     {
         try
         {
@@ -430,7 +432,32 @@ public class LobbyManager : MonoBehaviour
 
             m_joinedLobby = lobby;
 
-            OnLobbyGameTypeChanged?.Invoke(this, new LobbyEventArgs { lobby = m_joinedLobby });
+            OnLobbyChanged?.Invoke(this, new LobbyEventArgs { lobby = m_joinedLobby });
+        }
+        catch (LobbyServiceException e)
+        {
+#if UNITY_EDITOR
+            Debug.LogError(e.Message);
+#endif
+        }
+    }
+
+    public async void UpdateTimeForTurn(TimeForTurnType timeForTurnType)
+    {
+        if (!IsLobbyHost()) return;
+
+        try
+        {
+            Lobby lobby = await Lobbies.Instance.UpdateLobbyAsync(m_joinedLobby.Id, new UpdateLobbyOptions
+            {
+                Data = new Dictionary<string, DataObject> {
+                    { KEY_TIME_FOR_PLAYER, new DataObject(DataObject.VisibilityOptions.Public, timeForTurnType.ToString()) }
+                }
+            });
+
+            m_joinedLobby = lobby;
+
+            OnLobbyChanged?.Invoke(this, new LobbyEventArgs { lobby = m_joinedLobby });
         }
         catch (LobbyServiceException e)
         {
@@ -449,8 +476,9 @@ public class LobbyManager : MonoBehaviour
                 OnGameStarted?.Invoke(this, EventArgs.Empty);
 
                 GameType gameType = Enum.Parse<GameType>(m_joinedLobby.Data[KEY_GAME_MODE].Value);
+                TimeForTurnType timeForPlayer = Enum.Parse<TimeForTurnType>(m_joinedLobby.Data[KEY_TIME_FOR_PLAYER].Value);
 
-                GameManager.Instance.InitializeSettings(gameType, m_joinedLobby.Players.Count);
+                GameManager.Instance.InitializeSettings(gameType, m_joinedLobby.Players.Count, timeForPlayer);
 
                 string relayCode = await RelayManager.Instance.CreateRelay(m_joinedLobby.Players.Count);
 

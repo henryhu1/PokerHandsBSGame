@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,11 +7,6 @@ public class AllOpponentCards : MonoBehaviour
 
     // TODO: programatically figure out how to evenly position opponent hands in space
     [SerializeField] private List<OpponentHand> opponentCardsGameObjects;
-
-    [HideInInspector]
-    public delegate void SelectOpponentHandDelegateHandler(ulong clientId);
-    [HideInInspector]
-    public event SelectOpponentHandDelegateHandler OnSelectOpponentHand;
 
     [HideInInspector]
     public delegate void UnselectAllOpponentHandDelegateHandler();
@@ -29,6 +23,9 @@ public class AllOpponentCards : MonoBehaviour
     [HideInInspector]
     public event MouseExitOpponentHandDelegateHandler OnMouseExitOpponentHand;
 
+    [Header("Firing Events")]
+    [SerializeField] private UlongEventChannelSO OnSelectOpponentHand;
+
     private OpponentHand m_userSelectedHand;
     public OpponentHand UserSelectedHand { get { return m_userSelectedHand; } }
 
@@ -39,15 +36,13 @@ public class AllOpponentCards : MonoBehaviour
             Destroy(Instance.gameObject);
         }
         Instance = this;
-
-        HideOpponentHands();
     }
 
     private void Start()
     {
         opponentCardsGameObjects.ForEach(i =>
         {
-            i.OnMouseEnterThisHand += (ulong clientId, string name, int amountOfCards) =>
+            i.OnMouseEnterThisHand += (clientId, name, amountOfCards) =>
             {
                 OnMouseEnterOpponentHand?.Invoke(clientId, name, amountOfCards);
             };
@@ -60,6 +55,8 @@ public class AllOpponentCards : MonoBehaviour
                 SelectOpponentHand(i);
             };
         });
+
+        HideOpponentHands();
     }
 
     public void HideOpponentHands()
@@ -67,14 +64,30 @@ public class AllOpponentCards : MonoBehaviour
         opponentCardsGameObjects.ForEach(i => i.gameObject.SetActive(false));
     }
 
-    public void DisplayOpponentCards(List<int> opponentCardAmounts, List<string> opponentNames, ulong[] clientIds)
+    public void DisplayOpponentCards(List<PlayerCardInfo> orderedOpponentCards)
     {
         for (int i = 0; i < opponentCardsGameObjects.Count; i++)
         {
-            if (i < opponentCardAmounts.Count && opponentCardAmounts[i] > 0)
+            if (i < orderedOpponentCards.Count && orderedOpponentCards[i].amountOfCards > 0)
             {
                 opponentCardsGameObjects[i].gameObject.SetActive(true);
-                opponentCardsGameObjects[i].DisplayCards(opponentCardAmounts[i], opponentNames[i], clientIds[i]);
+                opponentCardsGameObjects[i].DisplayCards(orderedOpponentCards[i]);
+            }
+            else
+            {
+                opponentCardsGameObjects[i].gameObject.SetActive(false);
+            }
+        }
+    }
+
+    public void DisplayHiddenOpponentCards(List<PlayerHiddenCardInfo> orderedOpponentsHiddenCards)
+    {
+        for (int i = 0; i < opponentCardsGameObjects.Count; i++)
+        {
+            if (i < orderedOpponentsHiddenCards.Count && orderedOpponentsHiddenCards[i].amountOfCards > 0)
+            {
+                opponentCardsGameObjects[i].gameObject.SetActive(true);
+                opponentCardsGameObjects[i].DisplayBlanks(orderedOpponentsHiddenCards[i]);
             }
             else
             {
@@ -91,7 +104,7 @@ public class AllOpponentCards : MonoBehaviour
     private void SelectOpponentHand(OpponentHand opponentHand)
     {
         m_userSelectedHand = opponentHand;
-        OnSelectOpponentHand?.Invoke(opponentHand.OpponentClientId);
+        OnSelectOpponentHand.RaiseEvent(opponentHand.OpponentClientId);
     }
 
     public void UnselectAllOpponentHands()

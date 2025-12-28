@@ -1,14 +1,20 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
-public class PlayedHandLogUI : TransitionableUIBase
+public class PlayedHandLogUI : MonoBehaviour
 {
-    public static PlayedHandLogUI Instance { get; private set; }
-
     [SerializeField] private PlayedHandLogItemUI m_PlayedHandLogItemUIPrefab;
     [SerializeField] private GameObject m_LogContent;
+
+    private TransitionableUIBase animatable;
+
+    [Header("Listening Events")]
+    [SerializeField] private UlongEventChannelSO OnSelectOpponentHand;
+    [SerializeField] private VoidEventChannelSO OnCameraInPosition;
+    [SerializeField] private VoidEventChannelSO OnInitializeNewGame;
+    [SerializeField] private BoolListEventChannelSO OnDisplayPlayedHandsPresent;
+    [SerializeField] private VoidEventChannelSO OnGameWon;
 
     // TODO: GetPlayerAndRoundOfPlayedHand and AllOpponentCards events must iterate over this list
     //   to find the corresponding played hands, a better data structure could be used for better efficiency
@@ -17,68 +23,48 @@ public class PlayedHandLogUI : TransitionableUIBase
     private const float k_pulseCycle = 0.5f;
     private Coroutine m_PulsingCoroutine;
 
-    protected override void Awake()
+    private void Awake()
     {
-        base.Awake();
-
-        if (Instance != this && Instance != null)
-        {
-            Destroy(Instance.gameObject);
-        }
-        Instance = this;
-
+        animatable = GetComponent<TransitionableUIBase>();
         m_PlayedHandLogItems = new List<PlayedHandLogItemUI>();
     }
 
-    protected override void RegisterForEvents()
+    private void OnEnable()
     {
-        CameraRotationLookAtTarget.Instance.OnCameraInPosition += CameraRotationLookAtTarget_CameraInPosition;
-        AllOpponentCards.Instance.OnSelectOpponentHand += AllOpponentCards_SelectOpponentHand;
         AllOpponentCards.Instance.OnUnselectAllOpponentHand += AllOpponentCards_UnselectAllOpponentHand;
         AllOpponentCards.Instance.OnMouseEnterOpponentHand += AllOpponentCards_MouseEnterOpponentHand;
         AllOpponentCards.Instance.OnMouseExitOpponentHand += AllOpponentCards_MouseExitOpponentHand;
         GameManager.Instance.OnAddToCardLog += GameManager_AddToCardLog;
-        GameManager.Instance.OnEndOfRound += GameManager_EndOfRound;
-        GameManager.Instance.OnPlayerLeft += GameManager_PlayerLeft;
         GameManager.Instance.OnClearCardLog += GameManager_ClearCardLog;
-        GameManager.Instance.OnGameWon += GameManager_GameWon;
-        GameManager.Instance.OnRestartGame += GameManager_RestartGame;
+        OnGameWon.OnEventRaised += GameWon;
+
+        OnSelectOpponentHand.OnEventRaised += AllOpponentCards_SelectOpponentHand;
+        OnCameraInPosition.OnEventRaised += CameraInPosition;
+        OnInitializeNewGame.OnEventRaised += InitializeNewGame;
+        OnDisplayPlayedHandsPresent.OnEventRaised += DisplayPlayedHandsPresent;
     }
 
-    private void UnregisterForEvents()
+    private void OnDisable()
     {
-        CameraRotationLookAtTarget.Instance.OnCameraInPosition -= CameraRotationLookAtTarget_CameraInPosition;
-        AllOpponentCards.Instance.OnSelectOpponentHand -= AllOpponentCards_SelectOpponentHand;
         AllOpponentCards.Instance.OnUnselectAllOpponentHand -= AllOpponentCards_UnselectAllOpponentHand;
         AllOpponentCards.Instance.OnMouseEnterOpponentHand -= AllOpponentCards_MouseEnterOpponentHand;
         AllOpponentCards.Instance.OnMouseExitOpponentHand -= AllOpponentCards_MouseExitOpponentHand;
         GameManager.Instance.OnAddToCardLog -= GameManager_AddToCardLog;
-        GameManager.Instance.OnEndOfRound -= GameManager_EndOfRound;
-        GameManager.Instance.OnPlayerLeft -= GameManager_PlayerLeft;
         GameManager.Instance.OnClearCardLog -= GameManager_ClearCardLog;
-        GameManager.Instance.OnGameWon -= GameManager_GameWon;
-        GameManager.Instance.OnRestartGame -= GameManager_RestartGame;
+        OnGameWon.OnEventRaised -= GameWon;
+
+        OnSelectOpponentHand.OnEventRaised -= AllOpponentCards_SelectOpponentHand;
+        OnCameraInPosition.OnEventRaised -= CameraInPosition;
+        OnInitializeNewGame.OnEventRaised -= InitializeNewGame;
+        OnDisplayPlayedHandsPresent.OnEventRaised -= DisplayPlayedHandsPresent;
     }
 
-    protected override void Start()
-    {
-        RegisterForEvents();
-        base.Start();
-    }
-
-    private void OnDestroy() { UnregisterForEvents(); }
-
-    private void DisplayWhichPlayedHandsPresent(List<bool> playedHandsPresent)
+    private void DisplayPlayedHandsPresent(List<bool> playedHandsPresent)
     {
         for (int i = 0; i < playedHandsPresent.Count; i++)
         {
             m_PlayedHandLogItems[i].ShowHandPresentIcon(playedHandsPresent[i]);
         }
-    }
-
-    private void CameraRotationLookAtTarget_CameraInPosition()
-    {
-        StartAnimation();
     }
 
     private void AllOpponentCards_SelectOpponentHand(ulong clientId)
@@ -91,7 +77,8 @@ public class PlayedHandLogUI : TransitionableUIBase
         UnhighlightPlayedHands();
     }
 
-    private void AllOpponentCards_MouseEnterOpponentHand(ulong clientId, string name, int amountOfCards)
+    // TODO: refactor into event channel to remove unused args
+    private void AllOpponentCards_MouseEnterOpponentHand(ulong clientId, string _, int __)
     {
         StartPulsingAnimation(clientId);
     }
@@ -111,19 +98,9 @@ public class PlayedHandLogUI : TransitionableUIBase
     private void GameManager_AddToCardLog(PlayedHandLogItem playedHandLogItem)
     {
         PlayedHandLogItemUI cardLogItem = Instantiate(m_PlayedHandLogItemUIPrefab, m_LogContent.transform);
-        cardLogItem.GiveLogItem(playedHandLogItem);
+        cardLogItem.GiveLogItem(m_PlayedHandLogItems.Count + 1, playedHandLogItem);
 
         m_PlayedHandLogItems.Add(cardLogItem);
-    }
-
-    private void GameManager_EndOfRound(List<bool> playedHandsPresent, List<PokerHand> _)
-    {
-        DisplayWhichPlayedHandsPresent(playedHandsPresent);
-    }
-
-    private void GameManager_PlayerLeft(string _, List<bool> playedHandsPresent, List<PokerHand> __)
-    {
-        DisplayWhichPlayedHandsPresent(playedHandsPresent);
     }
 
     private void GameManager_ClearCardLog()
@@ -132,14 +109,19 @@ public class PlayedHandLogUI : TransitionableUIBase
         m_PlayedHandLogItems.Clear();
     }
 
-    private void GameManager_GameWon(int _, List<GameManager.PlayerData> __)
+    private void GameWon()
     {
-        StartAnimation();
+        animatable.TransitionOffScreen();
     }
 
-    private void GameManager_RestartGame()
+    private void CameraInPosition()
     {
-        StartAnimation();
+        animatable.TransitionOnToScreen();
+    }
+
+    private void InitializeNewGame()
+    {
+        animatable.TransitionOnToScreen();
     }
 
     public (string, int) GetPlayerAndRoundOfPlayedHand(PokerHand hand)

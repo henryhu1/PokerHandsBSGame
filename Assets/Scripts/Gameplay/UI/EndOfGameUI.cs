@@ -1,10 +1,9 @@
-using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class EndOfGameUI : TransitionableUIBase
+public class EndOfGameUI : MonoBehaviour
 {
     public static EndOfGameUI Instance { get; private set; }
 
@@ -18,29 +17,30 @@ public class EndOfGameUI : TransitionableUIBase
     [SerializeField] private Button m_exitButton;
     private GameType m_selectedGameType;
     private List<ResultItemUI> m_resultItems;
-
-    [HideInInspector]
-    public delegate void RestartGameDelegateHandler(GameType gameType);
-    [HideInInspector]
-    public event RestartGameDelegateHandler OnRestartGame;
+    private TransitionableUIBase animatable;
 
     [HideInInspector]
     public delegate void ExitGameDelegateHandler();
     [HideInInspector]
     public event ExitGameDelegateHandler OnExitGame;
 
-    protected override void Awake()
-    {
-        base.Awake();
+    [Header("Firing Events")]
+    [SerializeField] private IntEventChannelSO OnRestartGame;
 
+    [Header("Listening Events")]
+    [SerializeField] private VoidEventChannelSO OnInitializeNewGame;
+
+    private void Awake()
+    {
         if (Instance != this && Instance != null)
         {
             Destroy(Instance.gameObject);
         }
         Instance = this;
 
-        m_selectedGameType = GameManager.Instance.SelectedGameType;
+        m_selectedGameType = GameManager.Instance.GetGameType();
         m_resultItems = new List<ResultItemUI>();
+        animatable = GetComponent<TransitionableUIBase>();
 
         m_gameModeButton.onClick.AddListener(() =>
         {
@@ -59,7 +59,7 @@ public class EndOfGameUI : TransitionableUIBase
 
         m_restartButton.onClick.AddListener(() =>
         {
-            OnRestartGame?.Invoke(m_selectedGameType);
+            OnRestartGame.RaiseEvent((int)m_selectedGameType);
         });
 
         m_exitButton.onClick.AddListener(() =>
@@ -67,35 +67,35 @@ public class EndOfGameUI : TransitionableUIBase
             OnExitGame?.Invoke();
         });
 
-        m_optionsUI.gameObject.SetActive(GameManager.Instance.IsHost);
+        m_optionsUI.SetActive(GameManager.Instance.IsHost);
     }
 
-    protected override void RegisterForEvents()
+    private void OnEnable()
+    {
+        OnInitializeNewGame.OnEventRaised += InitializeNewGame;
+    }
+
+    private void OnDisable()
+    {
+        OnInitializeNewGame.OnEventRaised -= InitializeNewGame;
+    }
+
+    private void Start()
     {
         GameManager.Instance.RegisterEndOfGameUICallbacks();
-        GameManager.Instance.OnGameWon += GameManager_GameWon;
-        GameManager.Instance.OnRestartGame += GameManager_RestartGame;
-    }
-
-    protected override void Start()
-    {
-        RegisterForEvents();
-        base.Start();
     }
 
     private void OnDestroy()
     {
         GameManager.Instance.UnregisterEndOfGameUICallbacks();
-        GameManager.Instance.OnGameWon -= GameManager_GameWon;
-        GameManager.Instance.OnRestartGame -= GameManager_RestartGame;
     }
 
-    public void GameManager_GameWon(int myPosition, List<GameManager.PlayerData> eliminationOrder)
+    public void DisplayGameResults(int myPosition, List<PlayerData> eliminationOrder)
     {
-        m_restartGameOption.gameObject.SetActive(GameManager.Instance.m_connectedClientIds.Count != 1);
+        m_restartGameOption.SetActive(GameManager.Instance.m_connectedClientIds.Count != 1);
         for (int i = 0; i < eliminationOrder.Count; i++)
         {
-            GameManager.PlayerData playerData = eliminationOrder[i];
+            PlayerData playerData = eliminationOrder[i];
             string playerName = playerData.Name;
             if (i + 1 == myPosition)
             {
@@ -106,13 +106,13 @@ public class EndOfGameUI : TransitionableUIBase
 
             m_resultItems.Add(resultItemUI);
         }
-        StartAnimation();
+        animatable.TransitionOnToScreen();
     }
 
-    public void GameManager_RestartGame()
+    private void InitializeNewGame()
     {
         foreach (ResultItemUI resultItemUI in m_resultItems) Destroy(resultItemUI.gameObject);
         m_resultItems.Clear();
-        StartAnimation();
+        animatable.TransitionOffScreen();
     }
 }

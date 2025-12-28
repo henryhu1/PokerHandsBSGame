@@ -1,48 +1,42 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ExistingHandsUI : TransitionableUIBase
+public class ExistingHandsUI : MonoBehaviour
 {
+    [Header("UI")]
+    [SerializeField] private PlayedHandLogUI playedHandLogUI;
     [SerializeField] private ExistingHandItemUI m_ExistingHandItemUIPrefab;
     [SerializeField] private GameObject m_LogContent;
 
+    [Header("Listening Events")]
+    [SerializeField] private VoidEventChannelSO OnNextRoundStarting;
+    [SerializeField] private VoidEventChannelSO OnInitializeNewGame;
+    [SerializeField] private PokerHandListEventChannelSO OnDisplayAllHandsInPlay;
+    [SerializeField] private VoidEventChannelSO OnGameWon;
+
+    private TransitionableUIBase animatable;
     private List<ExistingHandItemUI> m_ExistingHandItems;
 
-    protected override void Awake()
+    private void Awake()
     {
-        base.Awake();
-
+        animatable = GetComponent<TransitionableUIBase>();
         m_ExistingHandItems = new List<ExistingHandItemUI>();
     }
 
-    protected override void RegisterForEvents()
+    private void OnEnable()
     {
-        GameManager.Instance.OnEndOfRound += GameManager_EndOfRound;
-        GameManager.Instance.OnPlayerLeft += GameManager_PlayerLeft;
-        GameManager.Instance.OnNextRoundStarting += GameManager_NextRoundStarting;
-        GameManager.Instance.OnGameWon += GameManager_GameWon;
-        GameManager.Instance.OnRestartGame += GameManager_RestartGame;
+        OnNextRoundStarting.OnEventRaised += NextRoundStarting;
+        OnGameWon.OnEventRaised += GameWon;
+        OnInitializeNewGame.OnEventRaised += InitializeNewGame;
+        OnDisplayAllHandsInPlay.OnEventRaised += DisplayAllHandsInPlay;
     }
 
-    private void UnregisterFromEvents()
+    private void OnDisable()
     {
-        GameManager.Instance.OnEndOfRound -= GameManager_EndOfRound;
-        GameManager.Instance.OnPlayerLeft -= GameManager_PlayerLeft;
-        GameManager.Instance.OnNextRoundStarting -= GameManager_NextRoundStarting;
-        GameManager.Instance.OnGameWon -= GameManager_GameWon;
-        GameManager.Instance.OnRestartGame -= GameManager_RestartGame;
-    }
-
-    protected override void Start()
-    {
-        RegisterForEvents();
-        base.Start();
-    }
-
-    private void OnDestroy()
-    {
-        UnregisterFromEvents();
+        OnNextRoundStarting.OnEventRaised -= NextRoundStarting;
+        OnGameWon.OnEventRaised -= GameWon;
+        OnInitializeNewGame.OnEventRaised -= InitializeNewGame;
+        OnDisplayAllHandsInPlay.OnEventRaised -= DisplayAllHandsInPlay;
     }
 
     private void DisplayAllHandsInPlay(List<PokerHand> allHandsInPlay)
@@ -51,27 +45,16 @@ public class ExistingHandsUI : TransitionableUIBase
         {
             ExistingHandItemUI existingHandItem = Instantiate(m_ExistingHandItemUIPrefab, m_LogContent.transform);
             PokerHand hand = allHandsInPlay[i];
-            (string, int) playedHandInfo = PlayedHandLogUI.Instance.GetPlayerAndRoundOfPlayedHand(hand);
+            (string, int) playedHandInfo = playedHandLogUI.GetPlayerAndRoundOfPlayedHand(hand);
             existingHandItem.GiveExistingHandItem(hand, playedHandInfo.Item1, playedHandInfo.Item2 + 1);
             m_ExistingHandItems.Add(existingHandItem);
         }
+        animatable.TransitionOnToScreen();
     }
 
-    private void GameManager_EndOfRound(List<bool> _, List<PokerHand> allHandsInPlay)
+    private void GameWon()
     {
-        DisplayAllHandsInPlay(allHandsInPlay);
-        StartAnimation();
-    }
-
-    private void GameManager_PlayerLeft(string _, List<bool> __, List<PokerHand> allHandsInPlay)
-    {
-        DisplayAllHandsInPlay(allHandsInPlay);
-        StartAnimation();
-    }
-
-    private void GameManager_GameWon(int _, List<GameManager.PlayerData> __)
-    {
-        StartAnimation();
+        animatable.TransitionOffScreen();
     }
 
     private void ClearContent()
@@ -80,13 +63,13 @@ public class ExistingHandsUI : TransitionableUIBase
         m_ExistingHandItems.Clear();
     }
 
-    private void GameManager_NextRoundStarting()
+    private void NextRoundStarting()
     {
-        StartAnimation();
+        animatable.TransitionOffScreen();
         ClearContent();
     }
 
-    private void GameManager_RestartGame()
+    private void InitializeNewGame()
     {
         ClearContent();
     }

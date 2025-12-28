@@ -10,11 +10,9 @@ public class CameraRotationLookAtTarget : MonoBehaviour
     [SerializeField] private AnimationCurve movementCurve;
     [SerializeField] private float m_movementDuration;
 
-    [HideInInspector]
-    public delegate void CameraInPositionDelegateHandler();
-    [HideInInspector]
+    [Header("Firing Events")]
     // TODO: UI gets displayed on camera in position, instead should UI be displayed when cards are distributed?
-    public event CameraInPositionDelegateHandler OnCameraInPosition;
+    [SerializeField] private VoidEventChannelSO OnCameraInPosition;
 
     private void Awake()
     {
@@ -47,7 +45,7 @@ public class CameraRotationLookAtTarget : MonoBehaviour
             yield return null;
         }
 
-        OnCameraInPosition?.Invoke();
+        OnCameraInPosition.RaiseEvent();
         transform.rotation = endRotation;
     }
 }

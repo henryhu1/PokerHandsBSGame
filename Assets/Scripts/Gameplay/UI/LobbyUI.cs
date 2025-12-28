@@ -22,7 +22,9 @@ public class LobbyUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI m_lobbyNameText;
     [SerializeField] private TextMeshProUGUI m_lobbyJoinCodeText;
     [SerializeField] private TextMeshProUGUI m_playerCountText;
-    [SerializeField] private TextMeshProUGUI m_gameModeText;
+    [SerializeField] private Toggle timeInTurnFiveToggle;
+    [SerializeField] private Toggle timeInTurnTenToggle;
+    [SerializeField] private Toggle timeInTurnFifteenToggle;
     [SerializeField] private TextMeshProUGUI m_changeGameModeButtonText;
     [SerializeField] private TextMeshProUGUI m_gameStartingText;
     [SerializeField] private Button m_changeGameModeButton;
@@ -30,7 +32,6 @@ public class LobbyUI : MonoBehaviour
     [SerializeField] private Button m_leaveLobbyButton;
     private bool m_isCreatingGame;
     private Coroutine m_startingTextCoroutine;
-
 
     private void Awake()
     {
@@ -61,13 +62,35 @@ public class LobbyUI : MonoBehaviour
             m_isCreatingGame = true;
             LobbyManager.Instance.StartGame();
         });
+
+        timeInTurnFiveToggle.onValueChanged.AddListener(isOn =>
+        {
+            if (isOn)
+            {
+                LobbyManager.Instance.UpdateTimeForTurn(TimeForTurnType.Five);
+            }
+        });
+        timeInTurnTenToggle.onValueChanged.AddListener(isOn =>
+        {
+            if (isOn)
+            {
+                LobbyManager.Instance.UpdateTimeForTurn(TimeForTurnType.Ten);
+            }
+        });
+        timeInTurnFifteenToggle.onValueChanged.AddListener(isOn =>
+        {
+            if (isOn)
+            {
+                LobbyManager.Instance.UpdateTimeForTurn(TimeForTurnType.Fifteen);
+            }
+        });
     }
 
     private void Start()
     {
         LobbyManager.Instance.OnJoinedLobby += UpdateLobby_Event;
         LobbyManager.Instance.OnJoinedLobbyUpdate += UpdateLobby_Event;
-        LobbyManager.Instance.OnLobbyGameTypeChanged += UpdateLobby_Event;
+        LobbyManager.Instance.OnLobbyChanged += UpdateLobby_Event;
         LobbyManager.Instance.OnLeftLobby += LobbyManager_OnLeftLobby;
         LobbyManager.Instance.OnKickedFromLobby += LobbyManager_OnLeftLobby;
         LobbyManager.Instance.OnGameStarted += LobbyManager_OnGameStarted;
@@ -80,7 +103,7 @@ public class LobbyUI : MonoBehaviour
     {
         LobbyManager.Instance.OnJoinedLobby -= UpdateLobby_Event;
         LobbyManager.Instance.OnJoinedLobbyUpdate -= UpdateLobby_Event;
-        LobbyManager.Instance.OnLobbyGameTypeChanged -= UpdateLobby_Event;
+        LobbyManager.Instance.OnLobbyChanged -= UpdateLobby_Event;
         LobbyManager.Instance.OnLeftLobby -= LobbyManager_OnLeftLobby;
         LobbyManager.Instance.OnKickedFromLobby -= LobbyManager_OnLeftLobby;
         LobbyManager.Instance.OnGameStarted -= LobbyManager_OnGameStarted;
@@ -165,16 +188,13 @@ public class LobbyUI : MonoBehaviour
             }
         }
 
-        m_gameModeText.gameObject.SetActive(!LobbyManager.Instance.IsLobbyHost());
-
-        m_changeGameModeButton.gameObject.SetActive(LobbyManager.Instance.IsLobbyHost());
+        m_changeGameModeButton.interactable = LobbyManager.Instance.IsLobbyHost();
         m_startGameButton.gameObject.SetActive(LobbyManager.Instance.IsLobbyHost());
         m_startGameButton.enabled = !m_isCreatingGame && lobby.Players.Count >= 2;
 
         m_lobbyNameText.text = lobby.Name;
         m_playerCountText.text = lobby.Players.Count + "/" + lobby.MaxPlayers;
-        m_gameModeText.text = lobby.Data[LobbyManager.KEY_GAME_MODE].Value;
-        m_changeGameModeButtonText.text = m_gameModeText.text;
+        m_changeGameModeButtonText.text = lobby.Data[LobbyManager.KEY_GAME_MODE].Value;
         if (lobby.IsPrivate && lobby.LobbyCode != "")
         {
             m_lobbyJoinCodeText.gameObject.SetActive(true);
@@ -185,6 +205,18 @@ public class LobbyUI : MonoBehaviour
             m_lobbyJoinCodeText.text = "";
             m_lobbyJoinCodeText.gameObject.SetActive(false);
         }
+
+        if (!LobbyManager.Instance.IsLobbyHost())
+        {
+            timeInTurnFiveToggle.interactable = false;
+            timeInTurnTenToggle.interactable = false;
+            timeInTurnFifteenToggle.interactable = false;
+        }
+
+        TimeForTurnType timeInTurn = Enum.Parse<TimeForTurnType>(lobby.Data[LobbyManager.KEY_TIME_FOR_PLAYER].Value);
+        timeInTurnFiveToggle.isOn = timeInTurn == TimeForTurnType.Five;
+        timeInTurnTenToggle.isOn = timeInTurn == TimeForTurnType.Ten;
+        timeInTurnFifteenToggle.isOn = timeInTurn == TimeForTurnType.Fifteen;
 
         Show();
     }

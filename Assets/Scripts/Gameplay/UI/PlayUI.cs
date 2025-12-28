@@ -1,15 +1,22 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayUI : MonoBehaviour
 {
     public static PlayUI Instance { get; private set; }
 
-    [HideInInspector]
-    public delegate void ShowPlayUIDelegateHandler();
-    [HideInInspector]
-    public event ShowPlayUIDelegateHandler OnShowPlayUI;
+    [Header("UI Children")]
+    [SerializeField] private ActionsUI actionsUI;
+    [SerializeField] private HandSelectionUI handSelectionUI;
+    [SerializeField] private OrderCardsUI orderCardsUI;
+
+    private TransitionableUIBase actionsAnimatable;
+    private TransitionableUIBase handSelectionAnimatable;
+
+    [Header("Listening Events")]
+    [SerializeField] private VoidEventChannelSO OnCameraInPosition;
+    [SerializeField] private VoidEventChannelSO OnNextRoundStarting;
+    [SerializeField] private VoidEventChannelSO OnRoundEnded;
+    [SerializeField] private VoidEventChannelSO OnInitializeNewGame;
 
     private void Awake()
     {
@@ -22,26 +29,42 @@ public class PlayUI : MonoBehaviour
 
     private void Start()
     {
-        GameManager.Instance.RegisterPlayUIObservers();
+        actionsAnimatable = actionsUI.GetComponent<TransitionableUIBase>();
+        handSelectionAnimatable = handSelectionUI.GetComponent<TransitionableUIBase>();
+
         if (!GameManager.Instance.IsNotOut())
         {
             Hide();
         }
     }
 
-    private void OnDestroy()
+    private void OnEnable()
     {
-        GameManager.Instance.UnregisterPlayUIObservers();
+        OnCameraInPosition.OnEventRaised += Show;
+        OnRoundEnded.OnEventRaised += Hide;
+        OnNextRoundStarting.OnEventRaised += Show;
+        OnInitializeNewGame.OnEventRaised += Show;
+    }
+
+    private void OnDisable()
+    {
+        OnCameraInPosition.OnEventRaised -= Show;
+        OnRoundEnded.OnEventRaised -= Hide;
+        OnNextRoundStarting.OnEventRaised -= Show;
+        OnInitializeNewGame.OnEventRaised -= Show;
     }
 
     public void Show()
     {
-        gameObject.SetActive(true);
-        OnShowPlayUI?.Invoke();
+        actionsAnimatable.TransitionOnToScreen();
+        handSelectionAnimatable.TransitionOnToScreen();
+        orderCardsUI.Show();
     }
 
     public void Hide()
     {
-        gameObject.SetActive(false);
+        actionsAnimatable.TransitionOffScreen();
+        handSelectionAnimatable.TransitionOffScreen();
+        orderCardsUI.Hide();
     }
 }

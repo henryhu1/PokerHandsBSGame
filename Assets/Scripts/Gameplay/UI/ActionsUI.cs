@@ -1,36 +1,52 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class ActionsUI : TransitionableUIBase
+public class ActionsUI : MonoBehaviour
 {
+    // TODO: remove Singleton?
     public static ActionsUI Instance { get; private set; }
 
+    [Header("Hand selection")]
+    [SerializeField] private HandSelectionUI handSelectionUI;
+
+    [Header("UI")]
     [SerializeField] private Button m_PlayButton;
     [SerializeField] private Button m_BullshitButton;
     [SerializeField] private Outline m_Outline;
     [SerializeField] private InvalidPlayMessageUI m_InvalidPlayNotif;
     [SerializeField] private GameObject m_TurnNotification;
+
+    [Header("Firing Events")]
+    [SerializeField] private IntEventChannelSO OnInvalidPlay;
+    [SerializeField] private PokerHandEventChannelSO OnSendPokerHandToPlay;
+
+    [Header("Listening Events")]
+    [SerializeField] private BoolEventChannelSO OnNextPlayerTurn;
+
     private bool m_isPlayerOut;
 
-    protected override void Awake()
+    private void Awake()
     {
-        base.Awake();
-
         if (Instance != this && Instance != null)
         {
             Destroy(Instance.gameObject);
         }
         Instance = this;
 
-
         m_PlayButton.onClick.AddListener(() =>
         {
-            PokerHand playingPokerHand = HandSelectionUI.Instance.GetSelection();
-            if (playingPokerHand != null)
+            PokerHand playingPokerHand = handSelectionUI.GetSelection();
+            if (playingPokerHand == null)
             {
-                // TODO: clients have the last played hand, playable hand check can be done client side?
+                return;
+            }
+            else if (GameManager.Instance.IsHandLowerThanLastPlayed(playingPokerHand))
+            {
+                OnInvalidPlay.RaiseEvent((int)InvalidPlays.HandTooLow);
+            }
+            else
+            {
+                OnSendPokerHandToPlay.RaiseEvent(playingPokerHand);
                 GameManager.Instance.TryPlayingHandServerRpc(playingPokerHand);
             }
         });
@@ -45,76 +61,27 @@ public class ActionsUI : TransitionableUIBase
         m_PlayButton.enabled = GameManager.Instance.IsHost; // TODO: flimsy how based on host the play button enables, change to actual turn logic?
         m_BullshitButton.enabled = !GameManager.Instance.IsBeginningOfRound();
         m_Outline.enabled = m_PlayButton.enabled;
-        m_TurnNotification.gameObject.SetActive(m_PlayButton.enabled);
+        m_TurnNotification.SetActive(m_PlayButton.enabled);
     }
 
-    protected override void RegisterForEvents()
+    private void OnEnable()
     {
-        CameraRotationLookAtTarget.Instance.OnCameraInPosition += CameraRotationLookAtTarget_CameraInPosition;
-        PlayUI.Instance.OnShowPlayUI += PlayUI_ShowPlayUI;
-        TurnManager.Instance.OnNextPlayerTurn += TurnManager_NextPlayerTurn;
-        GameManager.Instance.OnEndOfRound += GameManager_EndOfRound;
-        GameManager.Instance.OnPlayerLeft += GameManager_PlayerLeft;
-        GameManager.Instance.OnNextRoundStarting += GameManager_NextRoundStarting;
-        GameManager.Instance.OnRestartGame += GameManager_RestartGame;
+        OnNextPlayerTurn.OnEventRaised += TurnManager_NextPlayerTurn;
     }
 
-    private void UnregisterFromEvents()
+    private void OnDisable()
     {
-        CameraRotationLookAtTarget.Instance.OnCameraInPosition -= CameraRotationLookAtTarget_CameraInPosition;
-        PlayUI.Instance.OnShowPlayUI -= PlayUI_ShowPlayUI;
-        TurnManager.Instance.OnNextPlayerTurn -= TurnManager_NextPlayerTurn;
-        GameManager.Instance.OnEndOfRound -= GameManager_EndOfRound;
-        GameManager.Instance.OnPlayerLeft -= GameManager_PlayerLeft;
-        GameManager.Instance.OnNextRoundStarting -= GameManager_NextRoundStarting;
-        GameManager.Instance.OnRestartGame -= GameManager_RestartGame;
+        OnNextPlayerTurn.OnEventRaised -= TurnManager_NextPlayerTurn;
     }
 
-    protected override void Start()
+    private void Start()
     {
-        RegisterForEvents();
         GameManager.Instance.RegisterActionsUIObservers();
-        base.Start();
     }
 
-    private void OnDestroy()
+    private void TurnManager_NextPlayerTurn(bool isPlayerTurn)
     {
-        UnregisterFromEvents();
-    }
-
-    private void CameraRotationLookAtTarget_CameraInPosition()
-    {
-        if (GameManager.Instance.IsNotOut()) StartAnimation();
-    }
-
-    private void PlayUI_ShowPlayUI()
-    {
-        StartAnimation();
-    }
-
-    private void TurnManager_NextPlayerTurn(bool isPlayerTurn, bool wasPlayersTurnPreviously)
-    {
-        SetTurnActions(isPlayerTurn, wasPlayersTurnPreviously);
-    }
-
-    private void GameManager_EndOfRound(List<bool> _, List<PokerHand> __)
-    {
-        if (GameManager.Instance.IsNotOut()) { StartAnimation(); }
-    }
-
-    private void GameManager_PlayerLeft(string _, List<bool> __, List<PokerHand> ___)
-    {
-        if (GameManager.Instance.IsNotOut()) { StartAnimation(); }
-    }
-
-    private void GameManager_NextRoundStarting()
-    {
-        if (GameManager.Instance.IsNotOut()) StartAnimation();
-    }
-    private void GameManager_RestartGame()
-    {
-        gameObject.SetActive(true);
-        StartAnimation();
+        SetTurnActions(isPlayerTurn);
     }
 
     public void SetPlayerOut()
@@ -127,11 +94,13 @@ public class ActionsUI : TransitionableUIBase
         m_isPlayerOut = false;
     }
 
-    private void SetTurnActions(bool isPlayerTurn, bool wasPlayersTurnPreviously)
+    private void SetTurnActions(bool isPlayerTurn)
     {
+        bool wasPlayerTurn = m_PlayButton.enabled;
+
         m_PlayButton.enabled = !m_isPlayerOut && isPlayerTurn;
-        m_BullshitButton.enabled = !m_isPlayerOut && !GameManager.Instance.IsBeginningOfRound() && !wasPlayersTurnPreviously;
+        m_BullshitButton.enabled = !m_isPlayerOut && !GameManager.Instance.IsBeginningOfRound() && !wasPlayerTurn;
         m_Outline.enabled = m_PlayButton.enabled;
-        m_TurnNotification.gameObject.SetActive(m_PlayButton.enabled);
+        m_TurnNotification.SetActive(m_PlayButton.enabled);
     }
 }

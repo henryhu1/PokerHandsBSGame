@@ -1,0 +1,223 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 01308269dfab7b54eb1230286b30b4d6, type: 3}
+  m_Name: CardRegistry
+  m_EditorClassIdentifier: Assembly-CSharp::CardRegistrySO
+  mappings:
+  - card: {fileID: 11400000, guid: 8f56a893e7a123b4ea26328804a3b1d1, type: 2}
+    cardPrefab: {fileID: 4728769083773931331, guid: aa3f536aaeb912142a229c72cbb7514f, type: 3}
+    material: {fileID: 2100000, guid: 49f773549eca46d44ab490b990a49638, type: 2}
+    texture: {fileID: 2800000, guid: c2a5726b287996745aacff7b182a521d, type: 3}
+  - card: {fileID: 11400000, guid: ff568fa443014b54ca49a5907fa5f785, type: 2}
+    cardPrefab: {fileID: 2407788585431381547, guid: de7f4fb19a9baa94ebd8c6c2a283f3f6, type: 3}
+    material: {fileID: 2100000, guid: d803f72679812954aa76f9e815a2d4c7, type: 2}
+    texture: {fileID: 2800000, guid: 9302d42f098e67c41a201e19aa1d27d0, type: 3}
+  - card: {fileID: 11400000, guid: b01a92cd8c7498f44a954a7a2ceecb81, type: 2}
+    cardPrefab: {fileID: 8607722703119711929, guid: 021b1345f20da974a9aab5db9f4b330b, type: 3}
+    material: {fileID: 2100000, guid: 06f7393e3cbc75745b689985b7d7bd66, type: 2}
+    texture: {fileID: 2800000, guid: a99f39bc317efcf4aae469b213d0d163, type: 3}
+  - card: {fileID: 11400000, guid: 8030429115c3b1146a0b761fec43f408, type: 2}
+    cardPrefab: {fileID: 14266837350846585, guid: 2f809bae5d074164f8a3f256bf447328, type: 3}
+    material: {fileID: 2100000, guid: cbab0580b8879524e82063bb1efc2241, type: 2}
+    texture: {fileID: 2800000, guid: d0e626a1e8e53a14e908b9c98e23b8f6, type: 3}
+  - card: {fileID: 11400000, guid: 2e81c2c0bac9a264797de408b9632b5e, type: 2}
+    cardPrefab: {fileID: 5157621696908248286, guid: cface5db7437a00479b954669cd05ca1, type: 3}
+    material: {fileID: 2100000, guid: bb0986a9b53cb3640a2caf7644d40c25, type: 2}
+    texture: {fileID: 2800000, guid: 9e4fef354a531d446b72020d5125348d, type: 3}
+  - card: {fileID: 11400000, guid: 0a1c5e5dab1ded84d86b7d0b32c2b70a, type: 2}
+    cardPrefab: {fileID: 4326086016779330002, guid: a3fa6a6e3af9b8e4bbc5fd6dbd61c97d, type: 3}
+    material: {fileID: 2100000, guid: a561ca00743bdf44ca8b934108059233, type: 2}
+    texture: {fileID: 2800000, guid: 0bcb19d93a016e94f93a7e2fac280bed, type: 3}
+  - card: {fileID: 11400000, guid: 14fc527a4e26aaf4ca29532eccaa477a, type: 2}
+    cardPrefab: {fileID: 1535433599517909325, guid: f5d7babdcad84164eb7736b01ab1ef68, type: 3}
+    material: {fileID: 2100000, guid: 9d0ec99a304804c4b993eb5fa073ec2e, type: 2}
+    texture: {fileID: 2800000, guid: 626366a4a0c7bca4084306eb5489123b, type: 3}
+  - card: {fileID: 11400000, guid: ad639595baaaa0a488dcb29a89651bd0, type: 2}
+    cardPrefab: {fileID: 4272227442516388497, guid: 1ffa384972b62264088918309142ec38, type: 3}
+    material: {fileID: 2100000, guid: 422a1d3a35c38ca408a61526f982ea69, type: 2}
+    texture: {fileID: 2800000, guid: 3d4efa847b2131947bb10e09e044efcc, type: 3}
+  - card: {fileID: 11400000, guid: edbfc7c6484050c478f5a41f28b7f75f, type: 2}
+    cardPrefab: {fileID: 2194625916379401999, guid: 7b39de9879e68a640a17a09cd4296412, type: 3}
+    material: {fileID: 2100000, guid: d216f2e8aee1adb4598c17fe71f1c801, type: 2}
+    texture: {fileID: 2800000, guid: 80a0d0770e8bb9f4ba714d5c5e782039, type: 3}
+  - card: {fileID: 11400000, guid: 114beb24df3f44f4ba8afc6c9558ae64, type: 2}
+    cardPrefab: {fileID: 797663579735092538, guid: e01dd721e8c464341ac4194731bb7873, type: 3}
+    material: {fileID: 2100000, guid: 00341c08193b4e846948e00c6de6e7f5, type: 2}
+    texture: {fileID: 2800000, guid: eb01a0c0319df854aa13366f4e1528a1, type: 3}
+  - card: {fileID: 11400000, guid: d745de2d85aa60f4ab40e665a9b01fa0, type: 2}
+    cardPrefab: {fileID: 4974323665272148467, guid: f2580bd22e569cd4d98c91090a22b37b, type: 3}
+    material: {fileID: 2100000, guid: 8357d0f7da7a8614b8e133a0d8d290e2, type: 2}
+    texture: {fileID: 2800000, guid: 0a6e3c6c40df41940ad2fb925fb0688c, type: 3}
+  - card: {fileID: 11400000, guid: 4b38218a172fd5d49a751e78ca9b63a8, type: 2}
+    cardPrefab: {fileID: 8387379401857513986, guid: 4a5b3932114d4e546be91128438ea6f5, type: 3}
+    material: {fileID: 2100000, guid: 2ccbfeb5812246e42816af52ea6b5d4d, type: 2}
+    texture: {fileID: 2800000, guid: b2d0ba18f8b024a49a61be93bf9c89c0, type: 3}
+  - card: {fileID: 11400000, guid: 71dec9276ed84684bb2e801d0e35b7c9, type: 2}
+    cardPrefab: {fileID: 8713357493971281527, guid: b431e3858e2209247a90d54c1c539236, type: 3}
+    material: {fileID: 2100000, guid: 45f7f5121b6734e44a71c9e5b6c9b850, type: 2}
+    texture: {fileID: 2800000, guid: 56b480213ded30244b28e72660856365, type: 3}
+  - card: {fileID: 11400000, guid: d1cfcf074d7057b4ba718f8b87ebcd61, type: 2}
+    cardPrefab: {fileID: 740152203769002627, guid: 8d1adc01c8cf8e54d891c3f33433ce3a, type: 3}
+    material: {fileID: 2100000, guid: a506b3b66c371d948adb135e67beeede, type: 2}
+    texture: {fileID: 2800000, guid: 77202bde798ef9241a53716b210fbd4e, type: 3}
+  - card: {fileID: 11400000, guid: a91cfeaa4e7431d46a5340f46e14f0be, type: 2}
+    cardPrefab: {fileID: 877798333468748233, guid: 72e771a4d7e3d024c905385aad4f4a5a, type: 3}
+    material: {fileID: 2100000, guid: 345dce84c961d994d93b100825e2815b, type: 2}
+    texture: {fileID: 2800000, guid: c223be1206095424885b1e1f058c1cf0, type: 3}
+  - card: {fileID: 11400000, guid: 8db532dd0c28fdb4a816b0c14d44ea0a, type: 2}
+    cardPrefab: {fileID: 8161463967123878006, guid: d70afd41d238a9c4eb86271647eb9fbe, type: 3}
+    material: {fileID: 2100000, guid: 05797f18252cf1347b6f9a645769c939, type: 2}
+    texture: {fileID: 2800000, guid: 7dd21bd4dee823b43b4a9d0eb3ea9825, type: 3}
+  - card: {fileID: 11400000, guid: e5b34116892c73d44a0e1db886f57ae2, type: 2}
+    cardPrefab: {fileID: 4705094881709916490, guid: 44a05ad15ff2a1143ae60d7c53480816, type: 3}
+    material: {fileID: 2100000, guid: 12a901429781cf147a860449a3e26329, type: 2}
+    texture: {fileID: 2800000, guid: d87ecc733e1090e44ab67b3fdde3c4bf, type: 3}
+  - card: {fileID: 11400000, guid: e33df123f65ac1141ad59f28a165d7f3, type: 2}
+    cardPrefab: {fileID: 5171526685483169077, guid: c9715f4292e43084c97e876b0f2598dc, type: 3}
+    material: {fileID: 2100000, guid: b4dc4b94550ddaf41b03f3880ef76a0e, type: 2}
+    texture: {fileID: 2800000, guid: e7911eba35b428243b3ac55d2f0ae830, type: 3}
+  - card: {fileID: 11400000, guid: 8283ebc58d49f704aad49476e8d0ff6b, type: 2}
+    cardPrefab: {fileID: 3948913753458471593, guid: f0a75bfe72e8c5e49a3aea03890029bc, type: 3}
+    material: {fileID: 2100000, guid: 4c9b153e4df897e4dab38c833a2178aa, type: 2}
+    texture: {fileID: 2800000, guid: fd33bc056f8a8474893abf3c5ac74730, type: 3}
+  - card: {fileID: 11400000, guid: cb058de7a7bb08b4ba211336d1e33cca, type: 2}
+    cardPrefab: {fileID: 7053000059559068000, guid: 09555fbdafc3ca7469b92f1fdf5e3c2d, type: 3}
+    material: {fileID: 2100000, guid: 834207bc11416214488736d223e5a769, type: 2}
+    texture: {fileID: 2800000, guid: 8423e4f3a72eff947aaffe2339fe204e, type: 3}
+  - card: {fileID: 11400000, guid: ca6a1fff6e9f6d74ca8f6c8ae4185002, type: 2}
+    cardPrefab: {fileID: 4244010846955971451, guid: c1c794ff88bc4eb409806f0fe449bed8, type: 3}
+    material: {fileID: 2100000, guid: 8152b3aff9812fd419bd621f89b5004a, type: 2}
+    texture: {fileID: 2800000, guid: 7d810e281c1872648ad0c32733e27da7, type: 3}
+  - card: {fileID: 11400000, guid: cea56c2a3c5a4d84d81eb81d27a73044, type: 2}
+    cardPrefab: {fileID: 2859525627050369763, guid: 84a5ab1ee3ae8f84aa84de333b70ca56, type: 3}
+    material: {fileID: 2100000, guid: c576c2957d92c9c469e8f9f33dae5cbf, type: 2}
+    texture: {fileID: 2800000, guid: 8da3770ed794a2440b5b91acc6d4cede, type: 3}
+  - card: {fileID: 11400000, guid: 7160f0ee6376a6f41a38c8a8ee736a6b, type: 2}
+    cardPrefab: {fileID: 1296520148085422313, guid: 8a23ed8431571c44a82ee036052a8507, type: 3}
+    material: {fileID: 2100000, guid: 6bb9a049e771fd344af68514dfb55375, type: 2}
+    texture: {fileID: 2800000, guid: 62863de8fae47df4eadce3b755692c94, type: 3}
+  - card: {fileID: 11400000, guid: 90729b04f26d80b438002b16747efe40, type: 2}
+    cardPrefab: {fileID: 7349598165893746992, guid: 8b7888a9e7ead434c9804dcd910d457f, type: 3}
+    material: {fileID: 2100000, guid: 5f1b1494e9073f1478953a7af7bd497c, type: 2}
+    texture: {fileID: 2800000, guid: 4defcbd668b2bd9488ef72feb0bfd967, type: 3}
+  - card: {fileID: 11400000, guid: 731b47006def8da4fb98091b75c2bd61, type: 2}
+    cardPrefab: {fileID: 1854059080673174812, guid: fa4ab3ca1c4374b4b8b2e25a47e05b5a, type: 3}
+    material: {fileID: 2100000, guid: 25e29146093f9624fb23c09d53e8d5a6, type: 2}
+    texture: {fileID: 2800000, guid: d9995266bb01ab64a856a46cc0e0534c, type: 3}
+  - card: {fileID: 11400000, guid: 0065852c5a8f7b84e8fe03dde77e6e64, type: 2}
+    cardPrefab: {fileID: 7798726810910966806, guid: dd17955b50dcf904a9274b08aeeea87a, type: 3}
+    material: {fileID: 2100000, guid: a7abfcf56d5332a4ba09d02a80e56b6b, type: 2}
+    texture: {fileID: 2800000, guid: 3b941cb9883cb6d438d5ddf89cd51b69, type: 3}
+  - card: {fileID: 11400000, guid: 1af8ff816c04c9a4a8e2fbc10013b674, type: 2}
+    cardPrefab: {fileID: 4727978638938396040, guid: 43796c3bd339cc04c9abf3e0fd8fa074, type: 3}
+    material: {fileID: 2100000, guid: 1a865f361fdacdd499da8d935c9965c3, type: 2}
+    texture: {fileID: 2800000, guid: 8dfedddf2799c7b4d82bed3b2f9bd03c, type: 3}
+  - card: {fileID: 11400000, guid: 5d3151000393f7b40a72c51f86341f4e, type: 2}
+    cardPrefab: {fileID: 4896236198963130619, guid: b88620401c87539438bc45df9fcd06de, type: 3}
+    material: {fileID: 2100000, guid: 838b1f499422334468fa714aeefd7777, type: 2}
+    texture: {fileID: 2800000, guid: e5537e23e6fdde94db19f34a73419df4, type: 3}
+  - card: {fileID: 11400000, guid: 473929a1b90fd254fbacf929cf68c162, type: 2}
+    cardPrefab: {fileID: 6768490208719384955, guid: 22d868a9a7c0dd645a2387d8b7e7baae, type: 3}
+    material: {fileID: 2100000, guid: 30863bf8af281c443b13297a848272db, type: 2}
+    texture: {fileID: 2800000, guid: 4a885f25a9c7fea43a86646f6a5eaa5f, type: 3}
+  - card: {fileID: 11400000, guid: 8dce05758b725154e9af030cbcc594bf, type: 2}
+    cardPrefab: {fileID: 8565964268489250769, guid: 43817154431adc745995092829edaf39, type: 3}
+    material: {fileID: 2100000, guid: 4f4e1ffa3bab9304f828c1c25aeee548, type: 2}
+    texture: {fileID: 2800000, guid: 9c915f806d6d09845b4cc77519f902d7, type: 3}
+  - card: {fileID: 11400000, guid: ba366fa2c8bb6ee4eb7d70b485a05d07, type: 2}
+    cardPrefab: {fileID: 3395873644960650868, guid: 67b9f52ce7a73b042a16ecf13729e94c, type: 3}
+    material: {fileID: 2100000, guid: 63869f4fbb9d31f48b3a09ae874596e7, type: 2}
+    texture: {fileID: 2800000, guid: 0902e26d89d447b4a8a85c382159f4e7, type: 3}
+  - card: {fileID: 11400000, guid: 6dbe168edbe46a740b46ad0f104c8e1e, type: 2}
+    cardPrefab: {fileID: 4666594437758516045, guid: cc19fa2cdac1e7e4b9d341347dd41f3c, type: 3}
+    material: {fileID: 2100000, guid: 15b894311aadbbe4881b0d612b34b29d, type: 2}
+    texture: {fileID: 2800000, guid: f3999b7b63c9674419fc367b508440f9, type: 3}
+  - card: {fileID: 11400000, guid: ec383bb4dee952d48b8719a78d747688, type: 2}
+    cardPrefab: {fileID: 7209141216918027488, guid: fc870d3348bb69d47ad045e57de4fc64, type: 3}
+    material: {fileID: 2100000, guid: ebc53a1073e68d148b8e8927ed9a66c1, type: 2}
+    texture: {fileID: 2800000, guid: ccd65c16639c0954caf8f278f1d7ba93, type: 3}
+  - card: {fileID: 11400000, guid: 184a593d47965f1468ec694fb010864e, type: 2}
+    cardPrefab: {fileID: 6384156451879443105, guid: 6403a9ac878fb7a4c9969643bec0c242, type: 3}
+    material: {fileID: 2100000, guid: fd96239654acc704bb681288fa15ca28, type: 2}
+    texture: {fileID: 2800000, guid: 3ef19fb98bce74a48b277d5ac36ababc, type: 3}
+  - card: {fileID: 11400000, guid: bf6b8828d3e4acd44bf5fb75816466c9, type: 2}
+    cardPrefab: {fileID: 747243187590446997, guid: 0d25424106348804ab82f762681c1646, type: 3}
+    material: {fileID: 2100000, guid: 70d11a7aea18e9a418e6da52055cba1d, type: 2}
+    texture: {fileID: 2800000, guid: 6561daa10eb56e944b19b882914ba2ad, type: 3}
+  - card: {fileID: 11400000, guid: 427839f603985934abc95857a8a9198e, type: 2}
+    cardPrefab: {fileID: 7227086467103658190, guid: faaf732e116473149bc526cf6da226e8, type: 3}
+    material: {fileID: 2100000, guid: 6b7d37f8d9ce6954e8db2a839c659894, type: 2}
+    texture: {fileID: 2800000, guid: 06584b76fb55b1b49a50ce8440ba18f9, type: 3}
+  - card: {fileID: 11400000, guid: 04681085e69c74f4f8f553d94ec71741, type: 2}
+    cardPrefab: {fileID: 8620257906845747340, guid: ef2f97b9f957fe140abbf796b2bad373, type: 3}
+    material: {fileID: 2100000, guid: ab84188d3e38715449959779ee53d431, type: 2}
+    texture: {fileID: 2800000, guid: aac1d237a2ccd044b81768861f7730c5, type: 3}
+  - card: {fileID: 11400000, guid: 2dcd16fbc1b18ed46a290a7c60f8f54f, type: 2}
+    cardPrefab: {fileID: 2015021348791853094, guid: 5bd4c7c00ae3e0d48acbd1a271d5c422, type: 3}
+    material: {fileID: 2100000, guid: 5ada5856908b52b49aa0b398b82362ef, type: 2}
+    texture: {fileID: 2800000, guid: 7a310aaba26b180419909c4d90017b38, type: 3}
+  - card: {fileID: 11400000, guid: 6fc66dab302150840912a6af61a9e9df, type: 2}
+    cardPrefab: {fileID: 5108530814853527752, guid: 7b9aa311f7e68df46a1b1edc9e63d1b2, type: 3}
+    material: {fileID: 2100000, guid: 8cf8606adbd767a46b511c719d645e80, type: 2}
+    texture: {fileID: 2800000, guid: 3555e813e8cf67545908b0ac5a5834af, type: 3}
+  - card: {fileID: 11400000, guid: 4f4a02240bfc3bd439da441c9617455a, type: 2}
+    cardPrefab: {fileID: 4815123218820875828, guid: 1e4a72878cb15c24b804dd7cc0d16bc9, type: 3}
+    material: {fileID: 2100000, guid: dfb02f86e526c734dab61a26caf9153c, type: 2}
+    texture: {fileID: 2800000, guid: 99f10cb705af6b348a812c1ab511d0ce, type: 3}
+  - card: {fileID: 11400000, guid: 78f7ada907d1a9e4ca82783ef21c91d8, type: 2}
+    cardPrefab: {fileID: 1138510310478055048, guid: 7b901bf02930bb64f962415beb649a34, type: 3}
+    material: {fileID: 2100000, guid: b9ad17682ca5fe54bb3b6fb549d76915, type: 2}
+    texture: {fileID: 2800000, guid: 8523d4368d550a947a1c3cb4168ed9ff, type: 3}
+  - card: {fileID: 11400000, guid: 22a7a1f3a3c579349a699fb411d5aa36, type: 2}
+    cardPrefab: {fileID: 6255357424900943651, guid: be1e75c90d564b74488c41ae9b2f856a, type: 3}
+    material: {fileID: 2100000, guid: 82f3ee443e1f7044f92de4c88c802a76, type: 2}
+    texture: {fileID: 2800000, guid: 7b52a4d2a4cc48d45bc0c270ebffc24b, type: 3}
+  - card: {fileID: 11400000, guid: 27159bb41cc60ef47a936fef35076430, type: 2}
+    cardPrefab: {fileID: 4705075992077169630, guid: 1ca01dca8a0908e45927e722218591d4, type: 3}
+    material: {fileID: 2100000, guid: 656942f7d924db74c96927ae2bb114a4, type: 2}
+    texture: {fileID: 2800000, guid: 02a559c0b6c879d4297056cef79f941b, type: 3}
+  - card: {fileID: 11400000, guid: 7cfbc1f7f0a4b8845be9be5b3528ea62, type: 2}
+    cardPrefab: {fileID: 2296161047606720775, guid: d1b1a1695916d0f48a1f7fb784627eb2, type: 3}
+    material: {fileID: 2100000, guid: 482c05b4b8714c94e8640b569e296ed3, type: 2}
+    texture: {fileID: 2800000, guid: 6a15298c71266594086136f6121ae454, type: 3}
+  - card: {fileID: 11400000, guid: 35452bf85c07dcf4eacf513404637afb, type: 2}
+    cardPrefab: {fileID: 3639130532060189858, guid: 30adbc24963e2c64ba5d5c8b258864dd, type: 3}
+    material: {fileID: 2100000, guid: 756b7ac72822af340b4cf82c59cbeebc, type: 2}
+    texture: {fileID: 2800000, guid: 07517454cd8e340429110b2e89533e3a, type: 3}
+  - card: {fileID: 11400000, guid: 459966fb3f4f1914d92866cf0247b193, type: 2}
+    cardPrefab: {fileID: 5712490292125568556, guid: e9ef906e9bc65e842b6dfff1cbbdc31a, type: 3}
+    material: {fileID: 2100000, guid: db091d8dbd60d1e49a37df46edc8bdcc, type: 2}
+    texture: {fileID: 2800000, guid: da6a082efa6b6694f92fad9442f30fa9, type: 3}
+  - card: {fileID: 11400000, guid: 05ee3c11bd4142047a357511acff6113, type: 2}
+    cardPrefab: {fileID: 966901289727711529, guid: 8a469cd2437c7d64fb45b64b37a2b547, type: 3}
+    material: {fileID: 2100000, guid: 880be3e34e9814b40b4a894dc3986360, type: 2}
+    texture: {fileID: 2800000, guid: 78998314942cf794786a837260fddeeb, type: 3}
+  - card: {fileID: 11400000, guid: 6bdd29b9cd0cc8941b7c27a7d4c58868, type: 2}
+    cardPrefab: {fileID: 7174289347754356117, guid: 09e7b903fe0dbde4e9bb32a9d326584c, type: 3}
+    material: {fileID: 2100000, guid: 302e651110c44284c94698351dee8853, type: 2}
+    texture: {fileID: 2800000, guid: 397fcc769693d0747ac7c79d662555d9, type: 3}
+  - card: {fileID: 11400000, guid: f7b4b9e69895dbb4cae391eccd7296fb, type: 2}
+    cardPrefab: {fileID: 8017095965791180941, guid: 629f5cfb1ff23d943813009729aaafac, type: 3}
+    material: {fileID: 2100000, guid: 6908661693f4ad8488e792efbab02925, type: 2}
+    texture: {fileID: 2800000, guid: 523bc81d4f12c154594d9134dfd85f4f, type: 3}
+  - card: {fileID: 11400000, guid: 7325aff1e32997747a47cdb2c89d8354, type: 2}
+    cardPrefab: {fileID: 973126801939583721, guid: 5d307e2aa74b15c488f7a9848a1790e7, type: 3}
+    material: {fileID: 2100000, guid: fd2ef79f12e5ab644bf6e1d30e347394, type: 2}
+    texture: {fileID: 2800000, guid: 0bc0a39dce7af2d40b541dddf4ed86dc, type: 3}
+  - card: {fileID: 11400000, guid: fffe6b3f504f44e49b63ed51103292a7, type: 2}
+    cardPrefab: {fileID: 1969986926114890988, guid: 73f9fbaa0ed147a4598cfb2bbe05f2f2, type: 3}
+    material: {fileID: 2100000, guid: 4ed5c77aafd37bd48b12c2facc583f6e, type: 2}
+    texture: {fileID: 2800000, guid: 2c1a6354d1d441c4e97d432a7edc557c, type: 3}
+  - card: {fileID: 11400000, guid: 6f07d6f09fef64a4483da168700ff25c, type: 2}
+    cardPrefab: {fileID: 1102907449829192419, guid: 4127cfc781ac87647b0ec77739e4505b, type: 3}
+    material: {fileID: 2100000, guid: bf2452c0a5f71184cbe07f232aab6a86, type: 2}
+    texture: {fileID: 2800000, guid: f068beb6338e31243afd5b1a3ed6604f, type: 3}

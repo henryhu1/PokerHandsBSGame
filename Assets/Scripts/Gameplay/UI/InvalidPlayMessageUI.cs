@@ -1,31 +1,32 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class InvalidPlayMessageUI : FadableUIBase
 {
-    public static Dictionary<InvalidPlays, string> s_invalidPlayMessage = new Dictionary<InvalidPlays, string>
+    public static Dictionary<InvalidPlays, string> s_invalidPlayMessage = new()
     {
         { InvalidPlays.HandTooLow, "Must play a higher hand"},
         { InvalidPlays.FlushNotAllowed, "Cannot play flush now" },
     };
 
-    private void Start()
-    {
-        GameManager.Instance.OnInvalidPlay += GameManager_InvalidPlay;
+    [Header("Listening Events")]
+    [SerializeField] private IntEventChannelSO OnInvalidPlay;
 
-        gameObject.SetActive(false);
+    protected override void OnEnable()
+    {
+        base.OnEnable();
+
+        OnInvalidPlay.OnEventRaised += InvalidPlay;
     }
 
-    private void OnDestroy()
+    private void OnDisable()
     {
-        GameManager.Instance.OnInvalidPlay -= GameManager_InvalidPlay;
+        OnInvalidPlay.OnEventRaised -= InvalidPlay;
     }
 
-    public void GameManager_InvalidPlay(InvalidPlays invalidPlay)
+    private void InvalidPlay(int invalidPlay)
     {
-        gameObject.SetActive(true);
-        m_fadingText.text = s_invalidPlayMessage[invalidPlay];
+        fadingText.text = s_invalidPlayMessage[(InvalidPlays)invalidPlay];
         StartAnimation();
     }
 }

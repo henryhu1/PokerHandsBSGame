@@ -1,19 +1,25 @@
-using System.Collections;
 using System.Collections.Generic;
 using TMPro;
-using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class EndOfRoundResultUI : TransitionableUIBase
+public class EndOfRoundResultUI : MonoBehaviour
 {
+    [Header("UI")]
     [SerializeField] private TextMeshProUGUI m_endOfRoundText;
     [SerializeField] private Image m_panel;
 
-    private static Color s_safeColor = new Color(0, 0.9f, 0, 0.8f);
-    private static Color s_loserColor = new Color(0.9f, 0, 0, 0.8f);
+    private TransitionableUIBase animatable;
 
-    private static Dictionary<RoundResultTypes, string> s_roundResultMessages = new Dictionary<RoundResultTypes, string>
+    [Header("Listening Events")]
+    [SerializeField] private VoidEventChannelSO OnNextRoundStarting;
+    [SerializeField] private IntEventChannelSO OnEndOfRoundResult;
+    [SerializeField] private VoidEventChannelSO OnGameWon;
+
+    private static Color s_safeColor = new(0, 0.9f, 0, 0.8f);
+    private static Color s_loserColor = new(0.9f, 0, 0, 0.8f);
+
+    private static Dictionary<RoundResultTypes, string> s_roundResultMessages = new()
     {
         { RoundResultTypes.Safe, "Safe!!" },
         { RoundResultTypes.CorrectBS, "You got it right!!" },
@@ -21,7 +27,7 @@ public class EndOfRoundResultUI : TransitionableUIBase
         { RoundResultTypes.WrongBS, "You got it wrong..." },
     };
 
-    private static Dictionary<RoundResultTypes, Color> s_roundResultColors = new Dictionary<RoundResultTypes, Color>
+    private static Dictionary<RoundResultTypes, Color> s_roundResultColors = new()
     {
         { RoundResultTypes.Safe, s_safeColor },
         { RoundResultTypes.CorrectBS, s_safeColor },
@@ -29,43 +35,40 @@ public class EndOfRoundResultUI : TransitionableUIBase
         { RoundResultTypes.WrongBS, s_loserColor },
     };
 
-    protected override void RegisterForEvents()
+    private void Awake()
     {
-        GameManager.Instance.OnEndOfRoundResult += GameManager_EndOfRoundResult;
-        GameManager.Instance.OnNextRoundStarting += GameManager_NextRoundStarting;
+        animatable = GetComponent<TransitionableUIBase>();
     }
 
-    private void UnregisterFromEvents()
+    private void OnEnable()
     {
-        GameManager.Instance.OnEndOfRoundResult -= GameManager_EndOfRoundResult;
-        GameManager.Instance.OnNextRoundStarting -= GameManager_NextRoundStarting;
+        OnEndOfRoundResult.OnEventRaised += EndOfRoundResult;
+        OnNextRoundStarting.OnEventRaised += NextRoundStarting;
+        OnGameWon.OnEventRaised += GameWon;
     }
 
-    private void GameManager_EndOfRoundResult(RoundResultTypes roundResult)
+    private void OnDisable()
     {
+        OnEndOfRoundResult.OnEventRaised -= EndOfRoundResult;
+        OnNextRoundStarting.OnEventRaised -= NextRoundStarting;
+        OnGameWon.OnEventRaised -= GameWon;
+    }
+
+    private void EndOfRoundResult(int roundResultValue)
+    {
+        RoundResultTypes roundResult = (RoundResultTypes) roundResultValue;
         m_panel.color = s_roundResultColors[roundResult];
         m_endOfRoundText.text = s_roundResultMessages[roundResult];
-        StartAnimation();
+        animatable.TransitionOnToScreen();
     }
 
-    private void GameManager_NextRoundStarting()
+    private void NextRoundStarting()
     {
-        if (gameObject.activeInHierarchy) StartAnimation();
+        animatable.TransitionOffScreen();
     }
 
-    protected override void Awake()
+    private void GameWon()
     {
-        base.Awake();
-    }
-
-    protected override void Start()
-    {
-        RegisterForEvents();
-        base.Start();
-    }
-
-    private void OnDestroy()
-    {
-        UnregisterFromEvents();
+        animatable.TransitionOffScreen();
     }
 }

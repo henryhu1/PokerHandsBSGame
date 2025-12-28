@@ -1,0 +1,206 @@
+using System.Collections.Generic;
+using System.Linq;
+using Unity.Netcode;
+
+public class CardGameServerManager
+{
+    private readonly DeckManager deckManager;
+    private UlongEventChannelSO OnClientLoadedScene;
+
+    private readonly Dictionary<ulong, PlayerCardInfo> clientCards = new();
+    private HandsInPlay handsInPlay = new();
+
+    private int startAmount, endAmount, loseChange;
+
+    public CardGameServerManager(DeckManager deck, UlongEventChannelSO OnClientLoadedScene)
+    {
+        deckManager = deck;
+        this.OnClientLoadedScene = OnClientLoadedScene;
+        this.OnClientLoadedScene.OnEventRaised += InitializePlayerEmptyHand;
+    }
+
+    ~CardGameServerManager()
+    {
+        OnClientLoadedScene.OnEventRaised -= InitializePlayerEmptyHand;
+    }
+
+    private void OnDisable()
+    {
+    }
+
+    public void RegisterServerEvents()
+    {
+        TurnManager.Instance.OnTurnOrderDecided += OnTurnOrderDecided;
+        NetworkManager.Singleton.OnClientDisconnectCallback += RemovePlayer;
+    }
+
+    public void UnregisterServerEvents()
+    {
+        TurnManager.Instance.OnTurnOrderDecided -= OnTurnOrderDecided;
+        NetworkManager.Singleton.OnClientDisconnectCallback -= RemovePlayer;
+    }
+
+    private void OnTurnOrderDecided() => TryDistribute();
+
+    private void TryDistribute()
+    {
+        if (StartingConditionsForCardDistribution())
+        {
+            DistributeCards();
+        }
+    }
+
+    public bool StartingConditionsForCardDistribution()
+    {
+        return clientCards.Count == GameManager.Instance.NumberOfPlayers;
+    }
+
+    public void InitializePlayerEmptyHand(ulong clientId)
+    {
+        if (clientCards.ContainsKey(clientId)) return;
+        string playerName = GameManager.Instance.GetClientName(clientId);
+        clientCards[clientId] = new PlayerCardInfo(new List<Card>(), startAmount, playerName, clientId);
+    }
+
+    public void ClearAllHands()
+    {
+        foreach (ulong clientId in clientCards.Keys)
+        {
+            ClearPlayerHand(clientId);
+        }
+    }
+
+    public void ClearPlayerHand(ulong clientId)
+    {
+        if (clientCards.TryGetValue(clientId, out PlayerCardInfo clientCardInfo))
+        {
+            clientCardInfo.cards.Clear();
+        }
+    }
+
+    public void ClearPlayers()
+    {
+        clientCards.Clear();
+    }
+
+    public bool IsHandInPlay(PokerHand pokerHand)
+    {
+        return handsInPlay.IsHandInPlay(pokerHand);
+    }
+
+    public List<PokerHand> GetHandsInPlay()
+    {
+        return handsInPlay.GetHandsInPlay();
+    }
+
+    public bool ChangeClientCardAmount(ulong clientId)
+    {
+        bool isPlayerOut = false;
+        PlayerCardInfo clientCardInfo = clientCards[clientId];
+        clientCardInfo.amountOfCards += loseChange;
+        if (clientCardInfo.amountOfCards == endAmount)
+        {
+            clientCards[clientId].cards.Clear();
+            clientCardInfo.amountOfCards = 0;
+            isPlayerOut = true;
+        }
+        clientCards[clientId] = clientCardInfo;
+        return isPlayerOut;
+    }
+
+    public void SetPlayerOut(ulong clientId)
+    {
+        PlayerCardInfo clientCardInfo = clientCards[clientId];
+        clientCardInfo.amountOfCards = 0;
+        clientCardInfo.cards.Clear();
+        clientCards[clientId] = clientCardInfo;
+    }
+
+    public void RemovePlayer(ulong clientId)
+    {
+        clientCards.Remove(clientId);
+    }
+
+    public void ResetHandsInPlay()
+    {
+        handsInPlay.ResetHandsInPlay();
+    }
+
+    public void ConfigureFromGameSettings()
+    {
+        if (GameManager.Instance.GetGameType() == GameType.Ascending)
+        {
+            startAmount = CardManagerConstants.AscStarting;
+            endAmount = CardManagerConstants.AscLimit;
+            loseChange = CardManagerConstants.AscLoseChange;
+        }
+        else
+        {
+            startAmount = CardManagerConstants.DescStarting;
+            endAmount = CardManagerConstants.DescLimit;
+            loseChange = CardManagerConstants.DescLoseChange;
+        }
+    }
+
+    public void DistributeCards()
+    {
+        deckManager.ResetAndShuffle();
+
+        HashSet<ulong> clientsThatViewDeck = new();
+        foreach (var kvp in clientCards)
+        {
+            var clientId = kvp.Key;
+            var info = kvp.Value;
+            info.cards.Clear();
+            if (!GameManager.Instance.m_inPlayClientIds.Contains(clientId))
+            {
+                clientsThatViewDeck.Add(clientId);
+                continue;
+            }
+            else
+            {
+                for (int i = 0; i < info.amountOfCards; i++)
+                    info.cards.Add(deckManager.DrawCard());
+            }
+        }
+
+        foreach (var kvp in clientCards)
+        {
+            var clientId = kvp.Key;
+
+            List<Card> sendingCards = kvp.Value.cards;
+            if (clientsThatViewDeck.Contains(clientId))
+            {
+                sendingCards = deckManager.GetAllCardsInDeck();
+            }
+
+            PlayerHiddenCardInfo[] hiddenClientCards = clientCards.Values.Select(clientCardInfo => new PlayerHiddenCardInfo(clientCardInfo.amountOfCards, clientCardInfo.playerName, clientCardInfo.clientId)).ToArray();
+            CardManager.Instance.DistributeCardInfoToPlayerClientRpc(
+                sendingCards.ToArray(),
+                hiddenClientCards,
+                TurnManager.Instance.GetTurnOrderStartingAtClient(clientId).ToArray(),
+                GetTotalCardsInPlay() <= CardManagerConstants.FlushLimit,
+                new ClientRpcParams { Send = new() { TargetClientIds = new[] { clientId } } }
+            );
+        }
+
+        handsInPlay.PopulateCardsInPlay(clientCards.Values.SelectMany(v => v.cards));
+        handsInPlay.FindHandsInPlay();
+    }
+
+    public void RevealAllCards()
+    {
+        foreach (var kvp in clientCards)
+        {
+            var clientId = kvp.Key;
+
+            CardManager.Instance.RevealCardInfoToPlayerClientRpc(
+                clientCards.Values.ToArray(),
+                TurnManager.Instance.GetTurnOrderStartingAtClient(clientId).ToArray(),
+                new ClientRpcParams { Send = new() { TargetClientIds = new[] { clientId } } }
+            );
+        }
+    }
+
+    public int GetTotalCardsInPlay() => clientCards.Values.Sum(i => i.amountOfCards);
+}
