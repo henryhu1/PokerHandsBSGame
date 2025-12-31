@@ -10,9 +10,6 @@ public class AuthenticationManager : MonoBehaviour
 {
     public static AuthenticationManager Instance;
 
-    [Header("Firing Events")]
-    [SerializeField] private StringEventChannelSO OnUpdatePlayerDisplayName;
-
     private void Awake()
     {
         if (Instance != this)
@@ -36,7 +33,7 @@ public class AuthenticationManager : MonoBehaviour
 #if UNITY_EDITOR
                 Debug.Log("Signed in! " + AuthenticationService.Instance.PlayerId);
 #endif
-                OnUpdatePlayerDisplayName.RaiseEvent(playerName);
+                LocalPlayerSaveSystem.SavePlayerName(playerName);
                 SceneTransitionHandler.Instance.SetSceneState(SceneStates.MainMenu);
                 SceneManager.LoadScene(SceneTransitionHandler.k_MainMenuScene);
             };

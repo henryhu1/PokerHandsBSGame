@@ -12,6 +12,12 @@ public class PlayerProfileNameUI : MonoBehaviour
 
     private void Awake()
     {
+        string playerName = LocalPlayerSaveSystem.LoadPlayerName();
+        if (!string.IsNullOrEmpty(playerName))
+        {
+            m_inputField.text = playerName;
+        }
+
         m_confirmButton.onClick.AddListener(() =>
         {
             AuthenticationManager.Instance.Authenticate(s_noWhiteSpace.Replace(m_inputField.text, ""));
