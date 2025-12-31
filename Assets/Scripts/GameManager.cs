@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Netcode;
@@ -8,9 +7,6 @@ using UnityEngine;
 public class GameManager : NetworkBehaviour
 {
     public static GameManager Instance { get; private set; }
-
-    [SerializeField] private const float k_clientConnectionCheckInterval = 5.0f;
-    private float m_clientConnectionCheckTimer;
 
     // Game settings
     private GameType selectedGameType;
@@ -59,6 +55,7 @@ public class GameManager : NetworkBehaviour
 
     // the timer should only be synced at the beginning
     // and then let the client to update it in a predictive manner
+    // ** another point to think about, when to START the timer **
     //private bool m_ReplicatedTimeSent = false;
     //private float m_TimeRemainingInCurrentTurn;
     ///////////////////////////////////////////////////////
@@ -87,151 +84,7 @@ public class GameManager : NetworkBehaviour
     [SerializeField] private BoolListEventChannelSO OnDisplayPlayedHandsPresent;
     [SerializeField] private VoidEventChannelSO OnGameWon;
 
-    private void ApprovalCheck(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response)
-    {
-        // The client identifier to be authenticated
-        ulong clientId = request.ClientNetworkId;
-
-        // Additional connection data defined by user code
-        byte[] connectionData = request.Payload;
-        if (connectionData == null || connectionData.Length == 0)
-        {
-            PlayerJoining(NetworkManager.Singleton.LocalClientId, LocalPlayerName, LocalPlayerId);
-        }
-        else
-        {
-            (string playerName, string playerId) = StreamUtils.ReadPlayerNameId(connectionData);
-#if UNITY_EDITOR
-            Debug.Log($"client {clientId} info: {playerName}, {playerId}");
-#endif
-            PlayerJoining(clientId, playerName, playerId);
-        }
-
-        // Your approval logic determines the following values
-        response.Approved = true;
-        response.CreatePlayerObject = false;
-
-        // The Prefab hash value of the NetworkPrefab, if null the default NetworkManager player Prefab is used
-        response.PlayerPrefabHash = null;
-
-        // Position to spawn the player object (if null it uses default of Vector3.zero)
-        response.Position = Vector3.zero;
-
-        // Rotation to spawn the player object (if null it uses the default of Quaternion.identity)
-        response.Rotation = Quaternion.identity;
-
-        // If response.Approved is false, you can provide a message that explains the reason why via ConnectionApprovalResponse.Reason
-        // On the client-side, NetworkManager.DisconnectReason will be populated with this message via DisconnectReasonMessage
-        // response.Reason = "Some reason for not approving the client";
-
-        // If additional approval steps are needed, set this to true until the additional steps are complete
-        // once it transitions from true to false the connection approval response will be processed.
-        response.Pending = false;
-    }
-
-    public void PlayerJoining(ulong clientId, string clientName, string playerId)
-    {
-        if (m_playerData.TryGetValue(playerId, out PlayerData playerData))
-        {
-            playerData.LastUsedClientID = clientId;
-#if UNITY_EDITOR
-            Debug.Log($"Player with ID {clientId}, Unity auth ID {playerId}, name {clientName} was previously in the game");
-#endif
-        }
-        else
-        {
-            playerData = new()
-            {
-                LastUsedClientID = clientId,
-                Name = clientName,
-                IsConnected = true
-            };
-
-            m_playerData.Add(playerId, playerData);
-#if UNITY_EDITOR
-            Debug.Log($"new player with client ID {clientId}, Unity auth ID {playerId}, name {clientName} joined");
-#endif
-        }
-
-        if (SceneTransitionHandler.Instance.IsInGameScene())
-        {
-#if UNITY_EDITOR
-            Debug.Log($"client #{clientId} joined in the middle of a game");
-#endif
-            m_notInPlayClientIds.Add(clientId);
-            playerData.InPlay = false;
-            m_playerData[playerId] = playerData;
-        }
-
-        m_connectedClientIds.Add(clientId, playerId);
-    }
-
-    private void AddPlayer(ulong clientId)
-    {
-        if (IsServer)
-        {
-            if (!m_notInPlayClientIds.Contains(clientId))
-            {
-                m_inPlayClientIds.Add(clientId);
-                PlayerData playerData = m_playerData[m_connectedClientIds[clientId]];
-                playerData.InPlay = true;
-                m_playerData[m_connectedClientIds[clientId]] = playerData;
-            }
-
-            // TODO: this check is the same as SceneTransitionHandler OnAllClientsLoadedScene
-            if (NetworkManager.Singleton.ConnectedClients.Count == m_numberOfPlayers)
-            {
-                if (SceneTransitionHandler.Instance.IsInMainMenuScene())
-                {
-                    LobbyManager.Instance.DeleteLobby();
-                    SceneTransitionHandler.Instance.SetSceneState(SceneStates.InGame);
-                    SceneTransitionHandler.Instance.SwitchToGameScene();
-                }
-            }
-        }
-    }
-
-    private void RemovePlayer(ulong clientId)
-    {
-        if (IsServer)
-        {
-            if (!m_connectedClientIds.ContainsKey(clientId)) return;
-            if (!NetworkManager.Singleton.IsConnectedClient) return;
-
-            string playerId = m_connectedClientIds[clientId];
-            PlayerData playerData = m_playerData[playerId];
-            playerData.IsConnected = false;
-            playerData.InPlay = false;
-            m_connectedClientIds.Remove(clientId);
-
-            if (SceneTransitionHandler.Instance.IsInGameScene())
-            {
-                if (m_inPlayClientIds.Contains(clientId))
-                {
-                    // TODO: fix error occurring here when game ends in GameScene and despawns on the network
-                    m_inPlayClientIds.Remove(clientId);
-                    m_numberOfPlayers -= 1;
-                    if (!RoundManager.Instance.GetIsRoundOver())
-                    {
-                        m_lastRoundLosingClientId = clientId;
-                        PlayerLeftClientRpc(playerData.Name, CardManager.Instance.GetAllHandsInPlay().ToArray());
-                        TurnManager.Instance.StopServerTurnCountdown();
-                        CardManager.Instance.RevealAllCards();
-                    }
-                }
-                else if (m_eliminatedClientIds.Select(i => i.LastUsedClientID).Contains(clientId))
-                {
-                    m_numberOfPlayers -= 1;
-                }
-                else if (m_notInPlayClientIds.Contains(clientId))
-                {
-                    m_notInPlayClientIds.Remove(clientId);
-                }
-            }
-        }
-    }
-
-    public void RemoveInPlayClient(ulong removingClientId)
+    private void RemoveInPlayClient(ulong removingClientId)
     {
         if (!IsServer) return;
 
@@ -247,8 +100,6 @@ public class GameManager : NetworkBehaviour
             Destroy(Instance.gameObject);
         }
         Instance = this;
-
-        DontDestroyOnLoad(gameObject);
     }
 
     private void Start()
@@ -259,26 +110,6 @@ public class GameManager : NetworkBehaviour
         m_eliminatedClientIds = new List<PlayerData>();
         m_notInPlayClientIds = new HashSet<ulong>();
         m_playedHandLog = new List<PlayedHandLogItem>();
-
-        m_clientConnectionCheckTimer = k_clientConnectionCheckInterval;
-
-        NetworkManager.Singleton.ConnectionApprovalCallback = ApprovalCheck;
-    }
-
-    private void Update()
-    {
-        if (IsClient && !IsServer && !SceneTransitionHandler.Instance.IsInMainMenuScene())
-        {
-            m_clientConnectionCheckTimer -= Time.deltaTime;
-            if (m_clientConnectionCheckTimer <= 0)
-            {
-                if (!NetworkManager.Singleton.IsConnectedClient)
-                {
-                    SceneTransitionHandler.Instance.ExitAndLoadStartMenu();
-                    m_clientConnectionCheckTimer = k_clientConnectionCheckInterval;
-                }
-            }
-        }
     }
 
     public override void OnNetworkSpawn()
@@ -320,8 +151,6 @@ public class GameManager : NetworkBehaviour
             m_eliminatedClientIds.Clear();
 
             SceneTransitionHandler.Instance.RegisterCallbacks();
-            NetworkManager.Singleton.OnClientConnectedCallback += AddPlayer;
-            NetworkManager.Singleton.OnClientDisconnectCallback += RemovePlayer;
         }
 
         base.OnNetworkSpawn();
@@ -332,8 +161,6 @@ public class GameManager : NetworkBehaviour
         if (IsServer)
         {
             SceneTransitionHandler.Instance.UnregisterCallbacks();
-            NetworkManager.Singleton.OnClientConnectedCallback -= AddPlayer;
-            NetworkManager.Singleton.OnClientDisconnectCallback -= RemovePlayer;
         }
         base.OnNetworkDespawn();
     }
@@ -425,16 +252,6 @@ public class GameManager : NetworkBehaviour
         EndOfGameUI.Instance.OnExitGame -= EndOfGameUI_ExitGame;
     }
 
-    public void SetLocalPlayerId(string authPlayerId)
-    {
-        LocalPlayerId = authPlayerId;
-    }
-
-    public void SetLocalPlayerName(string playerDisplayName)
-    {
-        LocalPlayerName = playerDisplayName;
-    }
-
     public bool IsNotOut(ulong clientId)
     {
         return m_inPlayClientIds.Contains(clientId);
@@ -469,6 +286,14 @@ public class GameManager : NetworkBehaviour
     public bool IsHandLowerThanLastPlayed(PokerHand pokerHand)
     {
         return m_playedHandLog.Count != 0 && !m_playedHandLog.Last().IsPokerHandBetter(pokerHand);
+    }
+
+    public void SetLosingPlayer(PlayerData losingPlayer)
+    {
+        if (!IsServer) return;
+
+        m_lastRoundLosingClientId = losingPlayer.LastUsedClientID;
+        PlayerLeftClientRpc(losingPlayer.Name, CardManager.Instance.GetAllHandsInPlay().ToArray());
     }
 
     public void InitializeSettings(GameType gameType, int numberOfPlayers, TimeForTurnType timeForTurn)

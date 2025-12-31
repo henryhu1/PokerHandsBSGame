@@ -1,7 +1,7 @@
 using Unity.Netcode;
 
 // Player and client data, TODO: player manager? Single source of truth for players, ^ also look at m_numberOfPlayers ^
-public struct PlayerData : INetworkSerializable
+public class PlayerData : INetworkSerializable
 
 {
     public bool IsConnected { get; set; }
