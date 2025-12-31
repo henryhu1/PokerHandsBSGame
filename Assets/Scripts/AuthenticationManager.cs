@@ -12,7 +12,7 @@ public class AuthenticationManager : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance != this)
+        if (Instance != null && Instance != this)
         {
             Destroy(Instance.gameObject);
         }
