@@ -73,6 +73,7 @@ public class GameManager : NetworkBehaviour
     [Header("Listening Events")]
     [SerializeField] private UlongEventChannelSO OnPlayerOut;
     [SerializeField] private IntEventChannelSO OnRestartGame;
+    [SerializeField] private UlongEventChannelSO OnServerPlayerTurnTimeout;
 
     [Header("Firing Events")]
     [SerializeField] private IntEventChannelSO OnInvalidPlay;
@@ -83,15 +84,6 @@ public class GameManager : NetworkBehaviour
     [SerializeField] private PokerHandListEventChannelSO OnDisplayAllHandsInPlay;
     [SerializeField] private BoolListEventChannelSO OnDisplayPlayedHandsPresent;
     [SerializeField] private VoidEventChannelSO OnGameWon;
-
-    private void RemoveInPlayClient(ulong removingClientId)
-    {
-        if (!IsServer) return;
-
-        PlayerData removedPlayerData = m_playerData[m_connectedClientIds[removingClientId]];
-        PlayerRanOutOfTimeClientRpc(removedPlayerData.Name, CardManager.Instance.GetAllHandsInPlay().ToArray());
-        CardManager.Instance.RevealAllCards();
-    }
 
     private void Awake()
     {
@@ -169,12 +161,14 @@ public class GameManager : NetworkBehaviour
     {
         OnRestartGame.OnEventRaised += RestartGame;
         OnPlayerOut.OnEventRaised += CardManager_PlayerOut;
+        OnServerPlayerTurnTimeout.OnEventRaised += RemoveInPlayClient;
     }
 
     private void OnDisable()
     {
         OnRestartGame.OnEventRaised -= RestartGame;
         OnPlayerOut.OnEventRaised -= CardManager_PlayerOut;
+        OnServerPlayerTurnTimeout.OnEventRaised -= RemoveInPlayClient;
     }
 
     public GameType GetGameType() { return selectedGameType; }
@@ -194,6 +188,14 @@ public class GameManager : NetworkBehaviour
 #endif
             m_eliminatedClientIds.Add(losingPlayerData);
         }
+    }
+
+    private void RemoveInPlayClient(ulong removingClientId)
+    {
+        if (!IsServer) return;
+
+        PlayerData removedPlayerData = m_playerData[m_connectedClientIds[removingClientId]];
+        PlayerRanOutOfTimeClientRpc(removedPlayerData.Name, CardManager.Instance.GetAllHandsInPlay().ToArray());
     }
 
     public void RegisterNextRoundUIObservers()

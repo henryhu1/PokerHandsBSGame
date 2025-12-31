@@ -27,6 +27,7 @@ public class CardManager : NetworkBehaviour
 
     [Header("Listening Events")]
     [SerializeField] private UlongEventChannelSO OnClientLoadedScene;
+    [SerializeField] private UlongEventChannelSO OnServerPlayerTurnTimeout;
 
     private void Awake()
     {
@@ -42,11 +43,13 @@ public class CardManager : NetworkBehaviour
 
     private void OnEnable()
     {
+        OnServerPlayerTurnTimeout.OnEventRaised += ForcePlayerOut;
         OnClientLoadedScene.OnEventRaised += ClientLoadedScene;
     }
 
     private void OnDisable()
     {
+        OnServerPlayerTurnTimeout.OnEventRaised -= ForcePlayerOut;
         OnClientLoadedScene.OnEventRaised -= ClientLoadedScene;
     }
 
@@ -137,12 +140,14 @@ public class CardManager : NetworkBehaviour
         }
     }
 
-    public void ForcePlayerOut(ulong clientId)
+    private void ForcePlayerOut(ulong clientId)
     {
         if (!IsServer) return;
 
         cardGameServerManager.SetPlayerOut(clientId);
+
         OnPlayerOut.RaiseEvent(clientId);
+        cardGameServerManager.RevealAllCards();
     }
 
     public void RevealAllCards()

@@ -42,6 +42,7 @@ public class TurnManager : NetworkBehaviour
     [Header("Firing Events")]
     [SerializeField] private IntEventChannelSO OnTimeForTurnDecided;
     [SerializeField] private BoolEventChannelSO OnNextPlayerTurn;
+    [SerializeField] private UlongEventChannelSO OnServerPlayerTurnTimeout;
 
     [Header("Listening Events")]
     [SerializeField] private UlongEventChannelSO OnPlayerOut;
@@ -199,8 +200,9 @@ public class TurnManager : NetworkBehaviour
             serverTimeInTurn -= Time.deltaTime;
             yield return null;
         }
-        GameManager.Instance.RemoveInPlayClient(m_currentTurnObject.clientId);
-        CardManager.Instance.ForcePlayerOut(m_currentTurnObject.clientId);
+        OnServerPlayerTurnTimeout.RaiseEvent(m_currentTurnObject.clientId);
+        // GameManager.Instance.RemoveInPlayClient(m_currentTurnObject.clientId);
+        // CardManager.Instance.ForcePlayerOut(m_currentTurnObject.clientId);
     }
 
     public void RemovePlayer(ulong clientId)
