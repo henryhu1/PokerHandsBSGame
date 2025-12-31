@@ -1,28 +1,27 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
 [DefaultExecutionOrder(1000)]
 public class PlayerDisplayNameUI : MonoBehaviour
 {
-
     [SerializeField] private TMP_InputField m_playerDisplayNameInputField;
+
+    [Header("Firing Events")]
+    [SerializeField] private StringEventChannelSO OnUpdatePlayerDisplayName;
 
     private void Awake()
     {
-        m_playerDisplayNameInputField.text = GameManager.Instance.LocalPlayerName;
-
-        m_playerDisplayNameInputField.onDeselect.AddListener((string playerName) =>
+        m_playerDisplayNameInputField.onDeselect.AddListener(playerName =>
         {
-            GameManager.Instance.SetLocalPlayerName(playerName);
-            LobbyManager.Instance.UpdatePlayerName(playerName);
+            OnUpdatePlayerDisplayName.RaiseEvent(playerName);
         });
     }
 
     private void Start()
     {
+        m_playerDisplayNameInputField.text = PlayerManager.Instance.GetLocalPlayerName();
+
         LobbyListUI.Instance.OnCreatingNewLobby += LobbyListUI_OnCreatingNewLobby;
         LobbyCreateUI.Instance.OnCloseCreation += LobbyCreateUI_OnCloseCreation;
         LobbyManager.Instance.OnJoinedLobby += LobbyManager_OnJoinedLobby;
@@ -74,11 +73,11 @@ public class PlayerDisplayNameUI : MonoBehaviour
 
     private void Hide()
     {
-        gameObject.SetActive(false);
+        m_playerDisplayNameInputField.interactable = false;
     }
 
     private void Show()
     {
-        gameObject.SetActive(true);
+        m_playerDisplayNameInputField.interactable = true;
     }
 }

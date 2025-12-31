@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using Unity.Networking.Transport.Relay;
+using Unity.Services.Authentication;
 using Unity.Services.Relay;
 using Unity.Services.Relay.Models;
 using UnityEngine;
@@ -27,7 +28,7 @@ public class RelayManager : MonoBehaviour
             Allocation allocation = await RelayService.Instance.CreateAllocationAsync(numberOfPlayers);
             string joinCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
 
-            RelayServerData relayServerData = new RelayServerData(allocation, "wss");
+            RelayServerData relayServerData = new(allocation, "wss");
             NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(relayServerData);
 
             if (!NetworkManager.Singleton.StartHost())
@@ -50,9 +51,9 @@ public class RelayManager : MonoBehaviour
         {
             JoinAllocation joinAllocation = await RelayService.Instance.JoinAllocationAsync(joinCode);
 
-            RelayServerData relayServerData = new RelayServerData(joinAllocation, "wss");
+            RelayServerData relayServerData = new(joinAllocation, "wss");
             NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(relayServerData);
-            NetworkManager.Singleton.NetworkConfig.ConnectionData = StreamUtils.WritePlayerNameId(GameManager.Instance.LocalPlayerName, GameManager.Instance.LocalPlayerId);
+            NetworkManager.Singleton.NetworkConfig.ConnectionData = StreamUtils.WritePlayerNameId(PlayerManager.Instance.GetLocalPlayerName(), AuthenticationService.Instance.PlayerId);
 
             NetworkManager.Singleton.StartClient();
         }

@@ -52,6 +52,9 @@ public class LobbyManager : MonoBehaviour
     [HideInInspector]
     public event GameFailedToStartDelegateHandler OnGameFailedToStart;
 
+    [Header("Listening Events")]
+    [SerializeField] private StringEventChannelSO OnUpdatePlayerDisplayName;
+
     private float m_lobbyHeartbeatTimer = 15f;
     private float m_lobbyPollTimer = 1.1f;
     private float m_refreshLobbyListTimer = 5f;
@@ -71,6 +74,16 @@ public class LobbyManager : MonoBehaviour
         m_joinedLobby = null;
 
         RefreshLobbyList();
+    }
+
+    private void OnEnable()
+    {
+        OnUpdatePlayerDisplayName.OnEventRaised += UpdatePlayerName;
+    }
+
+    private void OnDisable()
+    {
+        OnUpdatePlayerDisplayName.OnEventRaised -= UpdatePlayerName;
     }
 
     private void Update()
@@ -175,7 +188,7 @@ public class LobbyManager : MonoBehaviour
     private Player GetPlayer()
     {
         return new Player(AuthenticationService.Instance.PlayerId, null, new Dictionary<string, PlayerDataObject> {
-            { KEY_PLAYER_NAME, new PlayerDataObject(PlayerDataObject.VisibilityOptions.Public, GameManager.Instance.LocalPlayerName) },
+            { KEY_PLAYER_NAME, new PlayerDataObject(PlayerDataObject.VisibilityOptions.Public, PlayerManager.Instance.GetLocalPlayerName()) },
         });
     }
 
@@ -217,13 +230,13 @@ public class LobbyManager : MonoBehaviour
         {
             if (string.IsNullOrEmpty(lobbyName))
             {
-                if (GameManager.Instance.LocalPlayerName.Last() == 's')
+                if (PlayerManager.Instance.GetLocalPlayerName().Last() == 's')
                 {
-                    lobbyName = $"{GameManager.Instance.LocalPlayerName}' {k_DefaultLobbyName}";
+                    lobbyName = $"{PlayerManager.Instance.GetLocalPlayerName()}' {k_DefaultLobbyName}";
                 }
                 else
                 {
-                    lobbyName = $"{GameManager.Instance.LocalPlayerName}'s {k_DefaultLobbyName}";
+                    lobbyName = $"{PlayerManager.Instance.GetLocalPlayerName()}'s {k_DefaultLobbyName}";
                 }
             }
             Lobby lobby = await LobbyService.Instance.CreateLobbyAsync(lobbyName, maxPlayers, options);
@@ -329,19 +342,21 @@ public class LobbyManager : MonoBehaviour
         }
     }
 
-    public async void UpdatePlayerName(string playerName)
+    private async void UpdatePlayerName(string playerName)
     {
         if (m_joinedLobby != null)
         {
             try
             {
-                UpdatePlayerOptions options = new UpdatePlayerOptions();
-
-                options.Data = new Dictionary<string, PlayerDataObject>() {
-                    {
-                        KEY_PLAYER_NAME, new PlayerDataObject(
-                            visibility: PlayerDataObject.VisibilityOptions.Public,
-                            value: playerName)
+                UpdatePlayerOptions options = new()
+                {
+                    Data = new Dictionary<string, PlayerDataObject>() {
+                        {
+                            KEY_PLAYER_NAME, new PlayerDataObject(
+                                visibility: PlayerDataObject.VisibilityOptions.Public,
+                                value: playerName
+                            )
+                        }
                     }
                 };
 

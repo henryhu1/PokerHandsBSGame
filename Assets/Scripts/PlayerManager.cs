@@ -1,9 +1,46 @@
-using System.Collections;
-using System.Collections.Generic;
-using Unity.Netcode;
 using UnityEngine;
 
-public class PlayerManager : NetworkBehaviour
+public class PlayerManager : MonoBehaviour
 {
-    // TODO: to keep track of player information across game status, cards, turn position and session info
+    public static PlayerManager Instance;
+    private string localPlayerName;
+
+    [Header("Listening Events")]
+    [SerializeField] private StringEventChannelSO OnUpdatePlayerDisplayName;
+
+    private void Awake()
+    {
+        if (Instance != this)
+        {
+            Destroy(Instance.gameObject);
+        }
+
+        Instance = this;
+
+        string savedPlayerName = LocalPlayerSaveSystem.LoadPlayerName();
+        if (!string.IsNullOrEmpty(savedPlayerName))
+        {
+            localPlayerName = savedPlayerName;
+        }
+    }
+
+    private void OnEnable()
+    {
+        OnUpdatePlayerDisplayName.OnEventRaised += SetLocalPlayerName;
+    }
+
+    private void OnDisable()
+    {
+        OnUpdatePlayerDisplayName.OnEventRaised -= SetLocalPlayerName;
+    }
+
+    private void SetLocalPlayerName(string playerName)
+    {
+        localPlayerName = playerName;
+    }
+
+    public string GetLocalPlayerName()
+    {
+        return localPlayerName;
+    }
 }
