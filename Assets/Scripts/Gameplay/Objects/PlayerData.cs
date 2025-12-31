@@ -10,6 +10,7 @@ public struct PlayerData : INetworkSerializable
     private string m_name;
     public string Name { get { return m_name; } set { m_name = value; } }
     public bool InPlay { get; set; }
+    public PlayerState state;
 
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {
