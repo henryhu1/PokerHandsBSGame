@@ -53,6 +53,7 @@ public class LobbyManager : MonoBehaviour
     public event GameFailedToStartDelegateHandler OnGameFailedToStart;
 
     [Header("Listening Events")]
+    [SerializeField] private VoidEventChannelSO OnAllClientsLoadedScene;
     [SerializeField] private StringEventChannelSO OnUpdatePlayerDisplayName;
 
     private float m_lobbyHeartbeatTimer = 15f;
@@ -78,11 +79,13 @@ public class LobbyManager : MonoBehaviour
 
     private void OnEnable()
     {
+        OnAllClientsLoadedScene.OnEventRaised += DeleteLobby;
         OnUpdatePlayerDisplayName.OnEventRaised += UpdatePlayerName;
     }
 
     private void OnDisable()
     {
+        OnAllClientsLoadedScene.OnEventRaised -= DeleteLobby;
         OnUpdatePlayerDisplayName.OnEventRaised -= UpdatePlayerName;
     }
 
@@ -517,7 +520,7 @@ public class LobbyManager : MonoBehaviour
         }
     }
 
-    public async void DeleteLobby()
+    private async void DeleteLobby()
     {
         if (IsLobbyHost())
         {

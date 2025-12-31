@@ -6,19 +6,12 @@ public class SceneTransitionHandler : MonoBehaviour
 {
     public static SceneTransitionHandler Instance { get; private set; }
 
-    [HideInInspector]
-    public delegate void AllClientsLoadedSceneDelegateHandler();
-    [HideInInspector]
-    public event AllClientsLoadedSceneDelegateHandler OnAllClientsLoadedScene;
-    [HideInInspector]
-    public delegate void SceneStateChangedDelegateHandler(SceneStates newState);
-    [HideInInspector]
-    public event SceneStateChangedDelegateHandler OnSceneStateChanged;
-
     [Header("Firing Events")]
     [SerializeField] private UlongEventChannelSO OnClientLoadedScene;
-    
-    private int m_numberOfClientLoaded;
+    [SerializeField] private IntEventChannelSO OnSceneStateChanged;
+    [SerializeField] private VoidEventChannelSO OnAllClientsLoadedScene;
+
+    private int numberOfClientsLoadedInScene;
 
     public const string k_MainMenuScene = "MainMenuScene";
     public const string k_InGameSceneName = "GameScene";
@@ -49,14 +42,14 @@ public class SceneTransitionHandler : MonoBehaviour
     public void SetSceneState(SceneStates sceneState)
     {
         m_SceneState = sceneState;
-        OnSceneStateChanged?.Invoke(m_SceneState);
+        OnSceneStateChanged.RaiseEvent((int)m_SceneState);
     }
 
     private void SwitchScene(string sceneName)
     {
         if (NetworkManager.Singleton.IsListening)
         {
-            m_numberOfClientLoaded = 0;
+            numberOfClientsLoadedInScene = 0;
             NetworkManager.Singleton.SceneManager.LoadScene(sceneName, LoadSceneMode.Single);
         }
         else
@@ -75,16 +68,22 @@ public class SceneTransitionHandler : MonoBehaviour
         Debug.Log($"client #{clientId} has loaded scene {sceneName}");
 #endif
         OnClientLoadedScene.RaiseEvent(clientId);
-        m_numberOfClientLoaded += 1;
-        if (m_numberOfClientLoaded == NetworkManager.Singleton.ConnectedClients.Count)
+        numberOfClientsLoadedInScene += 1;
+        if (numberOfClientsLoadedInScene == NetworkManager.Singleton.ConnectedClients.Count)
         {
-            OnAllClientsLoadedScene?.Invoke();
+            OnAllClientsLoadedScene.RaiseEvent();
+
+            if (IsInMainMenuScene())
+            {
+                SetSceneState(SceneStates.InGame);
+                SwitchToGameScene();
+            }
         }
     }
 
-    public bool AllClientsAreLoaded()
+    public bool AreAllClientsAreLoaded()
     {
-        return m_numberOfClientLoaded == NetworkManager.Singleton.ConnectedClients.Count;
+        return numberOfClientsLoadedInScene == NetworkManager.Singleton.ConnectedClients.Count;
     }
 
     public bool IsInMainMenuScene()
