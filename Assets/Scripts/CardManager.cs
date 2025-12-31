@@ -37,7 +37,17 @@ public class CardManager : NetworkBehaviour
         Instance = this;
 
         deckManager = new();
-        cardGameServerManager = new(deckManager, OnClientLoadedScene);
+        cardGameServerManager = new(deckManager);
+    }
+
+    private void OnEnable()
+    {
+        OnClientLoadedScene.OnEventRaised += ClientLoadedScene;
+    }
+
+    private void OnDisable()
+    {
+        OnClientLoadedScene.OnEventRaised -= ClientLoadedScene;
     }
 
     public override void OnNetworkSpawn()
@@ -46,7 +56,6 @@ public class CardManager : NetworkBehaviour
 
         if (IsServer)
         {
-            // SceneTransitionHandler.Instance.OnClientLoadedScene += SceneTransitionHandler_ClientLoadedScene;
             NetworkManager.OnClientDisconnectCallback += RemovePlayer;
 
             cardGameServerManager.RegisterServerEvents();
@@ -60,7 +69,6 @@ public class CardManager : NetworkBehaviour
 
         if (IsServer)
         {
-            // SceneTransitionHandler.Instance.OnClientLoadedScene -= SceneTransitionHandler_ClientLoadedScene;
             NetworkManager.OnClientDisconnectCallback -= RemovePlayer;
 
             cardGameServerManager.UnregisterServerEvents();
@@ -99,6 +107,14 @@ public class CardManager : NetworkBehaviour
             return cardGameServerManager.GetHandsInPlay();
         }
         return new List<PokerHand>();
+    }
+
+    private void ClientLoadedScene(ulong clientId)
+    {
+        if (IsServer)
+        {
+            cardGameServerManager.InitializePlayerEmptyHand(clientId);
+        }
     }
 
     public bool IsFlushAllowedToBePlayed()

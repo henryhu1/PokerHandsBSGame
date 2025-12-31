@@ -5,27 +5,15 @@ using Unity.Netcode;
 public class CardGameServerManager
 {
     private readonly DeckManager deckManager;
-    private UlongEventChannelSO OnClientLoadedScene;
 
     private readonly Dictionary<ulong, PlayerCardInfo> clientCards = new();
     private HandsInPlay handsInPlay = new();
 
     private int startAmount, endAmount, loseChange;
 
-    public CardGameServerManager(DeckManager deck, UlongEventChannelSO OnClientLoadedScene)
+    public CardGameServerManager(DeckManager deck)
     {
         deckManager = deck;
-        this.OnClientLoadedScene = OnClientLoadedScene;
-        this.OnClientLoadedScene.OnEventRaised += InitializePlayerEmptyHand;
-    }
-
-    ~CardGameServerManager()
-    {
-        OnClientLoadedScene.OnEventRaised -= InitializePlayerEmptyHand;
-    }
-
-    private void OnDisable()
-    {
     }
 
     public void RegisterServerEvents()
