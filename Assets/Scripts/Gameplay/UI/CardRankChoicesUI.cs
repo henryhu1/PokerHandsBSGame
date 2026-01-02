@@ -18,19 +18,17 @@ public class CardRankChoicesUI : ToggleSelectionableUIBase<Rank>
     [Header("Firing Events")]
     [SerializeField] private RankEventChannelSO OnSelectRank;
 
-    protected override void Awake()
+    private void Start()
     {
-        base.Awake();
-
-        foreach (var toggleEntry in toggleDictionary) {
-            Toggle toggle = toggleEntry.Key;
+        foreach (var toggleEntry in toggleMap) {
+            Toggle toggle = toggleEntry.toggle;
             toggle.onValueChanged.AddListener(isOn =>
             {
                 SetToggleColor(toggle);
                 if (isOn)
                 {
                     // Rank selected, passing if this is the primary rank
-                    OnSelectRank.RaiseEvent(toggleDictionary[toggle]);
+                    OnSelectRank.RaiseEvent(toggleEntry.type);
                 }
             });
         }
@@ -94,11 +92,19 @@ public class CardRankChoicesUI : ToggleSelectionableUIBase<Rank>
         {
             if (m_isPrimaryRankChoice)
             {
-                ChangeToggleInteractability(FindToggle(Rank.Three), false);
+                Toggle twoToggle = FindToggle(Rank.Two);
+                if (twoToggle != null)
+                {
+                    ChangeToggleInteractability(twoToggle, false);
+                }
             }
             else
             {
-                ChangeToggleInteractability(FindToggle(Rank.King), false);
+                Toggle aceToggle = FindToggle(Rank.Ace);
+                if (aceToggle != null)
+                {
+                    ChangeToggleInteractability(aceToggle, false);
+                }
             }
         }
         Show();
@@ -106,12 +112,12 @@ public class CardRankChoicesUI : ToggleSelectionableUIBase<Rank>
 
     public void DarkenDownTo(Rank highestRank)
     {
-        foreach (var toggleEntry in toggleDictionary)
+        foreach (var toggleEntry in toggleMap)
         {
-            Toggle toggle = toggleEntry.Key;
+            Toggle toggle = toggleEntry.toggle;
             if (!toggle.interactable || !toggle.enabled) continue;
 
-            if (toggleDictionary[toggle] < highestRank)
+            if (toggleEntry.type < highestRank)
             {
                 toggle.image.color = Color.white;
             }
@@ -124,12 +130,12 @@ public class CardRankChoicesUI : ToggleSelectionableUIBase<Rank>
 
     public void DarkenUpTo(Rank lowestRank)
     {
-        foreach (var toggleEntry in toggleDictionary)
+        foreach (var toggleEntry in toggleMap)
         {
-            Toggle toggle = toggleEntry.Key;
+            Toggle toggle = toggleEntry.toggle;
             if (!toggle.interactable || !toggle.enabled) continue;
 
-            if (toggleDictionary[toggle] > lowestRank)
+            if (toggleEntry.type > lowestRank)
             {
                 toggle.image.color = Color.white;
             }

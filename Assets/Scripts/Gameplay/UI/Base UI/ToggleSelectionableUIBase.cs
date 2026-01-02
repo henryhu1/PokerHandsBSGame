@@ -16,20 +16,10 @@ public abstract class ToggleSelectionableUIBase<T> : MonoBehaviour where T : Enu
         public T type;
     }
 
-    [SerializeField] private ToggleMapEntry[] toggleMap;
-
-    protected Dictionary<Toggle, T> toggleDictionary = new();
+    [SerializeField] protected ToggleMapEntry[] toggleMap;
 
     [Header("Firing Events")]
     [SerializeField] private VoidEventChannelSO OnNoSelectionMade;
-
-    protected virtual void Awake()
-    {
-        foreach (ToggleMapEntry toggleEntry in toggleMap)
-        {
-            toggleDictionary.Add(toggleEntry.toggle, toggleEntry.type);
-        }
-    }
 
     protected void SetToggleColor(Toggle toggle)
     {
@@ -63,11 +53,11 @@ public abstract class ToggleSelectionableUIBase<T> : MonoBehaviour where T : Enu
 
     protected Toggle FindToggle(T value)
     {
-        foreach (var toggleEntry in toggleDictionary)
+        foreach (var toggleEntry in toggleMap)
         {
-            if (toggleEntry.Value.Equals(value))
+            if (toggleEntry.type.Equals(value))
             {
-                return toggleEntry.Key;
+                return toggleEntry.toggle;
             }
         }
         return null;
@@ -82,35 +72,38 @@ public abstract class ToggleSelectionableUIBase<T> : MonoBehaviour where T : Enu
 
     protected void ChangeToggleInteractability(Toggle targetToggle, bool interactable)
     {
-        if (toggleDictionary.ContainsKey(targetToggle))
+        foreach (var toggleEntry in toggleMap)
         {
-            targetToggle.interactable = interactable;
-            targetToggle.image.color = interactable ? Color.white : ToggleColors.k_DisabledColor;
+            if (toggleEntry.toggle == targetToggle)
+            {
+                targetToggle.interactable = interactable;
+                targetToggle.image.color = interactable ? Color.white : ToggleColors.k_DisabledColor;
+            }
         }
     }
 
     public void EnableAllTogglesInteractability()
     {
-        foreach (var toggleEntry in toggleDictionary)
+        foreach (var toggleEntry in toggleMap)
         {
-            ChangeToggleInteractability(toggleEntry.Key, true);
+            ChangeToggleInteractability(toggleEntry.toggle, true);
         }
     }
 
     protected void DisableAllTogglesInteractability()
     {
-        foreach (var toggleEntry in toggleDictionary)
+        foreach (var toggleEntry in toggleMap)
         {
-            ChangeToggleInteractability(toggleEntry.Key, false);
+            ChangeToggleInteractability(toggleEntry.toggle, false);
         }
     }
 
     protected void EnableTogglesToAtLeast(T level)
     {
-        foreach (var toggleEntry in toggleDictionary)
+        foreach (var toggleEntry in toggleMap)
         {
-            Toggle toggle = toggleEntry.Key;
-            T type = toggleEntry.Value;
+            Toggle toggle = toggleEntry.toggle;
+            T type = toggleEntry.type;
             bool shouldEnable = type.CompareTo(level) >= 0;
             ChangeToggleInteractability(toggle, shouldEnable);
         }
@@ -118,10 +111,10 @@ public abstract class ToggleSelectionableUIBase<T> : MonoBehaviour where T : Enu
 
     protected void EnableTogglesToAtMost(T level)
     {
-        foreach (var toggleEntry in toggleDictionary)
+        foreach (var toggleEntry in toggleMap)
         {
-            Toggle toggle = toggleEntry.Key;
-            T type = toggleEntry.Value;
+            Toggle toggle = toggleEntry.toggle;
+            T type = toggleEntry.type;
             bool shouldEnable = type.CompareTo(level) <= 0;
             ChangeToggleInteractability(toggle, shouldEnable);
         }

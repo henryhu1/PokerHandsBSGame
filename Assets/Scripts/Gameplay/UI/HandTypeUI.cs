@@ -11,18 +11,16 @@ public class HandTypeUI : ToggleSelectionableUIBase<HandType>
     [SerializeField] private PokerHandEventChannelSO OnUpdatePlayableHands;
     [SerializeField] private PokerHandEventChannelSO OnSendPokerHandToPlay;
 
-    protected override void Awake()
+    private void Start()
     {
-        base.Awake();
-
-        foreach (var toggleEntry in toggleDictionary) {
-            Toggle toggle = toggleEntry.Key;
+        foreach (var toggleEntry in toggleMap) {
+            Toggle toggle = toggleEntry.toggle;
             toggle.onValueChanged.AddListener(isOn =>
             {
                 SetToggleColor(toggle);
                 if (isOn)
                 {
-                    OnSelectHandType.RaiseEvent(toggleDictionary[toggle]);
+                    OnSelectHandType.RaiseEvent(toggleEntry.type);
                 }
             });
         }

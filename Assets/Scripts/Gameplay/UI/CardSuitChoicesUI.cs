@@ -11,18 +11,16 @@ public class CardSuitChoicesUI : ToggleSelectionableUIBase<Suit>
     [HideInInspector]
     public event SelectRankDelegateHandler OnSelectSuit;
 
-    protected override void Awake()
+    private void Start()
     {
-        base.Awake();
-
-        foreach (var toggleEntry in toggleDictionary) {
-            Toggle toggle = toggleEntry.Key;
+        foreach (var toggleEntry in toggleMap) {
+            Toggle toggle = toggleEntry.toggle;
             toggle.onValueChanged.AddListener(isOn =>
             {
                 SetToggleColor(toggle);
                 if (isOn)
                 {
-                    OnSelectSuit?.Invoke(toggleDictionary[toggle]);
+                    OnSelectSuit?.Invoke(toggleEntry.type);
                 }
             });
         }
