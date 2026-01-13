@@ -1,44 +1,62 @@
+using System.Collections.Generic;
 using Unity.Netcode;
 using Unity.Services.Authentication;
 using UnityEngine;
 
-public class ConnectionManager : NetworkBehaviour
+public class ConnectionManager : MonoBehaviour
 {
-    private ServerPlayerManager serverPlayerManager;
+    public static ConnectionManager Instance;
+
+    private Dictionary<ulong, ClientConnectionData> clientConnectionMap;
 
     [SerializeField] private float clientConnectionCheckInterval = 5.0f;
     private float clientConnectionCheckTimer;
 
     private void Awake()
     {
-        NetworkManager.Singleton.ConnectionApprovalCallback += ApprovalCheck;
-        NetworkManager.Singleton.OnClientConnectedCallback += ClientConnected;
-        NetworkManager.Singleton.OnClientDisconnectCallback += ClientDisconnected;
+        if (Instance != null && Instance != this)
+        {
+            Destroy(Instance.gameObject);
+        }
+        Instance = this;
 
         DontDestroyOnLoad(this);
     }
 
     private void Start()
     {
-        serverPlayerManager = new ServerPlayerManager();
+        clientConnectionMap = new();
 
         clientConnectionCheckTimer = clientConnectionCheckInterval;
+
+        NetworkManager.Singleton.ConnectionApprovalCallback = ApprovalCheck;
     }
 
     private void Update()
     {
-        if (IsClient && !IsServer && !SceneTransitionHandler.Instance.IsInMainMenuScene())
+        if (!SceneTransitionHandler.Instance.IsInMainMenuScene())
         {
             clientConnectionCheckTimer -= Time.deltaTime;
             if (clientConnectionCheckTimer <= 0)
             {
                 if (!NetworkManager.Singleton.IsConnectedClient)
                 {
+                    clientConnectionMap.Clear();
                     SceneTransitionHandler.Instance.ExitAndLoadStartMenu();
                     clientConnectionCheckTimer = clientConnectionCheckInterval;
                 }
             }
         }
+    }
+
+    public void PlayerJoining(ulong clientId, string clientName, string playerId)
+    {
+        clientConnectionMap.Add(clientId, new ClientConnectionData
+        {
+            DisplayName = clientName,
+            LastUsedClientId = clientId,
+            AuthId = playerId,
+        });
     }
 
     private void ApprovalCheck(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response)
@@ -50,7 +68,10 @@ public class ConnectionManager : NetworkBehaviour
         byte[] connectionData = request.Payload;
         if (connectionData == null || connectionData.Length == 0)
         {
-            serverPlayerManager.PlayerJoining(
+#if UNITY_EDITOR
+            Debug.Log($"host {clientId} info: {PlayerManager.Instance.GetLocalPlayerName()}, {AuthenticationService.Instance.PlayerId}");
+#endif
+            PlayerJoining(
                 NetworkManager.Singleton.LocalClientId,
                 PlayerManager.Instance.GetLocalPlayerName(),
                 AuthenticationService.Instance.PlayerId
@@ -62,7 +83,7 @@ public class ConnectionManager : NetworkBehaviour
 #if UNITY_EDITOR
             Debug.Log($"client {clientId} info: {playerName}, {playerId}");
 #endif
-            serverPlayerManager.PlayerJoining(clientId, playerName, playerId);
+            PlayerJoining(clientId, playerName, playerId);
         }
 
         // Your approval logic determines the following values
@@ -87,17 +108,20 @@ public class ConnectionManager : NetworkBehaviour
         response.Pending = false;
     }
 
-    private void ClientConnected(ulong clientId)
+    private void AddPlayerConnection(ulong clientId)
     {
-        if (!IsServer) return;
-
-        serverPlayerManager.AddPlayer(clientId);
+        if (clientConnectionMap.TryGetValue(clientId, out ClientConnectionData data))
+        {
+        }
     }
 
-    private void ClientDisconnected(ulong clientId)
+    private void RemovePlayerConnection(ulong clientId)
     {
-        if (!IsServer) return;
+        clientConnectionMap.Remove(clientId);
+    }
 
-        serverPlayerManager.RemovePlayer(clientId);
+    public Dictionary<ulong, ClientConnectionData> GetClientConnections()
+    {
+        return new(clientConnectionMap);
     }
 }
