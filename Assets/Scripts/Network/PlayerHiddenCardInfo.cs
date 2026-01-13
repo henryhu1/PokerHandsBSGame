@@ -6,11 +6,11 @@ public struct PlayerHiddenCardInfo : INetworkSerializable
     public string playerName;
     public ulong clientId;
 
-    public PlayerHiddenCardInfo(int amountOfCards, string playerName, ulong clientId)
+    public PlayerHiddenCardInfo(PlayerCardInfo playerCards)
     {
-        this.amountOfCards = amountOfCards;
-        this.playerName = playerName;
-        this.clientId = clientId;
+        amountOfCards = playerCards.amountOfCards;
+        playerName = playerCards.playerName;
+        clientId = playerCards.clientId;
     }
 
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
