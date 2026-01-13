@@ -49,6 +49,20 @@ public class ConnectionManager : MonoBehaviour
         }
     }
 
+    public void RegisterNetworkCallbacks()
+    {
+        NetworkManager.Singleton.OnClientConnectedCallback += AddPlayerConnection;
+        NetworkManager.Singleton.OnClientDisconnectCallback += RemovePlayerConnection;
+    }
+
+    public void UnregisterNetworkCallbacks()
+    {
+        clientConnectionMap.Clear();
+
+        NetworkManager.Singleton.OnClientConnectedCallback -= AddPlayerConnection;
+        NetworkManager.Singleton.OnClientDisconnectCallback -= RemovePlayerConnection;
+    }
+
     public void PlayerJoining(ulong clientId, string clientName, string playerId)
     {
         clientConnectionMap.Add(clientId, new ClientConnectionData

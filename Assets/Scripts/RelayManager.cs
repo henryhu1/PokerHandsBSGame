@@ -19,6 +19,8 @@ public class RelayManager : MonoBehaviour
             Destroy(Instance.gameObject);
         }
         Instance = this;
+
+        DontDestroyOnLoad(gameObject);
     }
 
     public async Task<string> CreateRelay(int numberOfPlayers)
@@ -36,6 +38,7 @@ public class RelayManager : MonoBehaviour
                 throw new Exception("Failed to start host");
             }
 
+            BootstrapNetwork();
             return joinCode;
         }
         catch (Exception e)
@@ -65,11 +68,9 @@ public class RelayManager : MonoBehaviour
         }
     }
 
-    //public async void DeleteRelay(Allocation allocation)
-    //{
-    //    try
-    //    {
-    //        await RelayService.Instance.
-    //    }
-    //}
+    private void BootstrapNetwork()
+    {
+        ConnectionManager.Instance.RegisterNetworkCallbacks();
+        SceneTransitionHandler.Instance.RegisterNetworkCallbacks();
+    }
 }

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -9,9 +10,9 @@ public class SceneTransitionHandler : MonoBehaviour
     [Header("Firing Events")]
     [SerializeField] private UlongEventChannelSO OnClientLoadedScene;
     [SerializeField] private IntEventChannelSO OnSceneStateChanged;
-    [SerializeField] private VoidEventChannelSO OnAllClientsLoadedScene;
+    [SerializeField] private StringEventChannelSO OnAllClientsLoadedScene;
 
-    private int numberOfClientsLoadedInScene;
+    private readonly HashSet<ulong> loadedClients = new();
 
     public const string k_MainMenuScene = "MainMenuScene";
     public const string k_InGameSceneName = "GameScene";
@@ -29,16 +30,23 @@ public class SceneTransitionHandler : MonoBehaviour
         DontDestroyOnLoad(this);
     }
 
-    public void RegisterCallbacks()
+    public void RegisterNetworkCallbacks()
     {
+        if (!NetworkManager.Singleton.IsServer) return;
+        loadedClients.Add(NetworkManager.Singleton.LocalClientId);
+
         NetworkManager.Singleton.SceneManager.OnLoadComplete += OnLoadComplete;
     }
 
-    public void UnregisterCallbacks()
+    public void UnregisterNetworkCallbacks()
     {
+        if (!NetworkManager.Singleton.IsServer) return;
+        loadedClients.Clear();
+
         NetworkManager.Singleton.SceneManager.OnLoadComplete -= OnLoadComplete;
     }
 
+    // TODO: is local scene state needed?
     public void SetSceneState(SceneStates sceneState)
     {
         m_SceneState = sceneState;
@@ -49,7 +57,7 @@ public class SceneTransitionHandler : MonoBehaviour
     {
         if (NetworkManager.Singleton.IsListening)
         {
-            numberOfClientsLoadedInScene = 0;
+            loadedClients.Clear();
             NetworkManager.Singleton.SceneManager.LoadScene(sceneName, LoadSceneMode.Single);
         }
         else
@@ -58,32 +66,31 @@ public class SceneTransitionHandler : MonoBehaviour
         }
     }
 
-    public void SwitchToMainMenuScene() { SwitchScene(k_MainMenuScene); }
-
-    public void SwitchToGameScene() { SwitchScene(k_InGameSceneName); }
-
     private void OnLoadComplete(ulong clientId, string sceneName, LoadSceneMode loadSceneMode)
     {
+        if (!NetworkManager.Singleton.ConnectedClients.ContainsKey(clientId)) return;
+        if (sceneName != SceneManager.GetActiveScene().name) return;
+
 #if UNITY_EDITOR
         Debug.Log($"client #{clientId} has loaded scene {sceneName}");
 #endif
         OnClientLoadedScene.RaiseEvent(clientId);
-        numberOfClientsLoadedInScene += 1;
-        if (numberOfClientsLoadedInScene == NetworkManager.Singleton.ConnectedClients.Count)
+        loadedClients.Add(clientId);
+        if (AreAllClientsAreLoaded())
         {
-            OnAllClientsLoadedScene.RaiseEvent();
+            OnAllClientsLoadedScene.RaiseEvent(sceneName);
 
             if (IsInMainMenuScene())
             {
                 SetSceneState(SceneStates.InGame);
-                SwitchToGameScene();
+                SwitchScene(k_InGameSceneName);
             }
         }
     }
 
     public bool AreAllClientsAreLoaded()
     {
-        return numberOfClientsLoadedInScene == NetworkManager.Singleton.ConnectedClients.Count;
+        return loadedClients.Count == NetworkManager.Singleton.ConnectedClients.Count;
     }
 
     public bool IsInMainMenuScene()
