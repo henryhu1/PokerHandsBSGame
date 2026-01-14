@@ -2,9 +2,7 @@ using UnityEngine;
 
 public class RoundManager : MonoBehaviour
 {
-    public static RoundManager Instance;
-
-    private bool isRoundOver;
+    private int roundNumber;
 
     [Header("Firing Events")]
     [SerializeField] private VoidEventChannelSO OnNextRoundStarting;
@@ -14,18 +12,9 @@ public class RoundManager : MonoBehaviour
     [Header("Listening Events")]
     [SerializeField] private VoidEventChannelSO OnInitializeNewGame;
 
-    private void Awake()
-    {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(Instance);
-        }
-        Instance = this;
-    }
-
     private void Start()
     {
-        isRoundOver = false;
+        roundNumber = 0;
     } 
 
     private void OnEnable()
@@ -38,13 +27,10 @@ public class RoundManager : MonoBehaviour
         OnInitializeNewGame.OnEventRaised -= InitializeNewGame;
     }
 
-    private void InitializeNewGame() { isRoundOver = false; }
-
-    public bool GetIsRoundOver() { return isRoundOver; }
+    private void InitializeNewGame() { roundNumber = 0; }
 
     public void EndOfRound()
     {
-        isRoundOver = true;
         OnRoundEnded.RaiseEvent();
     }
 
@@ -55,7 +41,7 @@ public class RoundManager : MonoBehaviour
 
     public void StartNextRound()
     {
-        isRoundOver = false;
+        roundNumber++;
         OnNextRoundStarting.RaiseEvent();
     }
 }
