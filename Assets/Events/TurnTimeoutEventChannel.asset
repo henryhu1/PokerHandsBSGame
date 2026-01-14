@@ -10,5 +10,5 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fac995fc2d50a2f40abf39cc077a212e, type: 3}
-  m_Name: RestartGameEventChannel
+  m_Name: TurnTimeoutEventChannel
   m_EditorClassIdentifier: Assembly-CSharp::VoidEventChannelSO
