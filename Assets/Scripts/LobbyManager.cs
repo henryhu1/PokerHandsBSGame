@@ -134,6 +134,17 @@ public class LobbyManager : MonoBehaviour
                 {
                     if (!IsLobbyHost())
                     {
+                        GameType gameType = Enum.Parse<GameType>(m_joinedLobby.Data[KEY_GAME_MODE].Value);
+                        TimeForTurnType timeForPlayer = Enum.Parse<TimeForTurnType>(m_joinedLobby.Data[KEY_TIME_FOR_PLAYER].Value);
+
+                        GameRulesSO selectedRules = GameRulesFactory.CreateRuntime(baseRules);
+                        selectedRules.selectedGameType = gameType;
+                        selectedRules.timeForTurn = timeForPlayer;
+#if UNITY_EDITOR
+                        Debug.Log($"server rules: {gameType}, {timeForPlayer}");
+#endif
+                        GameSession.Instance.SetRules(selectedRules);
+
                         RelayManager.Instance.JoinRelay(m_joinedLobby.Data[KEY_START_GAME].Value);
                         SceneTransitionHandler.Instance.SetSceneState(SceneStates.InGame);
                         OnGameStarted.RaiseEvent();
@@ -482,6 +493,9 @@ public class LobbyManager : MonoBehaviour
                 GameRulesSO selectedRules = GameRulesFactory.CreateRuntime(baseRules);
                 selectedRules.selectedGameType = gameType;
                 selectedRules.timeForTurn = timeForPlayer;
+#if UNITY_EDITOR
+                Debug.Log($"rules: {gameType}, {timeForPlayer}");
+#endif
                 GameSession.Instance.SetRules(selectedRules);
 
                 string relayCode = await RelayManager.Instance.CreateRelay(m_joinedLobby.Players.Count);
