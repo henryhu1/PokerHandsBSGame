@@ -15,7 +15,6 @@ public class TurnManager : NetworkBehaviour
     private List<TurnObject> turnPositions;
 
     [Header("Firing Events")]
-    [SerializeField] private IntEventChannelSO OnTimeForTurnDecided;
     [SerializeField] private BoolEventChannelSO OnNextPlayerTurn;
     [SerializeField] private UlongEventChannelSO OnServerPlayerTurnTimeout;
 
@@ -45,8 +44,6 @@ public class TurnManager : NetworkBehaviour
         {
             NetworkManager.OnClientDisconnectCallback += RemovePlayer;
         }
-
-        RequestTurnTimeServerRpc();
     }
 
     public override void OnNetworkDespawn()
@@ -80,15 +77,13 @@ public class TurnManager : NetworkBehaviour
 
     private void TurnTimeout()
     {
+        if (!IsServer) return;
+
         OnServerPlayerTurnTimeout.RaiseEvent(currentTurnObject.ClientId);
     }
 
     private void NextRoundStarting()
     {
-        if (!IsServer) return;
-
-        // TODO: allow clients to also have countdown,
-        //   but only server executes out of time code
         timeInTurnManager.StartTurnCountdown();
     } 
 
@@ -145,6 +140,8 @@ public class TurnManager : NetworkBehaviour
 
     public void DecideTurnOrder(ulong[] inPlayClientIds)
     {
+        if (!IsServer) return;
+
         foreach (ulong clientId in inPlayClientIds)
         {
             AddClientToTurnOrder(clientId);
@@ -193,6 +190,9 @@ public class TurnManager : NetworkBehaviour
             {
                 playerTurns[clientId].Previous.Next = playerTurns[clientId].Next;
                 playerTurns[clientId].Next.Previous = playerTurns[clientId].Previous;
+
+                currentTurnObject = playerTurns[clientId];
+
                 playerTurns.Remove(clientId);
                 turnPositions.RemoveAll(i => i.ClientId == clientId);
 #if UNITY_EDITOR
@@ -220,52 +220,38 @@ public class TurnManager : NetworkBehaviour
         {
             // TODO: have currentTurnObject check if player is in game
             //   except when a player loses the doubly linked list is updated (next and prev)
+#if UNITY_EDITOR
+            Debug.Log($"client {currentTurnObject.ClientId} played, next up: {currentTurnObject.Next.ClientId}");
+#endif
             currentTurnObject = currentTurnObject.Next;
             timeInTurnManager.StartTurnCountdown();
+            NextTurnClientRpc(currentTurnObject.ClientId);
         }
     }
 
-    public void ResetTurnForNewRound()
+    public void ResetTurnForNewRound(ulong losingClientId)
     {
         if (IsServer)
         {
-            if (
-                playerTurns.ContainsKey(currentTurnObject.ClientId) ||
-                !GameManager.Instance.IsClientInPlay(currentTurnObject.ClientId)
-            )
+#if UNITY_EDITOR
+            Debug.Log($"round restarting at client {losingClientId}, in play = {GameManager.Instance.IsClientInPlay(losingClientId)}, in turns = {playerTurns.ContainsKey(losingClientId)}");
+#endif
+            if (playerTurns.ContainsKey(losingClientId) && GameManager.Instance.IsClientInPlay(losingClientId))
+            {
+                currentTurnObject = playerTurns[losingClientId];
+            }
+            else
             {
                 currentTurnObject = currentTurnObject.Next;
             }
-        }
-    }
 
-    [ServerRpc(RequireOwnership = false)]
-    public void RequestTurnTimeServerRpc(ServerRpcParams serverRpcParams = default)
-    {
-        ulong clientId = serverRpcParams.Receive.SenderClientId;
-        if (GameManager.Instance.IsClientInPlay(clientId))
-        {
-            ClientRpcParams clientRpcParams = new()
-            {
-                Send = new() { TargetClientIds = new ulong[] { clientId } }
-            };
-            var rules = GameSession.Instance.ActiveRules;
-            if (rules.timeForTurn != TimeForTurnType.None)
-            {
-                InitializeTurnTimeClientRpc(rules.timeForTurn, clientRpcParams);
-            }
+            NextTurnClientRpc(currentTurnObject.ClientId);
         }
     }
 
     [ClientRpc]
-    public void InitializeTurnTimeClientRpc(TimeForTurnType timeForTurnType, ClientRpcParams clientRpcParams = default)
+    public void NextTurnClientRpc(ulong currentTurnClientId)
     {
-        OnTimeForTurnDecided.RaiseEvent((int)timeForTurnType);
+        OnNextPlayerTurn.RaiseEvent(NetworkManager.Singleton.LocalClientId == currentTurnClientId);
     }
-
-    // [ClientRpc]
-    // public void NextRoundClientRpc()
-    // {
-    //     OnNextPlayerTurn.RaiseEvent(NetworkManager.Singleton.LocalClientId == currentTurnObject.Value.ClientId);
-    // }
 }

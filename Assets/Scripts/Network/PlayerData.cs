@@ -7,6 +7,14 @@ public class PlayerData : INetworkSerializable
     private string name;
     public PlayerState state;
 
+    // Gameplay tracking
+    public int calledIncorrectBSCount;
+    public int calledCorrectBSCount;
+    public int safePlayCount;
+    public int guessCount;
+
+    public PlayerData() { }
+
     public PlayerData(ulong clientId, string authId, string playerName, PlayerState initState)
     {
         lastUsedClientId = clientId;

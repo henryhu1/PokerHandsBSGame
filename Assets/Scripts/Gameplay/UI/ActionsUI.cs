@@ -23,8 +23,6 @@ public class ActionsUI : MonoBehaviour
     [Header("Listening Events")]
     [SerializeField] private BoolEventChannelSO OnNextPlayerTurn;
 
-    private bool m_isPlayerOut;
-
     private void Awake()
     {
         if (Instance != this && Instance != null)
@@ -55,8 +53,6 @@ public class ActionsUI : MonoBehaviour
         {
             GameManager.Instance.EvaluateLastPlayedHandServerRpc();
         });
-
-        m_isPlayerOut = false;
     }
 
     private void Start()
@@ -82,22 +78,12 @@ public class ActionsUI : MonoBehaviour
         SetTurnActions(isPlayerTurn);
     }
 
-    public void SetPlayerOut()
-    {
-        m_isPlayerOut = true;
-    }
-
-    public void SetPlayerIn()
-    {
-        m_isPlayerOut = false;
-    }
-
     private void SetTurnActions(bool isPlayerTurn)
     {
         bool wasPlayerTurn = m_PlayButton.enabled;
 
-        m_PlayButton.enabled = !m_isPlayerOut && isPlayerTurn;
-        m_BullshitButton.enabled = !m_isPlayerOut && !GameManager.Instance.IsBeginningOfRound() && !wasPlayerTurn;
+        m_PlayButton.enabled = GameManager.Instance.IsClientInPlay() && isPlayerTurn;
+        m_BullshitButton.enabled = GameManager.Instance.IsClientInPlay() && !GameManager.Instance.IsBeginningOfRound() && !wasPlayerTurn;
         m_Outline.enabled = m_PlayButton.enabled;
         m_TurnNotification.SetActive(m_PlayButton.enabled);
     }

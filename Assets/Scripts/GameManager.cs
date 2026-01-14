@@ -15,8 +15,10 @@ public class GameManager : NetworkBehaviour
 
     public GameState gameState = GameState.PREGAME;
     private Dictionary<ulong, PlayerData> allPlayerData = new();
+    public NetworkList<ulong> inPlayClientIds { get; private set; }
     private readonly HashSet<ulong> readyClients = new();
     private List<PlayerData> eliminatedClients = new();
+    private ulong? lastRoundLosingClientId;
 
     // TODO: every player has their own play log... only the server should have the log
     //   and clients just populate their log UI with the new play
@@ -39,6 +41,7 @@ public class GameManager : NetworkBehaviour
     [SerializeField] private UlongEventChannelSO OnPlayerOut;
     [SerializeField] private VoidEventChannelSO OnRestartGame;
     [SerializeField] private UlongEventChannelSO OnServerPlayerTurnTimeout;
+    [SerializeField] private VoidEventChannelSO OnExitGame;
 
     [Header("Firing Events")]
     [SerializeField] private IntEventChannelSO OnInvalidPlay;
@@ -57,6 +60,8 @@ public class GameManager : NetworkBehaviour
             Destroy(Instance.gameObject);
         }
         Instance = this;
+
+        inPlayClientIds = new NetworkList<ulong>();
     }
 
     public override void OnNetworkSpawn()
@@ -88,6 +93,7 @@ public class GameManager : NetworkBehaviour
         OnRestartGame.OnEventRaised += RestartGame;
         OnPlayerOut.OnEventRaised += CardManager_PlayerOut;
         OnServerPlayerTurnTimeout.OnEventRaised += PlayerTurnTimeout;
+        OnExitGame.OnEventRaised += EndGameCleanup;
     }
 
     private void OnDisable()
@@ -95,6 +101,7 @@ public class GameManager : NetworkBehaviour
         OnRestartGame.OnEventRaised -= RestartGame;
         OnPlayerOut.OnEventRaised -= CardManager_PlayerOut;
         OnServerPlayerTurnTimeout.OnEventRaised -= PlayerTurnTimeout;
+        OnExitGame.OnEventRaised -= EndGameCleanup;
     }
 
     // TODO: invoke events on game state change
@@ -103,18 +110,37 @@ public class GameManager : NetworkBehaviour
         switch (gameState)
         {
             case GameState.PREGAME:
+#if UNITY_EDITOR
+                Debug.Log("PREGAME to ROUNDS");
+#endif
                 gameState = GameState.ROUNDS;
                 break;
             case GameState.ROUNDS:
+#if UNITY_EDITOR
+                Debug.Log("ROUNDS to RESULT");
+#endif
                 gameState = GameState.RESULT;
                 break;
             case GameState.RESULT:
                 if (GetNumberOfInGamePlayers() == 1)
+                {
+#if UNITY_EDITOR
+                    Debug.Log("RESULT to DONE");
+#endif
                     gameState = GameState.DONE;
+                }
                 else
+                {
+#if UNITY_EDITOR
+                    Debug.Log("RESULT to ROUNDS");
+#endif
                     gameState = GameState.ROUNDS;
+                }
                 break;
             case GameState.DONE:
+#if UNITY_EDITOR
+                Debug.Log("DONE to PREGAME");
+#endif
                 gameState = GameState.PREGAME;
                 break;
         }
@@ -123,6 +149,7 @@ public class GameManager : NetworkBehaviour
     private void PopulatePlayerDataFromConnections()
     {
         allPlayerData.Clear();
+        inPlayClientIds.Clear();
 
         var clients = ConnectionManager.Instance.GetClientConnections();
         foreach (var kvp in clients)
@@ -139,6 +166,7 @@ public class GameManager : NetworkBehaviour
                     initState: PlayerState.SPECTATING
                 )
             );
+            inPlayClientIds.Add(kvp.Key);
         }
     }
 
@@ -209,12 +237,14 @@ public class GameManager : NetworkBehaviour
                     //   one to signal a player left
                     //   another to end the round
                     AdvanceGameState();
+                    lastRoundLosingClientId = clientId;
                     PlayerLeftClientRpc(playerData.GetName(), CardManager.Instance.GetAllHandsInPlay().ToArray());
                     CardManager.Instance.RevealAllCards();
                 }
             }
 
             allPlayerData.Remove(clientId);
+            inPlayClientIds.Remove(clientId);
         }
 
 #if UNITY_EDITOR
@@ -224,12 +254,7 @@ public class GameManager : NetworkBehaviour
 
     public int GetNumberOfInGamePlayers()
     {
-        return allPlayerData.Values
-            .Count(playerData =>
-                {
-                    return playerData.state == PlayerState.PLAYING;
-                }
-            );
+        return inPlayClientIds.Count;
     }
 
     private void CardManager_PlayerOut(ulong losingClientId)
@@ -238,6 +263,7 @@ public class GameManager : NetworkBehaviour
         {
             PlayerData losingPlayerData = allPlayerData[losingClientId];
             losingPlayerData.state = PlayerState.ELIMINATED;
+            inPlayClientIds.Remove(losingClientId);
 #if UNITY_EDITOR
             Debug.Log($"players in play: {GetNumberOfInGamePlayers()}");
 #endif
@@ -248,18 +274,16 @@ public class GameManager : NetworkBehaviour
     private void PlayerTurnTimeout(ulong timedOutClientId)
     {
         if (!IsServer) return;
+        if (gameState != GameState.ROUNDS) return;
 
         PlayerData removedPlayerData = allPlayerData[timedOutClientId];
+        AdvanceGameState();
         PlayerRanOutOfTimeClientRpc(removedPlayerData.GetName(), CardManager.Instance.GetAllHandsInPlay().ToArray());
     }
 
     public bool IsClientInPlay(ulong clientId)
     {
-        if (allPlayerData.TryGetValue(clientId, out PlayerData playerData))
-        {
-            return playerData.state == PlayerState.PLAYING;
-        }
-        return false;
+        return inPlayClientIds.Contains(clientId);
     }
 
     public bool IsClientInPlay()
@@ -302,6 +326,7 @@ public class GameManager : NetworkBehaviour
         {
             playedHandLog.Clear();
             allPlayerData.Clear();
+            inPlayClientIds.Clear();
             ExitGameClientRpc();
             NetworkManager.Singleton.Shutdown();
         }
@@ -336,11 +361,6 @@ public class GameManager : NetworkBehaviour
                 RestartGameClientRpc();
             }
         }
-    }
-
-    public void EndOfGameUI_ExitGame()
-    {
-        EndGameCleanup();
     }
 
     [ServerRpc(RequireOwnership = false)]
@@ -427,6 +447,7 @@ public class GameManager : NetworkBehaviour
     public void EvaluateLastPlayedHandServerRpc(ServerRpcParams serverRpcParams = default)
     {
         if (gameState != GameState.ROUNDS) return;
+        if (playedHandLog.Count == 0) return;
 
         ulong callingBullshitClientId = serverRpcParams.Receive.SenderClientId;
 
@@ -439,11 +460,12 @@ public class GameManager : NetworkBehaviour
         Debug.Log($"{lastPlayedHand.GetStringRepresentation()} is in play => {isHandInPlay}");
 #endif
 
-        ulong lastRoundLosingClientId = isHandInPlay ? callingBullshitClientId : lastClientToPlayHand;
+        ulong loser = isHandInPlay ? callingBullshitClientId : lastClientToPlayHand;
+        lastRoundLosingClientId = loser;
 
         ClientRpcParams losingClientRpcParams = new()
         {
-            Send = new() { TargetClientIds = new ulong[] { lastRoundLosingClientId } }
+            Send = new() { TargetClientIds = new ulong[] { loser } }
         };
 
         if (lastRoundLosingClientId != callingBullshitClientId)
@@ -463,11 +485,6 @@ public class GameManager : NetworkBehaviour
             };
             RoundResultClientRpc(RoundResultTypes.WrongBS, losingClientRpcParams);
             RoundResultClientRpc(RoundResultTypes.Safe, lastPlayedClientRpcParams);
-        }
-
-        if (allPlayerData.ContainsKey(lastRoundLosingClientId))
-        {
-            CardManager.Instance.ChangeClientCardAmount(lastRoundLosingClientId);
         }
 
         AdvanceGameState();
@@ -496,6 +513,7 @@ public class GameManager : NetworkBehaviour
     {
         ulong senderClientId = serverRpcParams.Receive.SenderClientId;
         if (gameState != GameState.RESULT) return;
+        if (!inPlayClientIds.Contains(senderClientId)) return;
         if (!allPlayerData.ContainsKey(senderClientId)) return;
         if (allPlayerData[senderClientId].state != PlayerState.PLAYING) return;
 
@@ -517,6 +535,11 @@ public class GameManager : NetworkBehaviour
             playersReadyForNextRound = 0;
             readyClients.Clear();
 
+            if (lastRoundLosingClientId.HasValue && allPlayerData.ContainsKey(lastRoundLosingClientId.Value))
+            {
+                CardManager.Instance.ChangeClientCardAmount(lastRoundLosingClientId.Value);
+            }
+
             AdvanceGameState();
             if (GetNumberOfInGamePlayers() == 1)
             {
@@ -527,9 +550,11 @@ public class GameManager : NetworkBehaviour
             else
             {
                 CardManager.Instance.DistributeCards();
-                TurnManager.Instance.ResetTurnForNewRound();
                 StartNextRoundClientRpc();
+                if (lastRoundLosingClientId.HasValue)
+                    TurnManager.Instance.ResetTurnForNewRound(lastRoundLosingClientId.Value);
             }
+            lastRoundLosingClientId = null;
         }
         else
         {

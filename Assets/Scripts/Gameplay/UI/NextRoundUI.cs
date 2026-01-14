@@ -26,7 +26,6 @@ public class NextRoundUI : MonoBehaviour
     private const string k_readyText = "Ready";
     private const string k_unreadyText = "Unready";
 
-    private bool m_canBeReady;
     private int m_totalPlayersToBeReady;
 
     private void Awake()
@@ -39,7 +38,6 @@ public class NextRoundUI : MonoBehaviour
 
         animatable = GetComponent<TransitionableUIBase>();
 
-        ResetTotalPlayersText();
         offendingPlayerUI.SetActive(false);
         m_toggleText.text = k_readyText;
 
@@ -52,11 +50,6 @@ public class NextRoundUI : MonoBehaviour
                 GameManager.Instance.ReadyForNextRoundServerRpc(isOn);
             }
         });
-    }
-
-    private void Start()
-    {
-        m_canBeReady = GameManager.Instance.IsClientInPlay();
     }
 
     private void OnEnable()
@@ -84,7 +77,7 @@ public class NextRoundUI : MonoBehaviour
         // if (animatable.IsOffScreen())
         // {
         m_toggleText.text = k_readyText;
-        m_readyForNextRoundToggle.enabled = m_canBeReady;
+        m_readyForNextRoundToggle.enabled = GameManager.Instance.IsClientInPlay();
         m_readyForNextRoundToggle.isOn = false;
         animatable.TransitionOnToScreen();
         // }
@@ -142,10 +135,5 @@ public class NextRoundUI : MonoBehaviour
     public void SetNumberOfPlayersReadyText(int numberOfPlayersReady)
     {
         m_playersReadyText.text = $"{numberOfPlayersReady}/{m_totalPlayersToBeReady}";
-    }
-
-    public void SetCanBeReady(bool canBeReady)
-    {
-        m_canBeReady = canBeReady;
     }
 }
