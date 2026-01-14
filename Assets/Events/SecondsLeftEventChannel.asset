@@ -10,5 +10,5 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ed2dab02d7f2e0041bf049f40e2a9dda, type: 3}
-  m_Name: TimeForTurnDecidedEventChannel
+  m_Name: SecondsLeftEventChannel
   m_EditorClassIdentifier: Assembly-CSharp::IntEventChannelSO

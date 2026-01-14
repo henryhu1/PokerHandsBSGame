@@ -5,6 +5,7 @@ public class TimeInTurnManager : MonoBehaviour
 {
     [Header("Firing Events")]
     [SerializeField] private VoidEventChannelSO OnTurnTimeout;
+    [SerializeField] private IntEventChannelSO OnSecondsLeft;
 
     private float timeInTurn;
     private Coroutine turnTimeCountdown;
@@ -52,7 +53,12 @@ public class TimeInTurnManager : MonoBehaviour
 
         while (timeInTurn > 0)
         {
+            int oldTime = Mathf.FloorToInt(timeInTurn);
             timeInTurn -= Time.deltaTime;
+            if (oldTime != Mathf.FloorToInt(timeInTurn))
+            {
+                OnSecondsLeft.RaiseEvent(oldTime);
+            }
             yield return null;
         }
         OnTurnTimeout.RaiseEvent();

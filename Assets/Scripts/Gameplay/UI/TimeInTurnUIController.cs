@@ -1,107 +1,53 @@
-using System.Collections;
 using TMPro;
 using UnityEngine;
 
-public class TineInTurnUIController : MonoBehaviour
+public class TimeInTurnUIController : MonoBehaviour
 {
     [Header("UI")]
     [SerializeField] private TextMeshProUGUI timerText;
 
     [Header("Listening Events")]
-    [SerializeField] private IntEventChannelSO OnTimeForTurnDecided;
-    [SerializeField] private VoidEventChannelSO OnCardsDistributed;
+    [SerializeField] private IntEventChannelSO OnSecondsLeft;
+    [SerializeField] private VoidEventChannelSO OnNextRoundStarting;
     [SerializeField] private BoolEventChannelSO OnNextPlayerTurn;
     [SerializeField] private VoidEventChannelSO OnRoundEnded;
-
-    private TimeForTurnType timeForTurn;
-
-    private float localTimeCountdown;
-    private Coroutine localTimer;
 
     private void OnEnable()
     {
         timerText.enabled = false;
 
-        OnTimeForTurnDecided.OnEventRaised += TimeForTurnDecided;
-        OnCardsDistributed.OnEventRaised += CardsDistributed;
+        OnSecondsLeft.OnEventRaised += SecondsLeft;
+        OnNextRoundStarting.OnEventRaised += NextRoundStarting;
         OnNextPlayerTurn.OnEventRaised += NextPlayerTurn;
         OnRoundEnded.OnEventRaised += RoundEnded;
     }
 
     private void OnDisable()
     {
-        OnTimeForTurnDecided.OnEventRaised -= TimeForTurnDecided;
-        OnCardsDistributed.OnEventRaised -= CardsDistributed;
+        OnSecondsLeft.OnEventRaised -= SecondsLeft;
+        OnNextRoundStarting.OnEventRaised -= NextRoundStarting;
         OnNextPlayerTurn.OnEventRaised -= NextPlayerTurn;
         OnRoundEnded.OnEventRaised -= RoundEnded;
     }
 
-    private void TimeForTurnDecided(int timeForTurn)
+    private void SecondsLeft(int time)
     {
-        this.timeForTurn = (TimeForTurnType)timeForTurn;
+        timerText.text = time.ToString();
+        timerText.enabled = true;
     }
 
-    private void CardsDistributed()
+    private void NextRoundStarting()
     {
-        if (localTimer != null)
-        {
-            StopCoroutine(localTimer);
-        }
-
-        localTimer = StartCoroutine(RunDownTurnTimer());
+        timerText.enabled = false;
     }
 
     private void NextPlayerTurn(bool isPlayerTurn)
     {
-        if (localTimer != null)
-        {
-            StopCoroutine(localTimer);
-        }
-
-        // if (isPlayerTurn)
-        // {
-        localTimer = StartCoroutine(RunDownTurnTimer());
-        // }
+        timerText.enabled = false;
     }
 
     private void RoundEnded()
     {
-        if (localTimer != null)
-        {
-            StopCoroutine(localTimer);
-        }
-        timerText.enabled = false;
-    }
-
-    private IEnumerator RunDownTurnTimer()
-    {
-        switch (timeForTurn)
-        {
-            case TimeForTurnType.Five:
-                localTimeCountdown = 5;
-                break;
-            case TimeForTurnType.Ten:
-                localTimeCountdown = 10;
-                break;
-            case TimeForTurnType.Fifteen:
-                localTimeCountdown = 15;
-                break;
-        }
-
-        while (localTimeCountdown > 0)
-        {
-            int oldTime = Mathf.FloorToInt(localTimeCountdown);
-
-            localTimeCountdown -= Time.deltaTime;
-            if (Mathf.FloorToInt(localTimeCountdown) != oldTime)
-            {
-                timerText.text = oldTime.ToString();
-            }
-
-            timerText.enabled = localTimeCountdown < 5;
-
-            yield return null;
-        }
         timerText.enabled = false;
     }
 }
