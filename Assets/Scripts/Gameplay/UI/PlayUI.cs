@@ -13,7 +13,6 @@ public class PlayUI : MonoBehaviour
     private TransitionableUIBase handSelectionAnimatable;
 
     [Header("Listening Events")]
-    [SerializeField] private VoidEventChannelSO OnCameraInPosition;
     [SerializeField] private VoidEventChannelSO OnNextRoundStarting;
     [SerializeField] private VoidEventChannelSO OnRoundEnded;
     [SerializeField] private VoidEventChannelSO OnInitializeNewGame;
@@ -32,7 +31,7 @@ public class PlayUI : MonoBehaviour
         actionsAnimatable = actionsUI.GetComponent<TransitionableUIBase>();
         handSelectionAnimatable = handSelectionUI.GetComponent<TransitionableUIBase>();
 
-        if (!GameManager.Instance.IsNotOut())
+        if (!GameManager.Instance.IsClientInPlay())
         {
             Hide();
         }
@@ -40,7 +39,6 @@ public class PlayUI : MonoBehaviour
 
     private void OnEnable()
     {
-        OnCameraInPosition.OnEventRaised += Show;
         OnRoundEnded.OnEventRaised += Hide;
         OnNextRoundStarting.OnEventRaised += Show;
         OnInitializeNewGame.OnEventRaised += Show;
@@ -48,7 +46,6 @@ public class PlayUI : MonoBehaviour
 
     private void OnDisable()
     {
-        OnCameraInPosition.OnEventRaised -= Show;
         OnRoundEnded.OnEventRaised -= Hide;
         OnNextRoundStarting.OnEventRaised -= Show;
         OnInitializeNewGame.OnEventRaised -= Show;

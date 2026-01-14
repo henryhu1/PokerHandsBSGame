@@ -11,7 +11,7 @@ public class CameraRotationLookAtTarget : MonoBehaviour
     [SerializeField] private float m_movementDuration;
 
     [Header("Firing Events")]
-    // TODO: UI gets displayed on camera in position, instead should UI be displayed when cards are distributed?
+    // TODO: remove unused event
     [SerializeField] private VoidEventChannelSO OnCameraInPosition;
 
     private void Awake()

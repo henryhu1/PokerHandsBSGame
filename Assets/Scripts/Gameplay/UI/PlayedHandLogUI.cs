@@ -11,8 +11,7 @@ public class PlayedHandLogUI : MonoBehaviour
 
     [Header("Listening Events")]
     [SerializeField] private UlongEventChannelSO OnSelectOpponentHand;
-    [SerializeField] private VoidEventChannelSO OnCameraInPosition;
-    [SerializeField] private VoidEventChannelSO OnInitializeNewGame;
+    [SerializeField] private VoidEventChannelSO OnNextRoundStarting;
     [SerializeField] private BoolListEventChannelSO OnDisplayPlayedHandsPresent;
     [SerializeField] private VoidEventChannelSO OnGameWon;
 
@@ -39,8 +38,7 @@ public class PlayedHandLogUI : MonoBehaviour
         OnGameWon.OnEventRaised += GameWon;
 
         OnSelectOpponentHand.OnEventRaised += AllOpponentCards_SelectOpponentHand;
-        OnCameraInPosition.OnEventRaised += CameraInPosition;
-        OnInitializeNewGame.OnEventRaised += InitializeNewGame;
+        OnNextRoundStarting.OnEventRaised += NextRoundStarting;
         OnDisplayPlayedHandsPresent.OnEventRaised += DisplayPlayedHandsPresent;
     }
 
@@ -54,8 +52,7 @@ public class PlayedHandLogUI : MonoBehaviour
         OnGameWon.OnEventRaised -= GameWon;
 
         OnSelectOpponentHand.OnEventRaised -= AllOpponentCards_SelectOpponentHand;
-        OnCameraInPosition.OnEventRaised -= CameraInPosition;
-        OnInitializeNewGame.OnEventRaised -= InitializeNewGame;
+        OnNextRoundStarting.OnEventRaised -= NextRoundStarting;
         OnDisplayPlayedHandsPresent.OnEventRaised -= DisplayPlayedHandsPresent;
     }
 
@@ -114,12 +111,7 @@ public class PlayedHandLogUI : MonoBehaviour
         animatable.TransitionOffScreen();
     }
 
-    private void CameraInPosition()
-    {
-        animatable.TransitionOnToScreen();
-    }
-
-    private void InitializeNewGame()
+    private void NextRoundStarting()
     {
         animatable.TransitionOnToScreen();
     }
