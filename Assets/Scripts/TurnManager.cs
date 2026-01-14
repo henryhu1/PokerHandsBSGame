@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Collections;
 using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
@@ -7,37 +6,13 @@ using UnityEngine;
 public class TurnManager : NetworkBehaviour
 {
     public static TurnManager Instance { get; private set; }
-    private class TurnObject
-    {
-        public ulong clientId { get; set; }
-        public bool inPlay { get; set; }
-        public TurnObject next { get; set; }
-        public TurnObject previous { get; set; }
 
-        public TurnObject(ulong clientId, bool inPlay, TurnObject next, TurnObject previous)
-        {
-            this.clientId = clientId;
-            this.inPlay = inPlay;
-            this.next = next;
-            this.previous = previous;
-        }
-    }
+    [SerializeField] private TimeInTurnManager timeInTurnManager;
 
-    // private List<ulong> m_turnOrder;
-    private TurnObject m_currentTurnObject;
-    private Dictionary<ulong, TurnObject> m_playerTurns;
+    private TurnObject currentTurnObject;
+    private Dictionary<ulong, TurnObject> playerTurns;
     // TODO: why keep this list? When the game restarts, reset all TurnObject.next and TurnObject.previous using this order
-    private List<TurnObject> m_turnPositions;
-    // private HashSet<int> m_outOfPlayTurnIndices;
-    private NetworkVariable<ulong> m_currentTurnClientId = new(0);
-
-    private float serverTimeInTurn;
-    private Coroutine serverTurnTimeCountdown;
-
-    [HideInInspector]
-    public delegate void TurnOrderDecidedDelegateHandler();
-    [HideInInspector]
-    public event TurnOrderDecidedDelegateHandler OnTurnOrderDecided;
+    private List<TurnObject> turnPositions;
 
     [Header("Firing Events")]
     [SerializeField] private IntEventChannelSO OnTimeForTurnDecided;
@@ -45,9 +20,10 @@ public class TurnManager : NetworkBehaviour
     [SerializeField] private UlongEventChannelSO OnServerPlayerTurnTimeout;
 
     [Header("Listening Events")]
+    [SerializeField] private VoidEventChannelSO OnTurnTimeout;
     [SerializeField] private UlongEventChannelSO OnPlayerOut;
-    [SerializeField] private UlongEventChannelSO OnClientLoadedScene;
-    [SerializeField] private VoidEventChannelSO OnCardsDistributed;
+    [SerializeField] private VoidEventChannelSO OnNextRoundStarting;
+    [SerializeField] private VoidEventChannelSO OnRoundEnded;
 
     public void Awake()
     {
@@ -57,26 +33,16 @@ public class TurnManager : NetworkBehaviour
         }
         Instance = this;
 
-        m_playerTurns = new();
-        m_turnPositions = new();
+        playerTurns = new();
+        turnPositions = new();
     }
 
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
 
-        // TODO (2): event OnNextPlayerTurn is invoked on the network variable change
-        //   will always invoke, even on new round starting
-        m_currentTurnClientId.OnValueChanged += (oldValue, newValue) =>
-        {
-            OnNextPlayerTurn.RaiseEvent(NetworkManager.Singleton.LocalClientId == newValue);
-            // wasPlayersTurnPreviously = !GameManager.Instance.IsBeginningOfRound() && NetworkManager.Singleton.LocalClientId == oldValue
-        };
-
         if (IsServer)
         {
-            m_currentTurnClientId.Value = NetworkManager.Singleton.LocalClientId;
-
             NetworkManager.OnClientDisconnectCallback += RemovePlayer;
         }
 
@@ -89,7 +55,8 @@ public class TurnManager : NetworkBehaviour
 
         if (IsServer)
         {
-            m_playerTurns.Clear();
+            playerTurns.Clear();
+            turnPositions.Clear();
 
             NetworkManager.OnClientDisconnectCallback -= RemovePlayer;
         }
@@ -97,128 +64,137 @@ public class TurnManager : NetworkBehaviour
 
     private void OnEnable()
     {
+        OnTurnTimeout.OnEventRaised += TurnTimeout;
+        OnNextRoundStarting.OnEventRaised += NextRoundStarting;
+        OnRoundEnded.OnEventRaised += RoundEnded;
         OnPlayerOut.OnEventRaised += CardManager_PlayerOut;
-        OnClientLoadedScene.OnEventRaised += AddClientToTurnOrder;
     }
 
     private void OnDisable()
     {
+        OnTurnTimeout.OnEventRaised -= TurnTimeout;
+        OnNextRoundStarting.OnEventRaised -= NextRoundStarting;
+        OnRoundEnded.OnEventRaised -= RoundEnded;
         OnPlayerOut.OnEventRaised -= CardManager_PlayerOut;
-        OnClientLoadedScene.OnEventRaised -= AddClientToTurnOrder;
+    }
+
+    private void TurnTimeout()
+    {
+        OnServerPlayerTurnTimeout.RaiseEvent(currentTurnObject.ClientId);
+    }
+
+    private void NextRoundStarting()
+    {
+        if (!IsServer) return;
+
+        // TODO: allow clients to also have countdown,
+        //   but only server executes out of time code
+        timeInTurnManager.StartTurnCountdown();
+    } 
+
+    private void RoundEnded()
+    {
+        timeInTurnManager.StopTurnCountdown();
     }
 
     private void CardManager_PlayerOut(ulong losingClientId)
     {
         if (IsServer)
         {
-            m_playerTurns[losingClientId].inPlay = false;
-            m_playerTurns[losingClientId].previous.next = m_playerTurns[losingClientId].next;
-            m_playerTurns[losingClientId].next.previous = m_playerTurns[losingClientId].previous;
+            playerTurns[losingClientId].Previous.Next = playerTurns[losingClientId].Next;
+            playerTurns[losingClientId].Next.Previous = playerTurns[losingClientId].Previous;
         }
     }
 
-    public void AddClientToTurnOrder(ulong clientId)
+    // public void NewGamePlayerTurns(List<ulong> inPlayClientIds, ulong winnerClientId)
+    // {
+    //     if (IsServer)
+    //     {
+    //         for (int i = 0; i < turnPositions.Count; i++)
+    //         {
+    //             if (i == 0)
+    //             {
+    //                 turnPositions[i].Previous = turnPositions.Last();
+    //                 turnPositions[i].Next = turnPositions[i + 1];
+    //             }
+    //             else if (i == turnPositions.Count - 1)
+    //             {
+    //                 turnPositions[i].Next = turnPositions.First();
+    //                 turnPositions[i].Previous = turnPositions[i - 1];
+    //             }
+    //             else
+    //             {
+    //                 turnPositions[i].Next = turnPositions[i + 1];
+    //                 turnPositions[i].Previous = turnPositions[i - 1];
+    //             }
+    //         }
+
+    //         foreach (ulong inPlayClientId in inPlayClientIds)
+    //         {
+    //             if (!playerTurns.ContainsKey(inPlayClientId))
+    //             {
+    //                 AddClientToTurnOrder(inPlayClientId);
+    //             }
+    //         }
+
+    //         currentTurnObject.Value = playerTurns[winnerClientId];
+
+    //         timeInTurnManager.StartTurnCountdown(); // TODO: this needs to be done properly
+    //     }
+    // }
+
+    public void DecideTurnOrder(ulong[] inPlayClientIds)
+    {
+        foreach (ulong clientId in inPlayClientIds)
+        {
+            AddClientToTurnOrder(clientId);
+        }
+    }
+
+    private void AddClientToTurnOrder(ulong clientId)
     {
         if (IsServer)
         {
 #if UNITY_EDITOR
-            Debug.Log($"Adding client #{clientId} to turn order, position {m_playerTurns.Count}");
+            Debug.Log($"Adding client #{clientId} to turn order, position {playerTurns.Count}");
 #endif
-            TurnObject clientTurn = new(clientId, true, null, null);
-            // TODO: should I worry about clients loading the scene before the host?
-            //   This would mean the first player (host) gets put somewhere not at the beginning for positioning
-            if (!m_playerTurns.ContainsKey(clientId))
+            TurnObject clientTurn = new(clientId, null, null);
+            if (NetworkManager.Singleton.LocalClientId == clientId)
             {
-                if (m_playerTurns.Count == 0)
-                {
-                    m_currentTurnObject = clientTurn;
-                }
-                else
-                {
-                    clientTurn.previous = m_turnPositions.Last();
-                    clientTurn.next = m_turnPositions.First();
-                    m_turnPositions.Last().next = clientTurn;
-                    m_turnPositions.First().previous = clientTurn;
-                }
-                m_playerTurns.Add(clientId, clientTurn);
-                m_turnPositions.Add(clientTurn);
+                currentTurnObject = clientTurn;
+            }
 
-                if (m_playerTurns.Count == GameManager.Instance.NumberOfPlayers)
+            if (!playerTurns.ContainsKey(clientId))
+            {
+                if (playerTurns.Count > 0)
                 {
-                    OnTurnOrderDecided?.Invoke();
-                    StartServerTurnCountdown(3);
+                    clientTurn.Previous = turnPositions.Last();
+                    clientTurn.Next = turnPositions.First();
+                    turnPositions.Last().Next = clientTurn;
+                    turnPositions.First().Previous = clientTurn;
                 }
+                playerTurns.Add(clientId, clientTurn);
+                turnPositions.Add(clientTurn);
             }
 #if UNITY_EDITOR
             else
             {
-                Debug.Log($"Client #{clientId} already in turn order... at position {m_turnPositions.FindIndex(i => i.clientId == clientId)}");
+                Debug.Log($"Client #{clientId} already in turn order... at position {turnPositions.FindIndex(i => i.ClientId == clientId)}");
             }
 #endif
         }
     }
 
-    private void StartServerTurnCountdown(float bufferTime = 0)
-    {
-        StopServerTurnCountdown();
-        ResetTimeInTurn();
-        serverTimeInTurn += bufferTime;
-        serverTurnTimeCountdown = StartCoroutine(StartTurnTimeCountdown());
-    }
-
-    public void StopServerTurnCountdown()
-    {
-        if (!IsServer) return;
-
-        if (serverTurnTimeCountdown != null)
-        {
-            StopCoroutine(serverTurnTimeCountdown);
-        }
-    }
-
-    private void ResetTimeInTurn()
-    {
-        TimeForTurnType timeForTurn = GameManager.Instance.GetTimeForPlayer();
-        switch (timeForTurn)
-        {
-            case TimeForTurnType.Five:
-                serverTimeInTurn = 5;
-                break;
-            case TimeForTurnType.Ten:
-                serverTimeInTurn = 10;
-                break;
-            case TimeForTurnType.Fifteen:
-                serverTimeInTurn = 15;
-                break;
-        }
-    }
-
-    private IEnumerator StartTurnTimeCountdown()
-    {
-        while (serverTimeInTurn > 0)
-        {
-            serverTimeInTurn -= Time.deltaTime;
-            yield return null;
-        }
-        OnServerPlayerTurnTimeout.RaiseEvent(m_currentTurnObject.clientId);
-        // GameManager.Instance.RemoveInPlayClient(m_currentTurnObject.clientId);
-        // CardManager.Instance.ForcePlayerOut(m_currentTurnObject.clientId);
-    }
-
-    public void RemovePlayer(ulong clientId)
+    private void RemovePlayer(ulong clientId)
     {
         if (IsServer)
         {
-            if (m_playerTurns.ContainsKey(clientId))
+            if (playerTurns.ContainsKey(clientId))
             {
-                if (m_playerTurns[clientId].inPlay)
-                {
-                    m_playerTurns[clientId].previous.next = m_playerTurns[clientId].next;
-                    m_playerTurns[clientId].next.previous = m_playerTurns[clientId].previous;
-                    m_playerTurns[clientId].inPlay = false;
-                }
-                m_playerTurns.Remove(clientId);
-                m_turnPositions.RemoveAll(i => i.clientId == clientId);
+                playerTurns[clientId].Previous.Next = playerTurns[clientId].Next;
+                playerTurns[clientId].Next.Previous = playerTurns[clientId].Previous;
+                playerTurns.Remove(clientId);
+                turnPositions.RemoveAll(i => i.ClientId == clientId);
 #if UNITY_EDITOR
                 Debug.Log($"removed {clientId} from turns");
 #endif
@@ -230,9 +206,9 @@ public class TurnManager : NetworkBehaviour
     {
         if (IsServer)
         {
-            int clientTurnPosition = m_turnPositions.FindIndex(i => i.clientId == clientId);
-            List<ulong> after = m_turnPositions.GetRange(clientTurnPosition, m_turnPositions.Count - clientTurnPosition).Select(i => i.clientId).ToList();
-            List<ulong> before = m_turnPositions.GetRange(0, clientTurnPosition).Select(i => i.clientId).ToList();
+            int clientTurnPosition = turnPositions.FindIndex(i => i.ClientId == clientId);
+            List<ulong> after = turnPositions.GetRange(clientTurnPosition, turnPositions.Count - clientTurnPosition).Select(i => i.ClientId).ToList();
+            List<ulong> before = turnPositions.GetRange(0, clientTurnPosition).Select(i => i.ClientId).ToList();
             return after.Concat(before).ToList();
         }
         return null;
@@ -242,70 +218,24 @@ public class TurnManager : NetworkBehaviour
     {
         if (IsServer)
         {
-            m_currentTurnObject = m_currentTurnObject.next;
-            m_currentTurnClientId.Value = m_currentTurnObject.clientId;
-            StartServerTurnCountdown();
+            // TODO: have currentTurnObject check if player is in game
+            //   except when a player loses the doubly linked list is updated (next and prev)
+            currentTurnObject = currentTurnObject.Next;
+            timeInTurnManager.StartTurnCountdown();
         }
     }
 
-    public void NextRound(ulong losingClientId)
+    public void ResetTurnForNewRound()
     {
         if (IsServer)
         {
-            // TODO (2): right now, after the round ends m_currentTurnClientId.OnValueChanged will invoke the OnNextPlayerTurn event, but
-            //   NextRoundClientRpc will invoke the OnNextPlayerTurn event correctly by setting wasPlayersTurnPreviously always to false. Fix.
-            if (m_playerTurns.ContainsKey(losingClientId))
+            if (
+                playerTurns.ContainsKey(currentTurnObject.ClientId) ||
+                !GameManager.Instance.IsClientInPlay(currentTurnObject.ClientId)
+            )
             {
-                m_currentTurnObject = m_playerTurns[losingClientId];
+                currentTurnObject = currentTurnObject.Next;
             }
-            if (!m_currentTurnObject.inPlay)
-            {
-                m_currentTurnObject = m_currentTurnObject.next;
-            }
-            m_currentTurnClientId.Value = m_currentTurnObject.clientId;
-
-            StartServerTurnCountdown();
-            NextRoundClientRpc();
-        }
-    }
-
-    public void NewGamePlayerTurns(List<ulong> inPlayClientIds, ulong winnerClientId)
-    {
-        if (IsServer)
-        {
-            for (int i = 0; i < m_turnPositions.Count; i++)
-            {
-                m_turnPositions[i].inPlay = true;
-
-                if (i == 0)
-                {
-                    m_turnPositions[i].previous = m_turnPositions.Last();
-                    m_turnPositions[i].next = m_turnPositions[i + 1];
-                }
-                else if (i == m_turnPositions.Count - 1)
-                {
-                    m_turnPositions[i].next = m_turnPositions.First();
-                    m_turnPositions[i].previous = m_turnPositions[i - 1];
-                }
-                else
-                {
-                    m_turnPositions[i].next = m_turnPositions[i + 1];
-                    m_turnPositions[i].previous = m_turnPositions[i - 1];
-                }
-            }
-
-            foreach (ulong inPlayClientId in inPlayClientIds)
-            {
-                if (!m_playerTurns.ContainsKey(inPlayClientId))
-                {
-                    AddClientToTurnOrder(inPlayClientId);
-                }
-            }
-
-            m_currentTurnObject = m_playerTurns[winnerClientId];
-            m_currentTurnClientId.Value = winnerClientId;
-
-            StartServerTurnCountdown(3); // TODO: this needs to be done properly
         }
     }
 
@@ -313,13 +243,17 @@ public class TurnManager : NetworkBehaviour
     public void RequestTurnTimeServerRpc(ServerRpcParams serverRpcParams = default)
     {
         ulong clientId = serverRpcParams.Receive.SenderClientId;
-        if (GameManager.Instance.m_connectedClientIds.ContainsKey(clientId))
+        if (GameManager.Instance.IsClientInPlay(clientId))
         {
             ClientRpcParams clientRpcParams = new()
             {
                 Send = new() { TargetClientIds = new ulong[] { clientId } }
             };
-            InitializeTurnTimeClientRpc(GameManager.Instance.GetTimeForPlayer(), clientRpcParams);
+            var rules = GameSession.Instance.ActiveRules;
+            if (rules.timeForTurn != TimeForTurnType.None)
+            {
+                InitializeTurnTimeClientRpc(rules.timeForTurn, clientRpcParams);
+            }
         }
     }
 
@@ -329,10 +263,9 @@ public class TurnManager : NetworkBehaviour
         OnTimeForTurnDecided.RaiseEvent((int)timeForTurnType);
     }
 
-    [ClientRpc]
-    public void NextRoundClientRpc()
-    {
-        // TODO (2): only when a new round starts, event OnNextPlayerTurn is invoked on the client RPC
-        OnNextPlayerTurn.RaiseEvent(NetworkManager.Singleton.LocalClientId == m_currentTurnClientId.Value);
-    }
+    // [ClientRpc]
+    // public void NextRoundClientRpc()
+    // {
+    //     OnNextPlayerTurn.RaiseEvent(NetworkManager.Singleton.LocalClientId == currentTurnObject.Value.ClientId);
+    // }
 }
