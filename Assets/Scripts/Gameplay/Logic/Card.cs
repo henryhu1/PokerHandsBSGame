@@ -37,7 +37,7 @@ public class Card : INetworkSerializable, IComparable<Card>, IEquatable<Card>
         serializer.SerializeValue(ref m_suit);
     }
 
-    public string GetCardName()
+    public override string ToString()
     {
         return $"{m_rank} of {m_suit}s";
     }

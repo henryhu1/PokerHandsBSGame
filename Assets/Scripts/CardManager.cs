@@ -7,9 +7,8 @@ using UnityEngine.Assertions;
 public class CardManager : NetworkBehaviour
 {
     public static CardManager Instance { get; private set; }
-    private DeckManager deckManager;
     private CardGameServerManager cardGameServerManager;
-    
+
     [Header("Data")]
     [SerializeField] private CardRegistrySO cardRegistry;
 
@@ -26,7 +25,6 @@ public class CardManager : NetworkBehaviour
     [SerializeField] private PlayerCardInfoListEventChannelSO OnRevealAllCards;
 
     [Header("Listening Events")]
-    [SerializeField] private UlongEventChannelSO OnClientLoadedScene;
     [SerializeField] private UlongEventChannelSO OnServerPlayerTurnTimeout;
 
     private void Awake()
@@ -37,20 +35,17 @@ public class CardManager : NetworkBehaviour
         }
         Instance = this;
 
-        deckManager = new();
-        cardGameServerManager = new(deckManager);
+        cardGameServerManager = new();
     }
 
     private void OnEnable()
     {
         OnServerPlayerTurnTimeout.OnEventRaised += ForcePlayerOut;
-        OnClientLoadedScene.OnEventRaised += ClientLoadedScene;
     }
 
     private void OnDisable()
     {
         OnServerPlayerTurnTimeout.OnEventRaised -= ForcePlayerOut;
-        OnClientLoadedScene.OnEventRaised -= ClientLoadedScene;
     }
 
     public override void OnNetworkSpawn()
@@ -59,10 +54,7 @@ public class CardManager : NetworkBehaviour
 
         if (IsServer)
         {
-            NetworkManager.OnClientDisconnectCallback += RemovePlayer;
-
-            cardGameServerManager.RegisterServerEvents();
-            cardGameServerManager.ConfigureFromGameSettings();
+            NetworkManager.Singleton.OnClientDisconnectCallback += RemovePlayer;
         }
     }
 
@@ -72,21 +64,28 @@ public class CardManager : NetworkBehaviour
 
         if (IsServer)
         {
-            NetworkManager.OnClientDisconnectCallback -= RemovePlayer;
-
-            cardGameServerManager.UnregisterServerEvents();
+            NetworkManager.Singleton.OnClientDisconnectCallback -= RemovePlayer;
         }
     }
 
-    public void SetAmountOfCardsFromGameSetting()
+    public void SetUpPlayerHands(ulong[] clientIds)
     {
         if (IsServer)
         {
-            cardGameServerManager.ConfigureFromGameSettings();
+            var rules = GameSession.Instance.ActiveRules;
+            cardGameServerManager.SetUp(rules.selectedGameType, clientIds);
+            cardGameServerManager.DistributeCards();
         }
     }
 
-    public void RemovePlayer(ulong clientId)
+    public void DistributeCards()
+    {
+        if (!IsServer) return;
+
+        cardGameServerManager.DistributeCards();
+    }
+
+    private void RemovePlayer(ulong clientId)
     {
         if (IsServer)
         {
@@ -109,15 +108,7 @@ public class CardManager : NetworkBehaviour
         {
             return cardGameServerManager.GetHandsInPlay();
         }
-        return new List<PokerHand>();
-    }
-
-    private void ClientLoadedScene(ulong clientId)
-    {
-        if (IsServer)
-        {
-            cardGameServerManager.InitializePlayerEmptyHand(clientId);
-        }
+        return null;
     }
 
     public bool IsFlushAllowedToBePlayed()
@@ -147,7 +138,6 @@ public class CardManager : NetworkBehaviour
         cardGameServerManager.SetPlayerOut(clientId);
 
         OnPlayerOut.RaiseEvent(clientId);
-        cardGameServerManager.RevealAllCards();
     }
 
     public void RevealAllCards()
@@ -156,31 +146,6 @@ public class CardManager : NetworkBehaviour
         {
             cardGameServerManager.RevealAllCards();
         }
-    }
-
-    public void NextRound()
-    {
-        if (!IsServer) return;
-
-        DestroyCardGameObjectsClientRpc();
-        cardGameServerManager.ClearAllHands();
-        cardGameServerManager.ResetHandsInPlay();
-        cardGameServerManager.DistributeCards();
-    }
-
-    public void NewGamePlayerCards(List<ulong> inPlayClientIds)
-    {
-        if (!IsServer) return;
-
-        DestroyCardGameObjectsClientRpc();
-        cardGameServerManager.ConfigureFromGameSettings();
-        cardGameServerManager.ClearPlayers();
-        foreach (ulong clientId in inPlayClientIds)
-        {
-            cardGameServerManager.InitializePlayerEmptyHand(clientId);
-        }
-        cardGameServerManager.ResetHandsInPlay();
-        cardGameServerManager.DistributeCards();
     }
 
     [ClientRpc]
@@ -200,7 +165,7 @@ public class CardManager : NetworkBehaviour
 
         OnAreFlushesAllowed.RaiseEvent(areFlushesAllowed);
 
-        deckGameObject.SetActive(GameManager.Instance.m_inPlayClientIds.Contains(NetworkManager.Singleton.LocalClientId));
+        // deckGameObject.SetActive(GameManager.Instance.m_inPlayClientIds.Contains(NetworkManager.Singleton.LocalClientId));
         m_myCards = clientsCards.ToList();
         playerCardsInHand.CreateCardObjects(m_myCards);
 
@@ -240,13 +205,5 @@ public class CardManager : NetworkBehaviour
             allOpponentCards.DisplayOpponentCards(opponentCards);
             OnRevealAllCards.RaiseEvent(allPlayerCards.ToList());
         }
-    }
-
-    [ClientRpc]
-    public void DestroyCardGameObjectsClientRpc()
-    {
-        m_myCards.Clear();
-        playerCardsInHand.DestroyCardGameObjects();
-        allOpponentCards.HideOpponentHands();
     }
 }

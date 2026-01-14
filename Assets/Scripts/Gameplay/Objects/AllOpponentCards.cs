@@ -59,7 +59,7 @@ public class AllOpponentCards : MonoBehaviour
         HideOpponentHands();
     }
 
-    public void HideOpponentHands()
+    private void HideOpponentHands()
     {
         opponentCardsGameObjects.ForEach(i => i.gameObject.SetActive(false));
     }
@@ -82,6 +82,8 @@ public class AllOpponentCards : MonoBehaviour
 
     public void DisplayHiddenOpponentCards(List<PlayerHiddenCardInfo> orderedOpponentsHiddenCards)
     {
+        HideOpponentHands();
+
         for (int i = 0; i < opponentCardsGameObjects.Count; i++)
         {
             if (i < orderedOpponentsHiddenCards.Count && orderedOpponentsHiddenCards[i].amountOfCards > 0)

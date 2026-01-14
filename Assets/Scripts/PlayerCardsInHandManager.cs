@@ -65,7 +65,7 @@ public class PlayerCardsInHandManager : MonoBehaviour
         }
     }
 
-    public void DestroyCardGameObjects()
+    private void DestroyCardGameObjects()
     {
         foreach ((Draggable cardGameObject, int _) in cardObjects) Destroy(cardGameObject.gameObject);
         cardObjects.Clear();
@@ -170,6 +170,8 @@ public class PlayerCardsInHandManager : MonoBehaviour
 
     public void CreateCardObjects(List<Card> myCards)
     {
+        DestroyCardGameObjects();
+
         List<Card> cardsSorted = new(myCards);
         cardsSorted.Sort();
         int[] cardIndexInPosition = myCards.Select(card => cardsSorted.IndexOf(card)).ToArray();
