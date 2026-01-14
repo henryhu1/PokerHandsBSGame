@@ -887,6 +887,52 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: -20, y: -20}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &148393018
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 148393020}
+  - component: {fileID: 148393019}
+  m_Layer: 0
+  m_Name: TimeInTurnManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &148393019
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 148393018}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b310925404df27a40bd8a0df656dc5ca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TimeInTurnManager
+  OnTurnTimeout: {fileID: 11400000, guid: 23e707da1e79ac54f8a01d48e1087db5, type: 2}
+  OnSecondsLeft: {fileID: 11400000, guid: 675edcbb66294604983d39dc99115c1b, type: 2}
+--- !u!4 &148393020
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 148393018}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 1030.979, y: 568.704, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1679527415}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &151404207
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2952,8 +2998,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TineInTurnUIController
   timerText: {fileID: 2143039552}
-  OnTimeForTurnDecided: {fileID: 11400000, guid: b850d103d1b9f86468dfd2e864553809, type: 2}
-  OnCardsDistributed: {fileID: 11400000, guid: 33c3741b30304e640b67e7bbe362b2d8, type: 2}
+  OnSecondsLeft: {fileID: 11400000, guid: 675edcbb66294604983d39dc99115c1b, type: 2}
+  OnNextRoundStarting: {fileID: 11400000, guid: 8733d489064045b499db4c6848ba08fe, type: 2}
   OnNextPlayerTurn: {fileID: 11400000, guid: 6330ac0dfd5e85f4db6cbec7ada06d16, type: 2}
   OnRoundEnded: {fileID: 11400000, guid: 2efb75451219c1549b19941a68f213b7, type: 2}
 --- !u!1 &447741830
@@ -3464,6 +3510,90 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 473054204}
   m_CullTransparentMesh: 1
+--- !u!1 &477349239
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 477349240}
+  - component: {fileID: 477349242}
+  - component: {fileID: 477349241}
+  m_Layer: 0
+  m_Name: GameManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &477349240
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 477349239}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.46407023, y: 0.60892427, z: 0.34504583}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &477349241
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 477349239}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02c2bfd808d7f9c45b6c70a016f0f59f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  baseRules: {fileID: 11400000, guid: 77e6ed7e1a9ddef43ba61461ce1b312d, type: 2}
+  roundManager: {fileID: 581754986}
+  gameState: 0
+  OnAllClientsLoadedScene: {fileID: 11400000, guid: 3ec6304d5da600d4b82784967b0621e1, type: 2}
+  OnPlayerOut: {fileID: 11400000, guid: 50d0634f9c669ef44bf23459aa4a30f4, type: 2}
+  OnRestartGame: {fileID: 11400000, guid: b65207f71c9799243bd25a7dbf6caea8, type: 2}
+  OnServerPlayerTurnTimeout: {fileID: 11400000, guid: f7af96bc7de3c4d42a54e104c3dd059d, type: 2}
+  OnExitGame: {fileID: 11400000, guid: 8fec612a1a128d149b62dfea34d258ac, type: 2}
+  OnInvalidPlay: {fileID: 11400000, guid: 09b02b6f2cc7fb54e90d78cadf28c517, type: 2}
+  OnUpdatePlayableHands: {fileID: 11400000, guid: d41ef8b59aead7940a78ac7d27b185d7, type: 2}
+  OnPlayerLeft: {fileID: 11400000, guid: e764b6f002e5ea340aefa0bedf3a899b, type: 2}
+  OnPlayerRanOutOfTime: {fileID: 11400000, guid: c839ebc367e62a341b74426f93fd3496, type: 2}
+  OnInitializeNewGame: {fileID: 11400000, guid: 819f300a5119a584b85d32c1537c7b44, type: 2}
+  OnDisplayAllHandsInPlay: {fileID: 11400000, guid: 41bf55ca0669b40418ad49f73a3c1331, type: 2}
+  OnDisplayPlayedHandsPresent: {fileID: 11400000, guid: 238d720b52f89e94c906038b27840ab8, type: 2}
+  OnGameWon: {fileID: 11400000, guid: f9f16b67881813b4e8404a8da0ec5b53, type: 2}
+--- !u!114 &477349242
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 477349239}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 643396585
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 0
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
 --- !u!1001 &481383395
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5675,8 +5805,7 @@ MonoBehaviour:
   m_PlayedHandLogItemUIPrefab: {fileID: 6540639121345542175, guid: 78a39f36983f0c441b98b965cf5a8527, type: 3}
   m_LogContent: {fileID: 1373818246}
   OnSelectOpponentHand: {fileID: 11400000, guid: b1000c471aa09ba4697f0ab65776bc85, type: 2}
-  OnCameraInPosition: {fileID: 11400000, guid: d148c00a7f17d814fb021a5aa433be23, type: 2}
-  OnInitializeNewGame: {fileID: 11400000, guid: 819f300a5119a584b85d32c1537c7b44, type: 2}
+  OnNextRoundStarting: {fileID: 11400000, guid: 8733d489064045b499db4c6848ba08fe, type: 2}
   OnDisplayPlayedHandsPresent: {fileID: 11400000, guid: 238d720b52f89e94c906038b27840ab8, type: 2}
   OnGameWon: {fileID: 11400000, guid: f9f16b67881813b4e8404a8da0ec5b53, type: 2}
 --- !u!114 &675409745
@@ -7988,7 +8117,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -125}
+  m_AnchoredPosition: {x: 0, y: -400}
   m_SizeDelta: {x: 50, y: 40}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &961002738
@@ -8342,12 +8471,12 @@ MonoBehaviour:
   m_resultItemUIPrefab: {fileID: 1430230165520938723, guid: 4a3c0c3fdf5c7d3438c3da284a9f0ee9, type: 3}
   m_resultContent: {fileID: 2099348112}
   m_optionsUI: {fileID: 320430155}
-  m_restartGameOption: {fileID: 1297540088}
   m_gameModeButton: {fileID: 1490243483}
   m_gameModeText: {fileID: 1490243482}
   m_restartButton: {fileID: 1762345639}
   m_exitButton: {fileID: 932586330}
   OnRestartGame: {fileID: 11400000, guid: b65207f71c9799243bd25a7dbf6caea8, type: 2}
+  OnExitGame: {fileID: 11400000, guid: 8fec612a1a128d149b62dfea34d258ac, type: 2}
   OnInitializeNewGame: {fileID: 11400000, guid: 819f300a5119a584b85d32c1537c7b44, type: 2}
 --- !u!114 &983124420
 MonoBehaviour:
@@ -9260,7 +9389,7 @@ MonoBehaviour:
   OnAreFlushesAllowed: {fileID: 11400000, guid: 8c9401edf44e961428c524b26779534d, type: 2}
   OnCardsDistributed: {fileID: 11400000, guid: 33c3741b30304e640b67e7bbe362b2d8, type: 2}
   OnRevealAllCards: {fileID: 11400000, guid: b21124bf7f4845443b4cec3cb40203ce, type: 2}
-  OnClientLoadedScene: {fileID: 11400000, guid: 90b31630f6d49bb49b2677d4a13442ab, type: 2}
+  OnServerPlayerTurnTimeout: {fileID: 11400000, guid: f7af96bc7de3c4d42a54e104c3dd059d, type: 2}
 --- !u!114 &1096311314
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9553,7 +9682,6 @@ MonoBehaviour:
   actionsUI: {fileID: 1915432409}
   handSelectionUI: {fileID: 1856023909}
   orderCardsUI: {fileID: 961002738}
-  OnCameraInPosition: {fileID: 11400000, guid: d148c00a7f17d814fb021a5aa433be23, type: 2}
   OnNextRoundStarting: {fileID: 11400000, guid: 8733d489064045b499db4c6848ba08fe, type: 2}
   OnRoundEnded: {fileID: 11400000, guid: 2efb75451219c1549b19941a68f213b7, type: 2}
   OnInitializeNewGame: {fileID: 11400000, guid: 819f300a5119a584b85d32c1537c7b44, type: 2}
@@ -12983,11 +13111,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6668cb992c150624880a347c6689799a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  OnTimeForTurnDecided: {fileID: 11400000, guid: b850d103d1b9f86468dfd2e864553809, type: 2}
+  timeInTurnManager: {fileID: 148393019}
   OnNextPlayerTurn: {fileID: 11400000, guid: 6330ac0dfd5e85f4db6cbec7ada06d16, type: 2}
+  OnServerPlayerTurnTimeout: {fileID: 11400000, guid: f7af96bc7de3c4d42a54e104c3dd059d, type: 2}
+  OnTurnTimeout: {fileID: 11400000, guid: 23e707da1e79ac54f8a01d48e1087db5, type: 2}
   OnPlayerOut: {fileID: 11400000, guid: 50d0634f9c669ef44bf23459aa4a30f4, type: 2}
-  OnClientLoadedScene: {fileID: 11400000, guid: 90b31630f6d49bb49b2677d4a13442ab, type: 2}
-  OnCardsDistributed: {fileID: 11400000, guid: 33c3741b30304e640b67e7bbe362b2d8, type: 2}
+  OnNextRoundStarting: {fileID: 11400000, guid: 8733d489064045b499db4c6848ba08fe, type: 2}
+  OnRoundEnded: {fileID: 11400000, guid: 2efb75451219c1549b19941a68f213b7, type: 2}
 --- !u!4 &1679527415
 Transform:
   m_ObjectHideFlags: 0
@@ -13000,7 +13130,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 148393020}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1704363586
@@ -15805,6 +15936,7 @@ SceneRoots:
   - {fileID: 110975420}
   - {fileID: 579417324}
   - {fileID: 408816307}
+  - {fileID: 477349240}
   - {fileID: 1096311312}
   - {fileID: 1679527415}
   - {fileID: 581754987}
