@@ -101,43 +101,6 @@ public class TurnManager : NetworkBehaviour
         }
     }
 
-    // public void NewGamePlayerTurns(List<ulong> inPlayClientIds, ulong winnerClientId)
-    // {
-    //     if (IsServer)
-    //     {
-    //         for (int i = 0; i < turnPositions.Count; i++)
-    //         {
-    //             if (i == 0)
-    //             {
-    //                 turnPositions[i].Previous = turnPositions.Last();
-    //                 turnPositions[i].Next = turnPositions[i + 1];
-    //             }
-    //             else if (i == turnPositions.Count - 1)
-    //             {
-    //                 turnPositions[i].Next = turnPositions.First();
-    //                 turnPositions[i].Previous = turnPositions[i - 1];
-    //             }
-    //             else
-    //             {
-    //                 turnPositions[i].Next = turnPositions[i + 1];
-    //                 turnPositions[i].Previous = turnPositions[i - 1];
-    //             }
-    //         }
-
-    //         foreach (ulong inPlayClientId in inPlayClientIds)
-    //         {
-    //             if (!playerTurns.ContainsKey(inPlayClientId))
-    //             {
-    //                 AddClientToTurnOrder(inPlayClientId);
-    //             }
-    //         }
-
-    //         currentTurnObject.Value = playerTurns[winnerClientId];
-
-    //         timeInTurnManager.StartTurnCountdown(); // TODO: this needs to be done properly
-    //     }
-    // }
-
     public void DecideTurnOrder(ulong[] inPlayClientIds)
     {
         if (!IsServer) return;
@@ -224,7 +187,6 @@ public class TurnManager : NetworkBehaviour
             Debug.Log($"client {currentTurnObject.ClientId} played, next up: {currentTurnObject.Next.ClientId}");
 #endif
             currentTurnObject = currentTurnObject.Next;
-            timeInTurnManager.StartTurnCountdown();
             NextTurnClientRpc(currentTurnObject.ClientId);
         }
     }
@@ -252,6 +214,7 @@ public class TurnManager : NetworkBehaviour
     [ClientRpc]
     public void NextTurnClientRpc(ulong currentTurnClientId)
     {
+        timeInTurnManager.StartTurnCountdown();
         OnNextPlayerTurn.RaiseEvent(NetworkManager.Singleton.LocalClientId == currentTurnClientId);
     }
 }
