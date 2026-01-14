@@ -10,15 +10,23 @@ public class LobbyListUI : MonoBehaviour
 {
     public static LobbyListUI Instance { get; private set; }
 
-    // TODO: maybe refactor events to be delegate (arg type) instead of EventHandler
-    public event EventHandler<EventArgs> OnCreatingNewLobby;
-
+    [SerializeField] private GameObject uiItem;
     // TODO: refactor template into prefab
     [SerializeField] private Transform m_lobbyListItemTemplate;
     [SerializeField] private Transform m_container;
     [SerializeField] private Button m_joinWithCodeButton;
     [SerializeField] private Button m_refreshButton;
     [SerializeField] private Button m_createLobbyButton;
+
+    [Header("Firing Events")]
+    [SerializeField] private VoidEventChannelSO OnCreatingNewLobby;
+
+    [Header("Listening Events")]
+    [SerializeField] private VoidEventChannelSO OnCloseCreation;
+    [SerializeField] private LobbyListEventChannelSO OnLobbyListChanged;
+    [SerializeField] private LobbyEventChannelSO OnJoinedLobby;
+    [SerializeField] private VoidEventChannelSO OnLeftLobby;
+    [SerializeField] private LobbyEventChannelSO OnKickedFromLobby;
 
     private void Awake()
     {
@@ -34,7 +42,8 @@ public class LobbyListUI : MonoBehaviour
         m_createLobbyButton.onClick.AddListener(CreateLobbyButtonClick);
         m_joinWithCodeButton.onClick.AddListener(() => {
             InputFieldModalUI.Show_Static("Join with code", 6, "Lobby code", "Join",
-                (string joinCode) => {
+                joinCode =>
+                {
                     LobbyManager.Instance.JoinLobbyByCode(joinCode);
                 },
                 "Cancel",
@@ -43,49 +52,47 @@ public class LobbyListUI : MonoBehaviour
         });
     }
 
-    private void Start()
+    private void OnEnable()
     {
-        LobbyCreateUI.Instance.OnCloseCreation += LobbyCreateUI_OnCloseCreation;
-        LobbyManager.Instance.OnLobbyListChanged += LobbyManager_OnLobbyListChanged;
-        LobbyManager.Instance.OnJoinedLobby += LobbyManager_OnJoinedLobby;
-        LobbyManager.Instance.OnLeftLobby += LobbyManager_OnLeftLobby;
-        LobbyManager.Instance.OnKickedFromLobby += LobbyManager_OnKickedFromLobby;
-        // InputFieldFocusHandler.Instance.OnTextChanged += InputFieldFocusHandler_OnTextChanged;
+        OnCloseCreation.OnEventRaised += LobbyCreateUI_OnCloseCreation;
+        OnLobbyListChanged.OnEventRaised += LobbyManager_OnLobbyListChanged;
+        OnJoinedLobby.OnEventRaised += LobbyManager_OnJoinedLobby;
+        OnLeftLobby.OnEventRaised += LobbyManager_OnLeftLobby;
+        OnKickedFromLobby.OnEventRaised += LobbyManager_OnKickedFromLobby;
     }
 
-    private void OnDestroy()
+    private void OnDisable()
     {
-        LobbyCreateUI.Instance.OnCloseCreation -= LobbyCreateUI_OnCloseCreation;
-        LobbyManager.Instance.OnLobbyListChanged -= LobbyManager_OnLobbyListChanged;
-        LobbyManager.Instance.OnJoinedLobby -= LobbyManager_OnJoinedLobby;
-        LobbyManager.Instance.OnLeftLobby -= LobbyManager_OnLeftLobby;
-        LobbyManager.Instance.OnKickedFromLobby -= LobbyManager_OnKickedFromLobby;
-        // InputFieldFocusHandler.Instance.OnTextChanged += InputFieldFocusHandler_OnTextChanged;
+        OnCloseCreation.OnEventRaised -= LobbyCreateUI_OnCloseCreation;
+        OnLobbyListChanged.OnEventRaised -= LobbyManager_OnLobbyListChanged;
+        OnJoinedLobby.OnEventRaised -= LobbyManager_OnJoinedLobby;
+        OnLeftLobby.OnEventRaised -= LobbyManager_OnLeftLobby;
+        OnKickedFromLobby.OnEventRaised -= LobbyManager_OnKickedFromLobby;
     }
 
-    private void LobbyCreateUI_OnCloseCreation(object sender, EventArgs e)
+    private void LobbyCreateUI_OnCloseCreation()
     {
         Show();
     }
 
-    private void LobbyManager_OnKickedFromLobby(object sender, LobbyManager.LobbyEventArgs e)
+    private void LobbyManager_OnKickedFromLobby(Lobby lobby)
     {
         Show();
     }
 
-    private void LobbyManager_OnLeftLobby(object sender, EventArgs e)
+    private void LobbyManager_OnLeftLobby()
     {
         Show();
     }
 
-    private void LobbyManager_OnJoinedLobby(object sender, LobbyManager.LobbyEventArgs e)
+    private void LobbyManager_OnJoinedLobby(Lobby lobby)
     {
         Hide();
     }
 
-    private void LobbyManager_OnLobbyListChanged(object sender, LobbyManager.OnLobbyListChangedEventArgs e)
+    private void LobbyManager_OnLobbyListChanged(List<Lobby> lobbyList)
     {
-        UpdateLobbyList(e.lobbyList);
+        UpdateLobbyList(lobbyList);
     }
 
     private void UpdateLobbyList(List<Lobby> lobbyList)
@@ -114,16 +121,16 @@ public class LobbyListUI : MonoBehaviour
     private void CreateLobbyButtonClick()
     {
         Hide();
-        OnCreatingNewLobby?.Invoke(this, EventArgs.Empty);
+        OnCreatingNewLobby.RaiseEvent();
     }
 
     private void Hide()
     {
-        gameObject.SetActive(false);
+        uiItem.SetActive(false);
     }
 
     private void Show()
     {
-        gameObject.SetActive(true);
+        uiItem.SetActive(true);
     }
 }

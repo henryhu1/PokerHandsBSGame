@@ -1,6 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,12 +9,16 @@ public class InputFieldModalUI : MonoBehaviour
 
     public static InputFieldModalUI Instance { get; private set; }
 
+    [SerializeField] private GameObject uiItem;
     [SerializeField] private Button m_enterButton;
     [SerializeField] private Button m_cancelButton;
     [SerializeField] private TMP_InputField m_inputField;
     [SerializeField] private TMP_Text m_inputFieldPlaceholder;
     [SerializeField] private TextMeshProUGUI m_promptText;
     [SerializeField] private TextMeshProUGUI m_errorText;
+
+    [Header("Listening Events")]
+    [SerializeField] private VoidEventChannelSO OnCreatingNewLobby;
 
     private void Awake()
     {
@@ -29,9 +31,14 @@ public class InputFieldModalUI : MonoBehaviour
         Hide();
     }
 
-    private void Start()
+    private void OnEnable()
     {
-        LobbyListUI.Instance.OnCreatingNewLobby += Event_Close;
+        OnCreatingNewLobby.OnEventRaised += Event_Close;
+    }
+
+    private void OnDisable()
+    {
+        OnCreatingNewLobby.OnEventRaised += Event_Close;
     }
 
     /* TODO
@@ -43,10 +50,10 @@ public class InputFieldModalUI : MonoBehaviour
 
     private void Hide()
     {
-        gameObject.SetActive(false);
+        uiItem.SetActive(false);
     }
 
-    public void Event_Close(object sender, EventArgs e)
+    public void Event_Close()
     {
         Hide();
     }
@@ -61,7 +68,7 @@ public class InputFieldModalUI : MonoBehaviour
         Action onCancel
     )
     {
-        gameObject.SetActive(true);
+        uiItem.SetActive(true);
 
         m_promptText.text = promptString;
         m_inputField.characterLimit = charLimit;
@@ -99,5 +106,4 @@ public class InputFieldModalUI : MonoBehaviour
     {
         Instance.Show(promptString, charLimit, placeholder, enterString, onEnter, cancelString, onCancel);
     }
-
 }

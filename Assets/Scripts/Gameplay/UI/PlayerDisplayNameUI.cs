@@ -1,5 +1,6 @@
 using System;
 using TMPro;
+using Unity.Services.Lobbies.Models;
 using UnityEngine;
 
 [DefaultExecutionOrder(1000)]
@@ -9,6 +10,11 @@ public class PlayerDisplayNameUI : MonoBehaviour
 
     [Header("Listening Events")]
     [SerializeField] private IntEventChannelSO OnSceneStateChanged;
+    [SerializeField] private VoidEventChannelSO OnCreatingNewLobby;
+    [SerializeField] private VoidEventChannelSO OnCloseCreation;
+    [SerializeField] private LobbyEventChannelSO OnJoinedLobby;
+    [SerializeField] private VoidEventChannelSO OnGameStarted;
+    [SerializeField] private VoidEventChannelSO OnGameFailedToStart;
 
     [Header("Firing Events")]
     [SerializeField] private StringEventChannelSO OnUpdatePlayerDisplayName;
@@ -21,44 +27,44 @@ public class PlayerDisplayNameUI : MonoBehaviour
         });
     }
 
-    private void Start()
+    private void OnEnable()
     {
         m_playerDisplayNameInputField.text = PlayerManager.Instance.GetLocalPlayerName();
 
-        LobbyListUI.Instance.OnCreatingNewLobby += LobbyListUI_OnCreatingNewLobby;
-        LobbyCreateUI.Instance.OnCloseCreation += LobbyCreateUI_OnCloseCreation;
-        LobbyManager.Instance.OnJoinedLobby += LobbyManager_OnJoinedLobby;
-        LobbyManager.Instance.OnGameStarted += LobbyManager_GameStarted;
-        LobbyManager.Instance.OnGameFailedToStart += LobbyManager_GameFailedToStart;
+        OnCreatingNewLobby.OnEventRaised += LobbyListUI_OnCreatingNewLobby;
+        OnCloseCreation.OnEventRaised += LobbyCreateUI_OnCloseCreation;
+        OnJoinedLobby.OnEventRaised += LobbyManager_OnJoinedLobby;
+        OnGameStarted.OnEventRaised += LobbyManager_GameStarted;
+        OnGameFailedToStart.OnEventRaised += LobbyManager_GameFailedToStart;
         OnSceneStateChanged.OnEventRaised += SceneStateChanged;
     }
 
-    private void OnDestroy()
+    private void OnDisable()
     {
-        LobbyListUI.Instance.OnCreatingNewLobby -= LobbyListUI_OnCreatingNewLobby;
-        LobbyCreateUI.Instance.OnCloseCreation -= LobbyCreateUI_OnCloseCreation;
-        LobbyManager.Instance.OnJoinedLobby -= LobbyManager_OnJoinedLobby;
-        LobbyManager.Instance.OnGameStarted -= LobbyManager_GameStarted;
-        LobbyManager.Instance.OnGameFailedToStart -= LobbyManager_GameFailedToStart;
+        OnCreatingNewLobby.OnEventRaised -= LobbyListUI_OnCreatingNewLobby;
+        OnCloseCreation.OnEventRaised -= LobbyCreateUI_OnCloseCreation;
+        OnJoinedLobby.OnEventRaised -= LobbyManager_OnJoinedLobby;
+        OnGameStarted.OnEventRaised -= LobbyManager_GameStarted;
+        OnGameFailedToStart.OnEventRaised -= LobbyManager_GameFailedToStart;
         OnSceneStateChanged.OnEventRaised -= SceneStateChanged;
     }
 
-    private void LobbyListUI_OnCreatingNewLobby(object sender, EventArgs e)
+    private void LobbyListUI_OnCreatingNewLobby()
     {
         Hide();
     }
 
-    private void LobbyCreateUI_OnCloseCreation(object sender, EventArgs e)
+    private void LobbyCreateUI_OnCloseCreation()
     {
         Show();
     }
 
-    private void LobbyManager_OnJoinedLobby(object sender, EventArgs e)
+    private void LobbyManager_OnJoinedLobby(Lobby lobby)
     {
         Show();
     }
 
-    private void LobbyManager_GameStarted(object sender, EventArgs e)
+    private void LobbyManager_GameStarted()
     {
         Hide();
     }
@@ -76,11 +82,11 @@ public class PlayerDisplayNameUI : MonoBehaviour
 
     private void Hide()
     {
-        m_playerDisplayNameInputField.interactable = false;
+        m_playerDisplayNameInputField.enabled = false;
     }
 
     private void Show()
     {
-        m_playerDisplayNameInputField.interactable = true;
+        m_playerDisplayNameInputField.enabled = true;
     }
 }

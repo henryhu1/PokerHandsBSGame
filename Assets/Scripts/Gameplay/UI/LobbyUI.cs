@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using Unity.Services.Authentication;
 using Unity.Services.Lobbies.Models;
@@ -16,6 +15,7 @@ public class LobbyUI : MonoBehaviour
 
     private const string k_GameStartingPrefixText = "Game Starting";
 
+    [SerializeField] private GameObject uiItem;
     // TODO: refactor template into prefab
     [SerializeField] private Transform m_playerListItemTemplate;
     [SerializeField] private Transform m_container;
@@ -30,6 +30,18 @@ public class LobbyUI : MonoBehaviour
     [SerializeField] private Button m_changeGameModeButton;
     [SerializeField] private Button m_startGameButton;
     [SerializeField] private Button m_leaveLobbyButton;
+
+    [Header("Listening Events")]
+    [SerializeField] private LobbyEventChannelSO OnJoinedLobby;
+    [SerializeField] private LobbyEventChannelSO OnJoinedLobbyUpdate;
+    [SerializeField] private LobbyEventChannelSO OnKickedFromLobby;
+    [SerializeField] private LobbyEventChannelSO OnLobbyChanged;
+    [SerializeField] private LobbyListEventChannelSO OnLobbyListChanged;
+    [SerializeField] private StringEventChannelSO OnFailedToJoinLobbyByCode;
+    [SerializeField] private VoidEventChannelSO OnLeftLobby;
+    [SerializeField] private VoidEventChannelSO OnGameStarted;
+    [SerializeField] private VoidEventChannelSO OnGameFailedToStart;
+
     private bool m_isCreatingGame;
     private Coroutine m_startingTextCoroutine;
 
@@ -86,28 +98,28 @@ public class LobbyUI : MonoBehaviour
         });
     }
 
-    private void Start()
+    private void OnEnable()
     {
-        LobbyManager.Instance.OnJoinedLobby += UpdateLobby_Event;
-        LobbyManager.Instance.OnJoinedLobbyUpdate += UpdateLobby_Event;
-        LobbyManager.Instance.OnLobbyChanged += UpdateLobby_Event;
-        LobbyManager.Instance.OnLeftLobby += LobbyManager_OnLeftLobby;
-        LobbyManager.Instance.OnKickedFromLobby += LobbyManager_OnLeftLobby;
-        LobbyManager.Instance.OnGameStarted += LobbyManager_OnGameStarted;
-        LobbyManager.Instance.OnGameFailedToStart += LobbyManager_OnGameFailedToStart;
+        OnJoinedLobby.OnEventRaised += UpdateLobby_Event;
+        OnJoinedLobbyUpdate.OnEventRaised += UpdateLobby_Event;
+        OnLobbyChanged.OnEventRaised += UpdateLobby_Event;
+        OnLeftLobby.OnEventRaised += LobbyManager_OnLeftLobby;
+        OnKickedFromLobby.OnEventRaised += LobbyManager_OnKickedFromLobby;
+        OnGameStarted.OnEventRaised += LobbyManager_OnGameStarted;
+        OnGameFailedToStart.OnEventRaised += LobbyManager_OnGameFailedToStart;
 
         Hide();
     }
 
-    private void OnDestroy()
+    private void OnDisable()
     {
-        LobbyManager.Instance.OnJoinedLobby -= UpdateLobby_Event;
-        LobbyManager.Instance.OnJoinedLobbyUpdate -= UpdateLobby_Event;
-        LobbyManager.Instance.OnLobbyChanged -= UpdateLobby_Event;
-        LobbyManager.Instance.OnLeftLobby -= LobbyManager_OnLeftLobby;
-        LobbyManager.Instance.OnKickedFromLobby -= LobbyManager_OnLeftLobby;
-        LobbyManager.Instance.OnGameStarted -= LobbyManager_OnGameStarted;
-        LobbyManager.Instance.OnGameFailedToStart -= LobbyManager_OnGameFailedToStart;
+        OnJoinedLobby.OnEventRaised -= UpdateLobby_Event;
+        OnJoinedLobbyUpdate.OnEventRaised -= UpdateLobby_Event;
+        OnLobbyChanged.OnEventRaised -= UpdateLobby_Event;
+        OnLeftLobby.OnEventRaised -= LobbyManager_OnLeftLobby;
+        OnKickedFromLobby.OnEventRaised -= LobbyManager_OnKickedFromLobby;
+        OnGameStarted.OnEventRaised -= LobbyManager_OnGameStarted;
+        OnGameFailedToStart.OnEventRaised -= LobbyManager_OnGameFailedToStart;
     }
 
     private IEnumerator UpdateStartingGameUI()
@@ -135,7 +147,7 @@ public class LobbyUI : MonoBehaviour
         m_gameStartingText.gameObject.SetActive(false);
     }
 
-    private void LobbyManager_OnGameStarted(object sender, EventArgs e)
+    private void LobbyManager_OnGameStarted()
     {
         m_gameStartingText.gameObject.SetActive(true);
         m_startingTextCoroutine = StartCoroutine(UpdateStartingGameUI());
@@ -150,13 +162,19 @@ public class LobbyUI : MonoBehaviour
         m_startGameButton.enabled = true;
     }
 
-    private void LobbyManager_OnLeftLobby(object sender, EventArgs e)
+    private void LobbyManager_OnLeftLobby()
     {
         ClearLobby();
         Hide();
     }
 
-    private void UpdateLobby_Event(object sender, LobbyManager.LobbyEventArgs e)
+    private void LobbyManager_OnKickedFromLobby(Lobby lobby)
+    {
+        ClearLobby();
+        Hide();
+    }
+
+    private void UpdateLobby_Event(Lobby _)
     {
         UpdateLobby();
     }
@@ -236,11 +254,11 @@ public class LobbyUI : MonoBehaviour
     private void Hide()
     {
         m_gameStartingText.gameObject.SetActive(false);
-        gameObject.SetActive(false);
+        uiItem.SetActive(false);
     }
 
     private void Show()
     {
-        gameObject.SetActive(true);
+        uiItem.SetActive(true);
     }
 }

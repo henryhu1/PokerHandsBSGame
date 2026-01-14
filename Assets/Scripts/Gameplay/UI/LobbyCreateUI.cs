@@ -9,9 +9,7 @@ public class LobbyCreateUI : MonoBehaviour
 
     public static LobbyCreateUI Instance { get; private set; }
 
-    // TODO: maybe refactor events to be delegate (arg type) instead of EventHandler
-    public event EventHandler<EventArgs> OnCloseCreation;
-
+    [SerializeField] private GameObject uiItem;
     [SerializeField] private Button m_createButton;
     [SerializeField] private Button m_cancelButton;
     [SerializeField] private TMP_InputField m_lobbyNameInputField;
@@ -24,6 +22,12 @@ public class LobbyCreateUI : MonoBehaviour
     // [SerializeField] private TextMeshProUGUI m_publicPrivateText;
     // [SerializeField] private TextMeshProUGUI maxPlayersText;
     // [SerializeField] private TextMeshProUGUI m_gameModeText;
+
+    [Header("Firing Events")]
+    [SerializeField] private VoidEventChannelSO OnCloseCreation;
+
+    [Header("Listening Events")]
+    [SerializeField] private VoidEventChannelSO OnCreatingNewLobby;
 
     private string m_lobbyName;
     private int m_maxPlayers = 10;
@@ -49,7 +53,7 @@ public class LobbyCreateUI : MonoBehaviour
 
         m_cancelButton.onClick.AddListener(() => {
             Hide();
-            OnCloseCreation?.Invoke(this, EventArgs.Empty);
+            OnCloseCreation.RaiseEvent();
         });
 
         m_lobbyNameInputField.text = m_lobbyName;
@@ -70,26 +74,31 @@ public class LobbyCreateUI : MonoBehaviour
         }); */
     }
 
-    private void Start()
+    private void OnEnable()
     {
-        LobbyListUI.Instance.OnCreatingNewLobby += LobbyListUI_OnCreatingNewLobby;
+        OnCreatingNewLobby.OnEventRaised += LobbyListUI_OnCreatingNewLobby;
 
         Hide();
     }
 
-    private void LobbyListUI_OnCreatingNewLobby(object sender, EventArgs e)
+    private void OnDisable()
+    {
+        OnCreatingNewLobby.OnEventRaised -= LobbyListUI_OnCreatingNewLobby;
+    }
+
+    private void LobbyListUI_OnCreatingNewLobby()
     {
         Show();
     }
 
     private void Hide()
     {
-        gameObject.SetActive(false);
+        uiItem.SetActive(false);
     }
 
     private void Show()
     {
-        gameObject.SetActive(true);
+        uiItem.SetActive(true);
 
         m_lobbyName = "";
         m_lobbyNameInputField.text = m_lobbyName;

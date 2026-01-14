@@ -22,38 +22,21 @@ public class LobbyManager : MonoBehaviour
     private const float k_lobbyPollInterval = 1.1f;
     private const float k_lobbyHeartbeatInterval = 15f;
 
-    // TODO: maybe refactor events to be delegate (arg type) instead of EventHandler
-    public event EventHandler OnLeftLobby;
+    [SerializeField] GameRulesSO baseRules;
 
-    public event EventHandler<EventArgs> OnGameStarted;
-
-    [HideInInspector]
-    public delegate void FailedToJoinLobbyByCodeDelegateHandler(string reason);
-    [HideInInspector]
-    public event FailedToJoinLobbyByCodeDelegateHandler OnFailedToJoinLobbyByCode;
-
-    public event EventHandler<LobbyEventArgs> OnJoinedLobby;
-    public event EventHandler<LobbyEventArgs> OnJoinedLobbyUpdate;
-    public event EventHandler<LobbyEventArgs> OnKickedFromLobby;
-    public event EventHandler<LobbyEventArgs> OnLobbyChanged;
-    public class LobbyEventArgs : EventArgs
-    {
-        public Lobby lobby;
-    }
-
-    public event EventHandler<OnLobbyListChangedEventArgs> OnLobbyListChanged;
-    public class OnLobbyListChangedEventArgs : EventArgs
-    {
-        public List<Lobby> lobbyList;
-    }
-
-    [HideInInspector]
-    public delegate void GameFailedToStartDelegateHandler();
-    [HideInInspector]
-    public event GameFailedToStartDelegateHandler OnGameFailedToStart;
+    [Header("Firing Events")]
+    [SerializeField] private LobbyEventChannelSO OnJoinedLobby;
+    [SerializeField] private LobbyEventChannelSO OnJoinedLobbyUpdate;
+    [SerializeField] private LobbyEventChannelSO OnKickedFromLobby;
+    [SerializeField] private LobbyEventChannelSO OnLobbyChanged;
+    [SerializeField] private LobbyListEventChannelSO OnLobbyListChanged;
+    [SerializeField] private StringEventChannelSO OnFailedToJoinLobbyByCode;
+    [SerializeField] private VoidEventChannelSO OnLeftLobby;
+    [SerializeField] private VoidEventChannelSO OnGameStarted;
+    [SerializeField] private VoidEventChannelSO OnGameFailedToStart;
 
     [Header("Listening Events")]
-    [SerializeField] private VoidEventChannelSO OnAllClientsLoadedScene;
+    [SerializeField] private StringEventChannelSO OnAllClientsLoadedScene;
     [SerializeField] private StringEventChannelSO OnUpdatePlayerDisplayName;
 
     private float m_lobbyHeartbeatTimer = 15f;
@@ -91,7 +74,7 @@ public class LobbyManager : MonoBehaviour
 
     private void Update()
     {
-        if (m_joinedLobby == null && SceneTransitionHandler.Instance.IsInMainMenuScene() && !GameManager.Instance.IsNotOut())
+        if (m_joinedLobby == null && SceneTransitionHandler.Instance.IsInMainMenuScene())
         {
             HandleRefreshLobbyList();
         }
@@ -138,11 +121,11 @@ public class LobbyManager : MonoBehaviour
 
                 m_joinedLobby = await LobbyService.Instance.GetLobbyAsync(m_joinedLobby.Id);
 
-                OnJoinedLobbyUpdate?.Invoke(this, new LobbyEventArgs { lobby = m_joinedLobby });
+                OnJoinedLobbyUpdate.RaiseEvent(m_joinedLobby);
 
                 if (!IsPlayerInLobby())
                 {
-                    OnKickedFromLobby?.Invoke(this, new LobbyEventArgs { lobby = m_joinedLobby });
+                    OnKickedFromLobby.RaiseEvent(m_joinedLobby);
 
                     m_joinedLobby = null;
                 }
@@ -153,7 +136,7 @@ public class LobbyManager : MonoBehaviour
                     {
                         RelayManager.Instance.JoinRelay(m_joinedLobby.Data[KEY_START_GAME].Value);
                         SceneTransitionHandler.Instance.SetSceneState(SceneStates.InGame);
-                        OnGameStarted?.Invoke(this, EventArgs.Empty);
+                        OnGameStarted.RaiseEvent();
                     }
 
                     m_joinedLobby = null;
@@ -246,7 +229,7 @@ public class LobbyManager : MonoBehaviour
 
             m_joinedLobby = lobby;
 
-            OnJoinedLobby?.Invoke(this, new LobbyEventArgs { lobby = lobby });
+            OnJoinedLobby.RaiseEvent(lobby);
 
 #if UNITY_EDITOR
             Debug.Log("Created Lobby " + lobby.Name);
@@ -284,7 +267,7 @@ public class LobbyManager : MonoBehaviour
 
             QueryResponse lobbyListQueryResponse = await Lobbies.Instance.QueryLobbiesAsync();
 
-            OnLobbyListChanged?.Invoke(this, new OnLobbyListChangedEventArgs { lobbyList = lobbyListQueryResponse.Results });
+            OnLobbyListChanged.RaiseEvent(lobbyListQueryResponse.Results);
         }
         catch (LobbyServiceException e)
         {
@@ -310,14 +293,14 @@ public class LobbyManager : MonoBehaviour
             // TODO: when event occurs that Lobby.Data is changed, check if changes include Relay joinCode
             // await LobbyService.Instance.SubscribeToLobbyEventsAsync(m_joinedLobby.Id, new LobbyEventCallbacks { });
 
-            OnJoinedLobby?.Invoke(this, new LobbyEventArgs { lobby = lobby });
+            OnJoinedLobby.RaiseEvent(lobby);
         }
         catch (LobbyServiceException e)
         {
 #if UNITY_EDITOR
             Debug.LogError(e.Message);
 #endif
-            OnFailedToJoinLobbyByCode?.Invoke("Unable to join lobby");
+            OnFailedToJoinLobbyByCode.RaiseEvent("Unable to join lobby");
         }
     }
 
@@ -335,7 +318,7 @@ public class LobbyManager : MonoBehaviour
             // TODO: when event occurs that Lobby.Data is changed, check if changes include Relay joinCode
             // await LobbyService.Instance.SubscribeToLobbyEventsAsync(m_joinedLobby.Id, new LobbyEventCallbacks { });
 
-            OnJoinedLobby?.Invoke(this, new LobbyEventArgs { lobby = lobby });
+            OnJoinedLobby.RaiseEvent(lobby);
         }
         catch (LobbyServiceException e)
         {
@@ -368,7 +351,7 @@ public class LobbyManager : MonoBehaviour
                 Lobby lobby = await LobbyService.Instance.UpdatePlayerAsync(m_joinedLobby.Id, playerId, options);
                 m_joinedLobby = lobby;
 
-                OnJoinedLobbyUpdate?.Invoke(this, new LobbyEventArgs { lobby = m_joinedLobby });
+                OnJoinedLobbyUpdate.RaiseEvent(m_joinedLobby);
             }
             catch (LobbyServiceException e)
             {
@@ -388,7 +371,7 @@ public class LobbyManager : MonoBehaviour
             Lobby lobby = await LobbyService.Instance.QuickJoinLobbyAsync(options);
             m_joinedLobby = lobby;
 
-            OnJoinedLobby?.Invoke(this, new LobbyEventArgs { lobby = lobby });
+            OnJoinedLobby.RaiseEvent(lobby);
         }
         catch (LobbyServiceException e)
         {
@@ -408,7 +391,7 @@ public class LobbyManager : MonoBehaviour
 
                 m_joinedLobby = null;
 
-                OnLeftLobby?.Invoke(this, EventArgs.Empty);
+                OnLeftLobby.RaiseEvent();
             }
             catch (LobbyServiceException e)
             {
@@ -450,7 +433,7 @@ public class LobbyManager : MonoBehaviour
 
             m_joinedLobby = lobby;
 
-            OnLobbyChanged?.Invoke(this, new LobbyEventArgs { lobby = m_joinedLobby });
+            OnLobbyChanged.RaiseEvent(m_joinedLobby);
         }
         catch (LobbyServiceException e)
         {
@@ -475,7 +458,7 @@ public class LobbyManager : MonoBehaviour
 
             m_joinedLobby = lobby;
 
-            OnLobbyChanged?.Invoke(this, new LobbyEventArgs { lobby = m_joinedLobby });
+            OnLobbyChanged.RaiseEvent(m_joinedLobby);
         }
         catch (LobbyServiceException e)
         {
@@ -491,12 +474,15 @@ public class LobbyManager : MonoBehaviour
         {
             try
             {
-                OnGameStarted?.Invoke(this, EventArgs.Empty);
+                OnGameStarted.RaiseEvent();
 
                 GameType gameType = Enum.Parse<GameType>(m_joinedLobby.Data[KEY_GAME_MODE].Value);
                 TimeForTurnType timeForPlayer = Enum.Parse<TimeForTurnType>(m_joinedLobby.Data[KEY_TIME_FOR_PLAYER].Value);
 
-                GameManager.Instance.InitializeSettings(gameType, m_joinedLobby.Players.Count, timeForPlayer);
+                GameRulesSO selectedRules = GameRulesFactory.CreateRuntime(baseRules);
+                selectedRules.selectedGameType = gameType;
+                selectedRules.timeForTurn = timeForPlayer;
+                GameSession.Instance.SetRules(selectedRules);
 
                 string relayCode = await RelayManager.Instance.CreateRelay(m_joinedLobby.Players.Count);
 
@@ -515,12 +501,12 @@ public class LobbyManager : MonoBehaviour
 #if UNITY_EDITOR
                 Debug.Log($"Could not start relay, {e.Message}");
 #endif
-                OnGameFailedToStart?.Invoke();
+                OnGameFailedToStart.RaiseEvent();
             }
         }
     }
 
-    private async void DeleteLobby()
+    private async void DeleteLobby(string sceneName)
     {
         if (IsLobbyHost())
         {
