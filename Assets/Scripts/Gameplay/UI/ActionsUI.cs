@@ -57,7 +57,10 @@ public class ActionsUI : MonoBehaviour
         });
 
         m_isPlayerOut = false;
+    }
 
+    private void Start()
+    {
         m_PlayButton.enabled = GameManager.Instance.IsHost; // TODO: flimsy how based on host the play button enables, change to actual turn logic?
         m_BullshitButton.enabled = !GameManager.Instance.IsBeginningOfRound();
         m_Outline.enabled = m_PlayButton.enabled;
@@ -72,11 +75,6 @@ public class ActionsUI : MonoBehaviour
     private void OnDisable()
     {
         OnNextPlayerTurn.OnEventRaised -= TurnManager_NextPlayerTurn;
-    }
-
-    private void Start()
-    {
-        GameManager.Instance.RegisterActionsUIObservers();
     }
 
     private void TurnManager_NextPlayerTurn(bool isPlayerTurn)

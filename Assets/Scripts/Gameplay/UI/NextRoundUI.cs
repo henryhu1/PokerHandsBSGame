@@ -39,7 +39,6 @@ public class NextRoundUI : MonoBehaviour
 
         animatable = GetComponent<TransitionableUIBase>();
 
-        m_canBeReady = GameManager.Instance.IsNotOut();
         ResetTotalPlayersText();
         offendingPlayerUI.SetActive(false);
         m_toggleText.text = k_readyText;
@@ -53,6 +52,11 @@ public class NextRoundUI : MonoBehaviour
                 GameManager.Instance.ReadyForNextRoundServerRpc(isOn);
             }
         });
+    }
+
+    private void Start()
+    {
+        m_canBeReady = GameManager.Instance.IsClientInPlay();
     }
 
     private void OnEnable()
@@ -71,11 +75,6 @@ public class NextRoundUI : MonoBehaviour
         OnPlayerRanOutOfTime.OnEventRaised -= PlayerRanOutOfTime;
         OnNextRoundStarting.OnEventRaised -= NextRoundStarting;
         OnGameWon.OnEventRaised -= GameWon;
-    }
-
-    private void Start()
-    {
-        GameManager.Instance.RegisterNextRoundUIObservers();
     }
 
     private void EndOfRound()
@@ -131,7 +130,7 @@ public class NextRoundUI : MonoBehaviour
 
     private void ResetTotalPlayersText()
     {
-        m_totalPlayersToBeReady = GameManager.Instance.m_inPlayClientIds.Count;
+        m_totalPlayersToBeReady = GameManager.Instance.GetNumberOfInGamePlayers();
         m_playersReadyText.text = $"0/{m_totalPlayersToBeReady}";
     }
 

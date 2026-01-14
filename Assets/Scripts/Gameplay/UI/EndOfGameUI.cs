@@ -9,23 +9,19 @@ public class EndOfGameUI : MonoBehaviour
 
     [SerializeField] private ResultItemUI m_resultItemUIPrefab;
     [SerializeField] private GameObject m_resultContent;
+
+    [Header("Host UI")]
     [SerializeField] private GameObject m_optionsUI;
     [SerializeField] private GameObject m_restartGameOption;
     [SerializeField] private Button m_gameModeButton;
     [SerializeField] private TextMeshProUGUI m_gameModeText;
     [SerializeField] private Button m_restartButton;
     [SerializeField] private Button m_exitButton;
-    private GameType m_selectedGameType;
     private List<ResultItemUI> m_resultItems;
     private TransitionableUIBase animatable;
 
-    [HideInInspector]
-    public delegate void ExitGameDelegateHandler();
-    [HideInInspector]
-    public event ExitGameDelegateHandler OnExitGame;
-
     [Header("Firing Events")]
-    [SerializeField] private IntEventChannelSO OnRestartGame;
+    [SerializeField] private VoidEventChannelSO OnRestartGame;
 
     [Header("Listening Events")]
     [SerializeField] private VoidEventChannelSO OnInitializeNewGame;
@@ -38,36 +34,37 @@ public class EndOfGameUI : MonoBehaviour
         }
         Instance = this;
 
-        m_selectedGameType = GameManager.Instance.GetGameType();
         m_resultItems = new List<ResultItemUI>();
         animatable = GetComponent<TransitionableUIBase>();
-
-        m_gameModeButton.onClick.AddListener(() =>
+        
+        var rules = GameSession.Instance.ActiveRules;
+        if (GameManager.Instance.IsHost)
         {
-            switch (m_selectedGameType)
+            m_gameModeButton.onClick.AddListener(() =>
             {
-                case GameType.Ascending:
-                    m_selectedGameType = GameType.Descending;
-                    m_gameModeText.text = GameType.Descending.ToString();
-                    break;
-                case GameType.Descending:
-                    m_selectedGameType = GameType.Ascending;
-                    m_gameModeText.text = GameType.Ascending.ToString();
-                    break;
-            }
-        });
+                switch (rules.selectedGameType)
+                {
+                    case GameType.Ascending:
+                        m_gameModeText.text = GameType.Descending.ToString();
+                        break;
+                    case GameType.Descending:
+                        m_gameModeText.text = GameType.Ascending.ToString();
+                        break;
+                }
+            });
 
-        m_restartButton.onClick.AddListener(() =>
-        {
-            OnRestartGame.RaiseEvent((int)m_selectedGameType);
-        });
+            m_restartButton.onClick.AddListener(() =>
+            {
+                OnRestartGame.RaiseEvent();
+            });
 
-        m_exitButton.onClick.AddListener(() =>
-        {
-            OnExitGame?.Invoke();
-        });
+            m_exitButton.onClick.AddListener(() =>
+            {
+                GameManager.Instance.EndOfGameUI_ExitGame();
+            });
 
-        m_optionsUI.SetActive(GameManager.Instance.IsHost);
+            m_optionsUI.SetActive(true);
+        }
     }
 
     private void OnEnable()
@@ -80,23 +77,13 @@ public class EndOfGameUI : MonoBehaviour
         OnInitializeNewGame.OnEventRaised -= InitializeNewGame;
     }
 
-    private void Start()
-    {
-        GameManager.Instance.RegisterEndOfGameUICallbacks();
-    }
-
-    private void OnDestroy()
-    {
-        GameManager.Instance.UnregisterEndOfGameUICallbacks();
-    }
-
     public void DisplayGameResults(int myPosition, List<PlayerData> eliminationOrder)
     {
-        m_restartGameOption.SetActive(GameManager.Instance.m_connectedClientIds.Count != 1);
+        m_restartGameOption.SetActive(eliminationOrder.Count == 1);
         for (int i = 0; i < eliminationOrder.Count; i++)
         {
             PlayerData playerData = eliminationOrder[i];
-            string playerName = playerData.Name;
+            string playerName = playerData.GetName();
             if (i + 1 == myPosition)
             {
                 playerName += " (you)";
