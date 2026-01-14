@@ -12,7 +12,6 @@ public class EndOfGameUI : MonoBehaviour
 
     [Header("Host UI")]
     [SerializeField] private GameObject m_optionsUI;
-    [SerializeField] private GameObject m_restartGameOption;
     [SerializeField] private Button m_gameModeButton;
     [SerializeField] private TextMeshProUGUI m_gameModeText;
     [SerializeField] private Button m_restartButton;
@@ -22,6 +21,7 @@ public class EndOfGameUI : MonoBehaviour
 
     [Header("Firing Events")]
     [SerializeField] private VoidEventChannelSO OnRestartGame;
+    [SerializeField] private VoidEventChannelSO OnExitGame;
 
     [Header("Listening Events")]
     [SerializeField] private VoidEventChannelSO OnInitializeNewGame;
@@ -60,10 +60,8 @@ public class EndOfGameUI : MonoBehaviour
 
             m_exitButton.onClick.AddListener(() =>
             {
-                GameManager.Instance.EndOfGameUI_ExitGame();
+                OnExitGame.RaiseEvent();
             });
-
-            m_optionsUI.SetActive(true);
         }
     }
 
@@ -79,7 +77,9 @@ public class EndOfGameUI : MonoBehaviour
 
     public void DisplayGameResults(int myPosition, List<PlayerData> eliminationOrder)
     {
-        m_restartGameOption.SetActive(eliminationOrder.Count == 1);
+        m_optionsUI.SetActive(GameManager.Instance.IsHost);
+
+        m_restartButton.gameObject.SetActive(eliminationOrder.Count > 1);
         for (int i = 0; i < eliminationOrder.Count; i++)
         {
             PlayerData playerData = eliminationOrder[i];
