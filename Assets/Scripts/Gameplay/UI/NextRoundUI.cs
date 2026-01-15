@@ -18,6 +18,7 @@ public class NextRoundUI : MonoBehaviour
     [SerializeField] private VoidEventChannelSO OnNextRoundStarting;
     [SerializeField] private VoidEventChannelSO OnRoundEnded;
     [SerializeField] private StringEventChannelSO OnPlayerLeft;
+    [SerializeField] private VoidEventChannelSO OnYouRanOutOfTime;
     [SerializeField] private StringEventChannelSO OnPlayerRanOutOfTime;
     [SerializeField] private VoidEventChannelSO OnGameWon;
 
@@ -56,6 +57,7 @@ public class NextRoundUI : MonoBehaviour
     {
         OnRoundEnded.OnEventRaised += EndOfRound;
         OnPlayerLeft.OnEventRaised += PlayerLeft;
+        OnYouRanOutOfTime.OnEventRaised += YouRanOutOfTime;
         OnPlayerRanOutOfTime.OnEventRaised += PlayerRanOutOfTime;
         OnNextRoundStarting.OnEventRaised += NextRoundStarting;
         OnGameWon.OnEventRaised += GameWon;
@@ -65,6 +67,7 @@ public class NextRoundUI : MonoBehaviour
     {
         OnRoundEnded.OnEventRaised -= EndOfRound;
         OnPlayerLeft.OnEventRaised -= PlayerLeft;
+        OnYouRanOutOfTime.OnEventRaised -= YouRanOutOfTime;
         OnPlayerRanOutOfTime.OnEventRaised -= PlayerRanOutOfTime;
         OnNextRoundStarting.OnEventRaised -= NextRoundStarting;
         OnGameWon.OnEventRaised -= GameWon;
@@ -73,14 +76,10 @@ public class NextRoundUI : MonoBehaviour
     private void EndOfRound()
     {
         ResetTotalPlayersText();
-        offendingPlayerUI.SetActive(false);
-        // if (animatable.IsOffScreen())
-        // {
         m_toggleText.text = k_readyText;
         m_readyForNextRoundToggle.enabled = GameManager.Instance.IsClientInPlay();
         m_readyForNextRoundToggle.isOn = false;
         animatable.TransitionOnToScreen();
-        // }
     }
 
     private void PlayerLeft(string playerLeftName)
@@ -88,6 +87,16 @@ public class NextRoundUI : MonoBehaviour
         ResetTotalPlayersText();
         offendingPlayerUI.SetActive(true);
         offendingPlayerText.text = $"{playerLeftName} has left";
+    }
+
+    private void YouRanOutOfTime()
+    {
+        ResetTotalPlayersText();
+        offendingPlayerUI.SetActive(true);
+        offendingPlayerText.text = $"You have timed out";
+        // TODO: unify actions on end of round and time out
+        m_readyForNextRoundToggle.enabled = false;
+        m_readyForNextRoundToggle.isOn = false;
     }
 
     private void PlayerRanOutOfTime(string playerRanOutOfTimeName)
@@ -99,37 +108,26 @@ public class NextRoundUI : MonoBehaviour
 
     private void NextRoundStarting()
     {
-        // if (!animatable.IsOffScreen())
-        // {
         offendingPlayerUI.SetActive(false);
         m_toggleText.text = k_readyText;
         m_readyForNextRoundToggle.enabled = false;
         m_readyForNextRoundToggle.isOn = false;
         animatable.TransitionOffScreen();
-        // }
     }
 
     private void GameWon()
     {
-        // if (!animatable.IsOffScreen())
-        // {
         offendingPlayerUI.SetActive(false);
         m_toggleText.text = k_readyText;
         m_readyForNextRoundToggle.enabled = false;
         m_readyForNextRoundToggle.isOn = false;
         animatable.TransitionOffScreen();
-        // }
     }
 
     private void ResetTotalPlayersText()
     {
         m_totalPlayersToBeReady = GameManager.Instance.GetNumberOfInGamePlayers();
         m_playersReadyText.text = $"0/{m_totalPlayersToBeReady}";
-    }
-
-    public void SetTotalPlayersToBeReady(int totalPlayers)
-    {
-        m_totalPlayersToBeReady = totalPlayers;
     }
 
     public void SetNumberOfPlayersReadyText(int numberOfPlayersReady)

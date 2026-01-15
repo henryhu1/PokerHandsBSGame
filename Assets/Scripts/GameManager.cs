@@ -19,6 +19,7 @@ public class GameManager : NetworkBehaviour
     private readonly HashSet<ulong> readyClients = new();
     private List<PlayerData> eliminatedClients = new();
     private ulong? lastRoundLosingClientId;
+    private ulong? lastGameWinnerClientId;
 
     // TODO: every player has their own play log... only the server should have the log
     //   and clients just populate their log UI with the new play
@@ -47,6 +48,7 @@ public class GameManager : NetworkBehaviour
     [SerializeField] private IntEventChannelSO OnInvalidPlay;
     [SerializeField] private PokerHandEventChannelSO OnUpdatePlayableHands;
     [SerializeField] private StringEventChannelSO OnPlayerLeft;
+    [SerializeField] private VoidEventChannelSO OnYouRanOutOfTime;
     [SerializeField] private StringEventChannelSO OnPlayerRanOutOfTime;
     [SerializeField] private VoidEventChannelSO OnInitializeNewGame;
     [SerializeField] private PokerHandListEventChannelSO OnDisplayAllHandsInPlay;
@@ -104,6 +106,50 @@ public class GameManager : NetworkBehaviour
         OnExitGame.OnEventRaised -= EndGameCleanup;
     }
 
+    public int GetNumberOfInGamePlayers()
+    {
+        return inPlayClientIds.Count;
+    }
+
+    public bool IsClientInPlay(ulong clientId)
+    {
+        return inPlayClientIds.Contains(clientId);
+    }
+
+    public bool IsClientInPlay()
+    {
+        return IsClientInPlay(NetworkManager.Singleton.LocalClientId);
+    }
+
+    public string GetClientName(ulong clientId)
+    {
+        if (IsServer)
+        {
+            if (allPlayerData.TryGetValue(clientId, out PlayerData playerData))
+            {
+                return playerData.GetName();
+            }
+        }
+        return "unknown";
+    }
+
+    public bool IsBeginningOfRound()
+    {
+        return playedHandLog.Count == 0;
+    }
+
+    public PokerHand GetLastPlayedHand()
+    {
+        if (playedHandLog.Count == 0) return null;
+
+        return playedHandLog.Last().m_playedHand;
+    }
+
+    public bool IsHandLowerThanLastPlayed(PokerHand pokerHand)
+    {
+        return playedHandLog.Count != 0 && !playedHandLog.Last().IsPokerHandBetter(pokerHand);
+    }
+
     // TODO: invoke events on game state change
     private void AdvanceGameState()
     {
@@ -148,6 +194,7 @@ public class GameManager : NetworkBehaviour
 
     private void PopulatePlayerDataFromConnections()
     {
+        eliminatedClients.Clear();
         allPlayerData.Clear();
         inPlayClientIds.Clear();
 
@@ -252,11 +299,6 @@ public class GameManager : NetworkBehaviour
 #endif
     }
 
-    public int GetNumberOfInGamePlayers()
-    {
-        return inPlayClientIds.Count;
-    }
-
     private void CardManager_PlayerOut(ulong losingClientId)
     {
         if (IsServer)
@@ -264,6 +306,7 @@ public class GameManager : NetworkBehaviour
             PlayerData losingPlayerData = allPlayerData[losingClientId];
             losingPlayerData.state = PlayerState.ELIMINATED;
             inPlayClientIds.Remove(losingClientId);
+            lastRoundLosingClientId = losingClientId;
 #if UNITY_EDITOR
             Debug.Log($"players in play: {GetNumberOfInGamePlayers()}");
 #endif
@@ -276,48 +319,27 @@ public class GameManager : NetworkBehaviour
         if (!IsServer) return;
         if (gameState != GameState.ROUNDS) return;
 
-        PlayerData removedPlayerData = allPlayerData[timedOutClientId];
+        PlayerData timedOutPlayerData = allPlayerData[timedOutClientId];
+        timedOutPlayerData.state = PlayerState.ELIMINATED;
+        inPlayClientIds.Remove(timedOutClientId);
+        lastRoundLosingClientId = timedOutClientId;
+
         AdvanceGameState();
-        PlayerRanOutOfTimeClientRpc(removedPlayerData.GetName(), CardManager.Instance.GetAllHandsInPlay().ToArray());
-    }
 
-    public bool IsClientInPlay(ulong clientId)
-    {
-        return inPlayClientIds.Contains(clientId);
-    }
-
-    public bool IsClientInPlay()
-    {
-        return IsClientInPlay(NetworkManager.Singleton.LocalClientId);
-    }
-
-    public string GetClientName(ulong clientId)
-    {
-        if (IsServer)
+        ulong[] timedOutClientArray = new ulong[] { timedOutClientId };
+        ClientRpcParams timedOutClientRpcParams = new()
         {
-            if (allPlayerData.TryGetValue(clientId, out PlayerData playerData))
-            {
-                return playerData.GetName();
-            }
-        }
-        return null;
-    }
+            Send = new() { TargetClientIds = timedOutClientArray }
+        };
+        ClientRanOutOfTimeClientRpc(CardManager.Instance.GetAllHandsInPlay().ToArray(), timedOutClientRpcParams);
 
-    public bool IsBeginningOfRound()
-    {
-        return playedHandLog.Count == 0;
-    }
+        ClientRpcParams otherClientRpcParams = new()
+        {
+            Send = new() { TargetClientIds = allPlayerData.Keys.Except(timedOutClientArray).ToArray() }
+        };
+        OtherClientRanOutOfTimeClientRpc(timedOutPlayerData.GetName(), CardManager.Instance.GetAllHandsInPlay().ToArray(), otherClientRpcParams);
 
-    public PokerHand GetLastPlayedHand()
-    {
-        if (playedHandLog.Count == 0) return null;
-
-        return playedHandLog.Last().m_playedHand;
-    }
-
-    public bool IsHandLowerThanLastPlayed(PokerHand pokerHand)
-    {
-        return playedHandLog.Count != 0 && !playedHandLog.Last().IsPokerHandBetter(pokerHand);
+        CardManager.Instance.RevealAllCards();
     }
 
     private void EndGameCleanup()
@@ -424,7 +446,18 @@ public class GameManager : NetworkBehaviour
     }
 
     [ClientRpc]
-    public void PlayerRanOutOfTimeClientRpc(string playerRanOutOfTimeName, PokerHand[] allHandsInPlay)
+    public void ClientRanOutOfTimeClientRpc(PokerHand[] allHandsInPlay, ClientRpcParams clientRpcParams = default)
+    {
+        List<PokerHand> pokerHandsInPlay = allHandsInPlay.Select(i => PokerHandFactory.InferPokerHandType(i)).ToList();
+        List<bool> playedHandsPresent = playedHandLog.Select(logItem => pokerHandsInPlay.Exists(hand => logItem.m_playedHand == hand)).ToList();
+        OnDisplayPlayedHandsPresent.RaiseEvent(playedHandsPresent);
+        OnDisplayAllHandsInPlay.RaiseEvent(pokerHandsInPlay);
+        roundManager.EndOfRound();
+        OnYouRanOutOfTime.RaiseEvent();
+    }
+
+    [ClientRpc]
+    public void OtherClientRanOutOfTimeClientRpc(string playerRanOutOfTimeName, PokerHand[] allHandsInPlay, ClientRpcParams clientRpcParams = default)
     {
         List<PokerHand> pokerHandsInPlay = allHandsInPlay.Select(i => PokerHandFactory.InferPokerHandType(i)).ToList();
         List<bool> playedHandsPresent = playedHandLog.Select(logItem => pokerHandsInPlay.Exists(hand => logItem.m_playedHand == hand)).ToList();
@@ -546,7 +579,9 @@ public class GameManager : NetworkBehaviour
             if (GetNumberOfInGamePlayers() == 1)
             {
                 List<PlayerData> playerStandings = eliminatedClients;
-                playerStandings.Add(allPlayerData.Values.First(playerData => playerData.state == PlayerState.PLAYING));
+                KeyValuePair<ulong, PlayerData> winner = allPlayerData.First(playerData => playerData.Value.state == PlayerState.PLAYING);
+                lastGameWinnerClientId = winner.Key;
+                playerStandings.Add(winner.Value);
                 GameWinnerClientRpc(playerStandings.ToArray());
             }
             else
