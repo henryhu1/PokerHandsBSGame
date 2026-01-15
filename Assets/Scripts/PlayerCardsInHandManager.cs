@@ -156,6 +156,8 @@ public class PlayerCardsInHandManager : MonoBehaviour
 
         while (time < duration)
         {
+            if (card == null) break;
+
             time += Time.deltaTime;
 
             float step = time / duration;
