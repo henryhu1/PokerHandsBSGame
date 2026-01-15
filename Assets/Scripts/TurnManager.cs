@@ -104,6 +104,8 @@ public class TurnManager : NetworkBehaviour
     public void DecideTurnOrder(ulong[] inPlayClientIds)
     {
         if (!IsServer) return;
+        playerTurns.Clear();
+        turnPositions.Clear();
 
         foreach (ulong clientId in inPlayClientIds)
         {
@@ -119,7 +121,7 @@ public class TurnManager : NetworkBehaviour
             Debug.Log($"Adding client #{clientId} to turn order, position {playerTurns.Count}");
 #endif
             TurnObject clientTurn = new(clientId, null, null);
-            if (NetworkManager.Singleton.LocalClientId == clientId)
+            if (playerTurns.Count == 0)
             {
                 currentTurnObject = clientTurn;
             }

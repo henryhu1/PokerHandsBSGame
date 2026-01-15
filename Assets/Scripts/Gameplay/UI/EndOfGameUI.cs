@@ -17,6 +17,7 @@ public class EndOfGameUI : MonoBehaviour
     [SerializeField] private Button m_restartButton;
     [SerializeField] private Button m_exitButton;
     private List<ResultItemUI> m_resultItems;
+    private GameType selectedGameType;
     private TransitionableUIBase animatable;
 
     [Header("Firing Events")]
@@ -37,32 +38,35 @@ public class EndOfGameUI : MonoBehaviour
         m_resultItems = new List<ResultItemUI>();
         animatable = GetComponent<TransitionableUIBase>();
         
-        var rules = GameSession.Instance.ActiveRules;
-        if (GameManager.Instance.IsHost)
+        m_gameModeButton.onClick.AddListener(() =>
         {
-            m_gameModeButton.onClick.AddListener(() =>
+            switch (selectedGameType)
             {
-                switch (rules.selectedGameType)
-                {
-                    case GameType.Ascending:
-                        m_gameModeText.text = GameType.Descending.ToString();
-                        break;
-                    case GameType.Descending:
-                        m_gameModeText.text = GameType.Ascending.ToString();
-                        break;
-                }
-            });
+                case GameType.Ascending:
+                    selectedGameType = GameType.Descending;
+                    m_gameModeText.text = GameType.Descending.ToString();
+                    break;
+                case GameType.Descending:
+                    selectedGameType = GameType.Ascending;
+                    m_gameModeText.text = GameType.Ascending.ToString();
+                    break;
+            }
+        });
 
-            m_restartButton.onClick.AddListener(() =>
-            {
-                OnRestartGame.RaiseEvent();
-            });
+        m_restartButton.onClick.AddListener(() =>
+        {
+            var rules = GameSession.Instance.ActiveRules;
+            GameRulesSO selectedRules = GameRulesFactory.CreateRuntime(rules);
+            selectedRules.selectedGameType = rules.selectedGameType;
+            GameSession.Instance.SetRules(selectedRules);
 
-            m_exitButton.onClick.AddListener(() =>
-            {
-                OnExitGame.RaiseEvent();
-            });
-        }
+            OnRestartGame.RaiseEvent();
+        });
+
+        m_exitButton.onClick.AddListener(() =>
+        {
+            OnExitGame.RaiseEvent();
+        });
     }
 
     private void OnEnable()

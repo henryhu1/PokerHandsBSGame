@@ -15,7 +15,6 @@ public class PlayUI : MonoBehaviour
     [Header("Listening Events")]
     [SerializeField] private VoidEventChannelSO OnNextRoundStarting;
     [SerializeField] private VoidEventChannelSO OnRoundEnded;
-    [SerializeField] private VoidEventChannelSO OnInitializeNewGame;
 
     private void Awake()
     {
@@ -41,14 +40,12 @@ public class PlayUI : MonoBehaviour
     {
         OnRoundEnded.OnEventRaised += Hide;
         OnNextRoundStarting.OnEventRaised += Show;
-        OnInitializeNewGame.OnEventRaised += Show;
     }
 
     private void OnDisable()
     {
         OnRoundEnded.OnEventRaised -= Hide;
         OnNextRoundStarting.OnEventRaised -= Show;
-        OnInitializeNewGame.OnEventRaised -= Show;
     }
 
     public void Show()

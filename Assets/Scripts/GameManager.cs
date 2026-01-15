@@ -151,8 +151,8 @@ public class GameManager : NetworkBehaviour
         allPlayerData.Clear();
         inPlayClientIds.Clear();
 
-        var clients = ConnectionManager.Instance.GetClientConnections();
-        foreach (var kvp in clients)
+        Dictionary<ulong, ClientConnectionData> clients = ConnectionManager.Instance.GetClientConnections();
+        foreach (KeyValuePair<ulong, ClientConnectionData> kvp in clients)
         {
 #if UNITY_EDITOR
             Debug.Log($"{kvp.Key} {kvp.Value.DisplayName} is being initialized in all player data");
@@ -206,7 +206,7 @@ public class GameManager : NetworkBehaviour
     {
         if (gameState != GameState.PREGAME) return;
 
-        foreach (var playerData in allPlayerData.Values.ToList())
+        foreach (PlayerData playerData in allPlayerData.Values.ToList())
         {
             playerData.state = PlayerState.PLAYING;
         }
@@ -336,15 +336,16 @@ public class GameManager : NetworkBehaviour
     {
         if (IsServer)
         {
+            ulong winnerClientId = allPlayerData.First(playerData => playerData.Value.state == PlayerState.PLAYING).Key;
+
             PopulatePlayerDataFromConnections();
 
-            var rules = GameSession.Instance.ActiveRules;
+            GameRulesSO  rules = GameSession.Instance.ActiveRules;
             GameRulesSO selectedRules = GameRulesFactory.CreateRuntime(baseRules);
             selectedRules.selectedGameType = rules.selectedGameType;
             // selectedRules.timeForTurn = timeForPlayer;
             GameSession.Instance.SetRules(selectedRules);
 
-            ulong winnerClientId = allPlayerData.First(playerData => playerData.Value.state == PlayerState.PLAYING).Key;
             if (GetNumberOfInGamePlayers() == 1)
             {
                 PlayerData[] lonePlayer = { allPlayerData[winnerClientId] };
@@ -356,9 +357,10 @@ public class GameManager : NetworkBehaviour
                 Debug.Log($"the winner of the last game is {winnerClientId} and gets the first turn");
 #endif
                 AdvanceGameState();
-                TurnManager.Instance.DecideTurnOrder(allPlayerData.Keys.ToArray());
-                CardManager.Instance.SetUpPlayerHands(allPlayerData.Keys.ToArray());
-                RestartGameClientRpc();
+                ulong[] orderedPlayers = allPlayerData.Keys.OrderBy(clientId => clientId == winnerClientId).ToArray();
+                TurnManager.Instance.DecideTurnOrder(orderedPlayers);
+                CardManager.Instance.SetUpPlayerHands(orderedPlayers);
+                RestartGameClientRpc(rules.selectedGameType);
             }
         }
     }
@@ -594,11 +596,11 @@ public class GameManager : NetworkBehaviour
     }
 
     [ClientRpc]
-    public void RestartGameClientRpc()
+    public void RestartGameClientRpc(GameType gameType)
     {
-        // TODO: should played hand log be a network list?
-        playedHandLog.Clear();
-        OnClearCardLog?.Invoke();
+        GameRulesSO  rules = GameRulesFactory.CreateRuntime(baseRules);
+        rules.selectedGameType = gameType;
+        GameSession.Instance.SetRules(rules);
         OnInitializeNewGame.RaiseEvent();
         ReportReadyServerRpc();
     }
