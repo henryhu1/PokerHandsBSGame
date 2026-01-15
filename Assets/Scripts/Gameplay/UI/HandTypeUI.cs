@@ -11,8 +11,12 @@ public class HandTypeUI : ToggleSelectionableUIBase<HandType>
     [SerializeField] private PokerHandEventChannelSO OnUpdatePlayableHands;
     [SerializeField] private PokerHandEventChannelSO OnSendPokerHandToPlay;
 
+    private bool areFlushesAllowed;
+
     private void Start()
     {
+        areFlushesAllowed = true;
+
         foreach (var toggleEntry in toggleMap) {
             Toggle toggle = toggleEntry.toggle;
             toggle.onValueChanged.AddListener(isOn =>
@@ -59,6 +63,12 @@ public class HandTypeUI : ToggleSelectionableUIBase<HandType>
         {
             EnableTogglesToAtLeast(lastPlayed);
         }
+
+        Toggle flushToggle = FindToggle(HandType.Flush);
+        if (flushToggle != null)
+        {
+            ChangeToggleInteractability(flushToggle, areFlushesAllowed);
+        }
     }
 
     private void SentPokerHandToPlay(PokerHand playedPokerHand)
@@ -68,6 +78,7 @@ public class HandTypeUI : ToggleSelectionableUIBase<HandType>
 
     private void CardManager_AreFlushesAllowed(bool flushesAllowed)
     {
+        areFlushesAllowed = flushesAllowed;
         Toggle flushToggle = FindToggle(HandType.Flush);
 
         if (flushToggle == null) return;
