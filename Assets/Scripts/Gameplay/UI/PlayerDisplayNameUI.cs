@@ -82,11 +82,11 @@ public class PlayerDisplayNameUI : MonoBehaviour
 
     private void Hide()
     {
-        m_playerDisplayNameInputField.enabled = false;
+        m_playerDisplayNameInputField.gameObject.SetActive(false);
     }
 
     private void Show()
     {
-        m_playerDisplayNameInputField.enabled = true;
+        m_playerDisplayNameInputField.gameObject.SetActive(true);
     }
 }
