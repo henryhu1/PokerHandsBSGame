@@ -145,7 +145,6 @@ public class CardGameServerManager
                 sendingCards.ToArray(),
                 hiddenClientCards,
                 TurnManager.Instance.GetTurnOrderStartingAtClient(clientId).ToArray(),
-                GetTotalCardsInPlay() <= CardManagerConstants.FlushLimit,
                 new ClientRpcParams { Send = new() { TargetClientIds = new[] { clientId } } }
             );
         }
@@ -165,7 +164,6 @@ public class CardGameServerManager
                 sendingCards.ToArray(),
                 hiddenClientCards,
                 TurnManager.Instance.GetTurnOrderStartingAtClient(clientId).ToArray(),
-                GetTotalCardsInPlay() <= CardManagerConstants.FlushLimit,
                 new ClientRpcParams { Send = new() { TargetClientIds = new[] { clientId } } }
             );
         }

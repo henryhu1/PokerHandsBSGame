@@ -85,6 +85,13 @@ public class CardManager : NetworkBehaviour
         cardGameServerManager.DistributeCards();
     }
 
+    public void DistributeDeckToSpectators(ulong[] spectators)
+    {
+        if (!IsServer) return;
+
+        cardGameServerManager.DistributeRemainingCardsInDeck(spectators);
+    }
+
     private void RemovePlayer(ulong clientId)
     {
         if (IsServer)
@@ -153,7 +160,6 @@ public class CardManager : NetworkBehaviour
         Card[] clientsCards,
         PlayerHiddenCardInfo[] otherClientsInfo,
         ulong[] clientOrder,
-        bool areFlushesAllowed,
         ClientRpcParams clientRpcParams = default
     )
     {
@@ -163,7 +169,7 @@ public class CardManager : NetworkBehaviour
 
         OnCardsDistributed.RaiseEvent();
 
-        OnAreFlushesAllowed.RaiseEvent(areFlushesAllowed);
+        OnAreFlushesAllowed.RaiseEvent(otherClientsInfo.Sum(hiddenInfo => hiddenInfo.amountOfCards) <= CardManagerConstants.FlushLimit);
 
         // deckGameObject.SetActive(GameManager.Instance.m_inPlayClientIds.Contains(NetworkManager.Singleton.LocalClientId));
         m_myCards = clientsCards.ToList();

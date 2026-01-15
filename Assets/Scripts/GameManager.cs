@@ -586,6 +586,17 @@ public class GameManager : NetworkBehaviour
                 StartNextRoundClientRpc();
                 if (lastRoundLosingClientId.HasValue)
                     TurnManager.Instance.ResetTurnForNewRound(lastRoundLosingClientId.Value);
+
+                if (eliminatedClients.Count > 0)
+                {
+                    CardManager.Instance.DistributeDeckToSpectators(eliminatedClients.Select(playerData => playerData.GetClientId()).ToArray());
+                }
+
+                PlayerData[] actualSpectators = allPlayerData.Values.Where(playerData => playerData.state == PlayerState.SPECTATING).ToArray();
+                if (actualSpectators.Length > 0)
+                {
+                    CardManager.Instance.DistributeDeckToSpectators(actualSpectators.Select(playerData => playerData.GetClientId()).ToArray());
+                }
             }
             lastRoundLosingClientId = null;
         }
