@@ -278,10 +278,8 @@ public class GameManager : NetworkBehaviour
         {
             if (playerData.state == PlayerState.PLAYING || playerData.state == PlayerState.ELIMINATED)
             {
-                // TODO: fix error occurring here when game ends in GameScene and despawns on the network
-                // inPlayClientIds.Remove(clientId);
                 // TODO: DO in ConnectionManager
-                if (gameState != GameState.ROUNDS)
+                if (gameState == GameState.ROUNDS)
                 {
                     // TODO: invoke two events instead
                     //   one to signal a player left
@@ -295,11 +293,8 @@ public class GameManager : NetworkBehaviour
 
             allPlayerData.Remove(clientId);
             inPlayClientIds.Remove(clientId);
+            readyClients.Remove(clientId);
         }
-
-#if UNITY_EDITOR
-            Debug.Log($"removed {clientId} from turns");
-#endif
     }
 
     private void CardManager_PlayerOut(ulong losingClientId)
