@@ -260,9 +260,12 @@ public class GameManager : NetworkBehaviour
         readyClients.Clear();
 
         AdvanceGameState();
-        TurnManager.Instance.DecideTurnOrder(allPlayerData.Keys.ToArray());
-        CardManager.Instance.SetUpPlayerHands(allPlayerData.Keys.ToArray());
         StartNextRoundClientRpc();
+        ulong[] orderedPlayers = allPlayerData.Keys.OrderBy(clientId => clientId == lastGameWinnerClientId ? 0 : 1).ToArray();
+        TurnManager.Instance.DecideTurnOrder(orderedPlayers);
+        if (lastGameWinnerClientId.HasValue)
+            TurnManager.Instance.ResetTurnForNewRound(lastGameWinnerClientId.Value);
+        CardManager.Instance.SetUpPlayerHands(orderedPlayers);
     }
 
     private void RemovePlayer(ulong clientId)
@@ -358,31 +361,29 @@ public class GameManager : NetworkBehaviour
     {
         if (IsServer)
         {
-            ulong winnerClientId = allPlayerData.First(playerData => playerData.Value.state == PlayerState.PLAYING).Key;
-
             PopulatePlayerDataFromConnections();
 
-            GameRulesSO  rules = GameSession.Instance.ActiveRules;
+            GameRulesSO rules = GameSession.Instance.ActiveRules;
             GameRulesSO selectedRules = GameRulesFactory.CreateRuntime(baseRules);
             selectedRules.selectedGameType = rules.selectedGameType;
-            // selectedRules.timeForTurn = timeForPlayer;
+            selectedRules.timeForTurn = rules.timeForTurn;
+#if UNITY_EDITOR
+            Debug.Log($"new game rules: {selectedRules.selectedGameType}, {selectedRules.timeForTurn}");
+#endif
             GameSession.Instance.SetRules(selectedRules);
 
-            if (GetNumberOfInGamePlayers() == 1)
+            if (GetNumberOfInGamePlayers() == 1 && lastGameWinnerClientId.HasValue)
             {
-                PlayerData[] lonePlayer = { allPlayerData[winnerClientId] };
+                PlayerData[] lonePlayer = { allPlayerData[lastGameWinnerClientId.Value] };
                 GameWinnerClientRpc(lonePlayer);
             }
             else
             {
 #if UNITY_EDITOR
-                Debug.Log($"the winner of the last game is {winnerClientId} and gets the first turn");
+                Debug.Log($"the winner of the last game is {lastGameWinnerClientId} and gets the first turn");
 #endif
                 AdvanceGameState();
-                ulong[] orderedPlayers = allPlayerData.Keys.OrderBy(clientId => clientId == winnerClientId).ToArray();
-                TurnManager.Instance.DecideTurnOrder(orderedPlayers);
-                CardManager.Instance.SetUpPlayerHands(orderedPlayers);
-                RestartGameClientRpc(rules.selectedGameType);
+                RestartGameClientRpc(selectedRules.selectedGameType, selectedRules.timeForTurn);
             }
         }
     }
@@ -631,10 +632,11 @@ public class GameManager : NetworkBehaviour
     }
 
     [ClientRpc]
-    public void RestartGameClientRpc(GameType gameType)
+    public void RestartGameClientRpc(GameType gameType, TimeForTurnType timeForTurn)
     {
-        GameRulesSO  rules = GameRulesFactory.CreateRuntime(baseRules);
+        GameRulesSO rules = GameRulesFactory.CreateRuntime(baseRules);
         rules.selectedGameType = gameType;
+        rules.timeForTurn = timeForTurn;
         GameSession.Instance.SetRules(rules);
         OnInitializeNewGame.RaiseEvent();
         ReportReadyServerRpc();

@@ -193,16 +193,16 @@ public class TurnManager : NetworkBehaviour
         }
     }
 
-    public void ResetTurnForNewRound(ulong losingClientId)
+    public void ResetTurnForNewRound(ulong startingClientId)
     {
         if (IsServer)
         {
 #if UNITY_EDITOR
-            Debug.Log($"round restarting at client {losingClientId}, in play = {GameManager.Instance.IsClientInPlay(losingClientId)}, in turns = {playerTurns.ContainsKey(losingClientId)}");
+            Debug.Log($"round restarting at client {startingClientId}, in play = {GameManager.Instance.IsClientInPlay(startingClientId)}, in turns = {playerTurns.ContainsKey(startingClientId)}");
 #endif
-            if (playerTurns.ContainsKey(losingClientId) && GameManager.Instance.IsClientInPlay(losingClientId))
+            if (playerTurns.ContainsKey(startingClientId) && GameManager.Instance.IsClientInPlay(startingClientId))
             {
-                currentTurnObject = playerTurns[losingClientId];
+                currentTurnObject = playerTurns[startingClientId];
             }
             else
             {

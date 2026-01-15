@@ -57,7 +57,7 @@ public class EndOfGameUI : MonoBehaviour
         {
             var rules = GameSession.Instance.ActiveRules;
             GameRulesSO selectedRules = GameRulesFactory.CreateRuntime(rules);
-            selectedRules.selectedGameType = rules.selectedGameType;
+            selectedRules.selectedGameType = selectedGameType;
             GameSession.Instance.SetRules(selectedRules);
 
             OnRestartGame.RaiseEvent();
@@ -67,6 +67,12 @@ public class EndOfGameUI : MonoBehaviour
         {
             OnExitGame.RaiseEvent();
         });
+    }
+
+    private void Start()
+    {
+        selectedGameType = GameSession.Instance.ActiveRules.selectedGameType;
+        m_gameModeText.text = selectedGameType == GameType.Descending ? GameType.Descending.ToString() : GameType.Ascending.ToString();
     }
 
     private void OnEnable()
