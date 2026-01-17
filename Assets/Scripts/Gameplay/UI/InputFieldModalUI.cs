@@ -38,7 +38,7 @@ public class InputFieldModalUI : MonoBehaviour
 
     private void OnDisable()
     {
-        OnCreatingNewLobby.OnEventRaised += Event_Close;
+        OnCreatingNewLobby.OnEventRaised -= Event_Close;
     }
 
     /* TODO
@@ -58,7 +58,7 @@ public class InputFieldModalUI : MonoBehaviour
         Hide();
     }
 
-    private void Show(
+    public void Show(
         string promptString,
         int charLimit,
         string placeholder,
@@ -92,18 +92,5 @@ public class InputFieldModalUI : MonoBehaviour
             onCancel();
             Hide();
         });
-    }
-
-    public static void Show_Static(
-        string promptString,
-        int charLimit,
-        string placeholder,
-        string enterString,
-        Action<string> onEnter,
-        string cancelString,
-        Action onCancel
-    )
-    {
-        Instance.Show(promptString, charLimit, placeholder, enterString, onEnter, cancelString, onCancel);
     }
 }

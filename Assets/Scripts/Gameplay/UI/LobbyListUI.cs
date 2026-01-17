@@ -41,7 +41,7 @@ public class LobbyListUI : MonoBehaviour
         m_refreshButton.onClick.AddListener(RefreshButtonClick);
         m_createLobbyButton.onClick.AddListener(CreateLobbyButtonClick);
         m_joinWithCodeButton.onClick.AddListener(() => {
-            InputFieldModalUI.Show_Static("Join with code", 6, "Lobby code", "Join",
+            InputFieldModalUI.Instance.Show("Join with code", 6, "Lobby code", "Join",
                 joinCode =>
                 {
                     LobbyManager.Instance.JoinLobbyByCode(joinCode);
