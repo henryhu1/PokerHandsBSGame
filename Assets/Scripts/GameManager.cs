@@ -16,7 +16,7 @@ public class GameManager : NetworkBehaviour
     public GameState gameState = GameState.PREGAME;
     private Dictionary<ulong, PlayerData> allPlayerData = new();
     public NetworkList<ulong> inPlayClientIds { get; private set; }
-    private readonly HashSet<ulong> readyClients = new();
+    private HashSet<ulong> readyClients = new();
     private List<PlayerData> eliminatedClients = new();
     private ulong? lastRoundLosingClientId;
     private ulong? lastGameWinnerClientId;
@@ -64,6 +64,10 @@ public class GameManager : NetworkBehaviour
         Instance = this;
 
         inPlayClientIds = new NetworkList<ulong>();
+        allPlayerData = new();
+        readyClients = new();
+        eliminatedClients = new();
+        playedHandLog = new();
     }
 
     public override void OnNetworkSpawn()
@@ -652,6 +656,7 @@ public class GameManager : NetworkBehaviour
     public void ExitGameClientRpc(ClientRpcParams clientRpcParams = default)
     {
         playedHandLog.Clear();
+        NetworkManager.Singleton.Shutdown();
         SceneTransitionHandler.Instance.ExitAndLoadStartMenu();
     }
 }
