@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
@@ -26,7 +24,8 @@ public class OpponentCardToolTipUI : MonoBehaviour
         transform.position = m_canvas.transform.TransformPoint(pos);
     }
 
-    public void Show(ulong clientId, string name, int amountOfCards)
+    // TODO: refactor into event channel to remove unused arg
+    public void Show(ulong _, string name, int amountOfCards)
     {
         gameObject.SetActive(true);
         m_playerNameText.text = name;
