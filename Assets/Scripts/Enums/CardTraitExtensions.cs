@@ -74,6 +74,22 @@ namespace CardTraitExtensions
             return new List<Rank> { rankLowestInStraight, rankHighestInStraight - 3, rankHighestInStraight - 2, rankHighestInStraight - 1, rankHighestInStraight };
         }
 
+        public static string GetRankSymbol(this Rank rank)
+        {
+            if (rank < Rank.Jack)
+                return ((int) rank).ToString();
+            else if (rank == Rank.Jack)
+                return "J";
+            else if (rank == Rank.Queen)
+                return "Q";
+            else if (rank == Rank.King)
+                return "K";
+            else if (rank == Rank.Ace)
+                return "A";
+            else
+                return "";
+        }
+
         public static string GetReadableHandString(this HandType hand)
         {
             return StringUtils.SplitCapitals(hand.ToString());

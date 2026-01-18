@@ -1,3 +1,4 @@
+using CardTraitExtensions;
 using TMPro;
 using UnityEngine;
 
@@ -11,7 +12,12 @@ public class SmallCardUIController : MonoBehaviour
     [SerializeField] private TextMeshProUGUI rankText;
     [SerializeField] private TextMeshProUGUI suitText;
 
-    public void Reset()
+    private void OnDisable()
+    {
+        Reset();
+    }
+
+    private void Reset()
     {
         SetColor(whiteColor);
         rankText.text = "";
@@ -20,7 +26,7 @@ public class SmallCardUIController : MonoBehaviour
 
     public void DisplayRank(Rank rank)
     {
-        rankText.text = ((int) rank).ToString();
+        rankText.text = rank.GetRankSymbol();
     }
 
     public void DisplaySuit(Suit suit)

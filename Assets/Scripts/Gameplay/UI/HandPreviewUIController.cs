@@ -5,14 +5,43 @@ public class HandPreviewUIController : MonoBehaviour
     [Header("UI")]
     [SerializeField] private GameObject uiItem;
     [SerializeField] private SmallCardUIController[] smallCards;
+    private RectTransform rectTransform;
+
+    [Header("Listening Events")]
+    [SerializeField] private PokerHandEventChannelSO OnPreviewPokerHand;
+    [SerializeField] private VoidEventChannelSO OnStopPreview;
 
     private PokerHand handToPreview;
 
+    private void Awake()
+    {
+        rectTransform = GetComponent<RectTransform>();
+    }
+
+    private void Start()
+    {
+        Hide();
+    }
+
+    private void OnEnable()
+    {
+        OnPreviewPokerHand.OnEventRaised += SetHandToPreview;
+        OnStopPreview.OnEventRaised += DelayHidePreview;
+    }
+
+    private void OnDisable()
+    {
+        OnPreviewPokerHand.OnEventRaised -= SetHandToPreview;
+        OnStopPreview.OnEventRaised -= DelayHidePreview;
+    }
+
     private void SetHandToPreview(PokerHand pokerHand)
     {
-        handToPreview = pokerHand;
-        DisplayCardPreviews(handToPreview.RequiredCardsCount);
+        CancelInvoke();
 
+        handToPreview = pokerHand;
+
+        DisplayCardPreviews(handToPreview.RequiredCardsCount);
         DisplayCardPreviewRanks(handToPreview.GetRanksForPokerHand());
         DisplayCardPreviewSuits(handToPreview.GetSuitsForPokerHand());
 
@@ -24,7 +53,6 @@ public class HandPreviewUIController : MonoBehaviour
         for (int i = 0; i < smallCards.Length; i++)
         {
             smallCards[i].gameObject.SetActive(i < count);
-            smallCards[i].Reset();
         }
     }
 
@@ -42,6 +70,11 @@ public class HandPreviewUIController : MonoBehaviour
         {
             smallCards[i].DisplaySuit(suits[i]);
         }
+    }
+
+    private void DelayHidePreview()
+    {
+        Invoke(nameof(Hide), 0.25f);
     }
 
     private void Show()
