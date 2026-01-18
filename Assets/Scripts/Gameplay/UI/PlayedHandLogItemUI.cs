@@ -1,12 +1,18 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
-public class PlayedHandLogItemUI : MonoBehaviour
+public class PlayedHandLogItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     [SerializeField] private TextMeshProUGUI placementText;
     [SerializeField] private TextMeshProUGUI logText;
     [SerializeField] private GameObject correctIcon;
     [SerializeField] private GameObject wrongIcon;
+
+    [Header("Firing Events")]
+    [SerializeField] private PokerHandEventChannelSO OnPreviewPokerHand;
+    [SerializeField] private VoidEventChannelSO OnStopPreview;
+
     private PlayedHandLogItem logItem;
 
     public static Color normalTextColor = Color.white;
@@ -66,5 +72,15 @@ public class PlayedHandLogItemUI : MonoBehaviour
     {
         correctIcon.SetActive(isCorrect);
         wrongIcon.SetActive(!isCorrect);
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        OnPreviewPokerHand.RaiseEvent(logItem.m_playedHand);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        OnStopPreview.RaiseEvent();
     }
 }
