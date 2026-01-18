@@ -9,7 +9,7 @@ public abstract class PokerHand : INetworkSerializable, IComparable<PokerHand> /
     protected Rank rankPrimary;
     protected Rank rankSecondary;
     protected Suit suit;
-    public abstract int RequiredCards { get; }
+    public abstract int RequiredCardsCount { get; }
 
     public PokerHand() { }
 
@@ -35,6 +35,16 @@ public abstract class PokerHand : INetworkSerializable, IComparable<PokerHand> /
     public Rank GetSecondaryRank() { return rankSecondary; }
 
     public Suit GetSuit() { return suit; }
+
+    public virtual Suit[] GetSuitsForPokerHand()
+    {
+        return new Suit[0];
+    }
+
+    public virtual Rank[] GetRanksForPokerHand()
+    {
+        return new Rank[0];
+    }
 
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {
@@ -143,13 +153,18 @@ public abstract class SuitHand : PokerHand
 
 public class HighCard : SingleRankHand
 {
-    public override int RequiredCards => 1;
+    public override int RequiredCardsCount => 1;
 
     public HighCard() : base() { }
 
     public HighCard(PokerHand pokerHand) : this(pokerHand.GetPrimaryRank()) { }
 
     public HighCard(Rank rankPrimary) : base(HandType.HighCard, rankPrimary) { }
+
+    public override Rank[] GetRanksForPokerHand()
+    {
+        return new Rank[] { rankPrimary };
+    }
 
     public override string GetStringRepresentation()
     {
@@ -159,13 +174,18 @@ public class HighCard : SingleRankHand
 
 public class Pair : SingleRankHand
 {
-    public override int RequiredCards => 2;
+    public override int RequiredCardsCount => 2;
 
     public Pair() : base() { }
 
     public Pair(PokerHand pokerHand) : this(pokerHand.GetPrimaryRank()) { }
 
     public Pair(Rank rankPrimary) : base(HandType.Pair, rankPrimary) { }
+
+    public override Rank[] GetRanksForPokerHand()
+    {
+        return new Rank[] { rankPrimary, rankPrimary };
+    }
 
     public override string GetStringRepresentation()
     {
@@ -175,7 +195,7 @@ public class Pair : SingleRankHand
 
 public class TwoPair : DoubleRankHand
 {
-    public override int RequiredCards => 4;
+    public override int RequiredCardsCount => 4;
 
     public TwoPair() : base() { }
 
@@ -185,6 +205,11 @@ public class TwoPair : DoubleRankHand
 
     public TwoPair(Rank rankPrimary, Rank rankSecondary) : base(HandType.TwoPair, rankPrimary, rankSecondary) { }
 
+    public override Rank[] GetRanksForPokerHand()
+    {
+        return new Rank[] { rankPrimary, rankPrimary, rankSecondary, rankSecondary };
+    }
+
     public override string GetStringRepresentation()
     {
         return base.GetStringRepresentation() + $" {rankPrimary} {rankSecondary}";
@@ -193,13 +218,18 @@ public class TwoPair : DoubleRankHand
 
 public class ThreeOfAKind : SingleRankHand
 {
-    public override int RequiredCards => 3;
+    public override int RequiredCardsCount => 3;
 
     public ThreeOfAKind() : base() { }
 
     public ThreeOfAKind(PokerHand pokerHand) : this(pokerHand.GetPrimaryRank()) { }
 
     public ThreeOfAKind(Rank rankPrimary) : base(HandType.ThreeOfAKind, rankPrimary) { }
+
+    public override Rank[] GetRanksForPokerHand()
+    {
+        return new Rank[] { rankPrimary, rankPrimary, rankPrimary };
+    }
 
     public override string GetStringRepresentation()
     {
@@ -211,13 +241,18 @@ public class Straight : SingleRankHand
 {
     public static Rank s_LowestStraight = Rank.Five;
 
-    public override int RequiredCards => 3;
+    public override int RequiredCardsCount => 3;
 
     public Straight() : base() { }
 
     public Straight(PokerHand pokerHand) : this(pokerHand.GetPrimaryRank()) { }
 
     public Straight(Rank rankPrimary) : base(HandType.Straight, rankPrimary) { }
+
+    public override Rank[] GetRanksForPokerHand()
+    {
+        return new Rank[] { rankPrimary, rankPrimary - 1, rankPrimary - 2, rankPrimary - 3, rankPrimary - 4 };
+    }
 
     public override string GetStringRepresentation()
     {
@@ -229,13 +264,20 @@ public class Flush : RankSuitHand
 {
     public static Rank s_LowestFlush = Rank.Six;
 
-    public override int RequiredCards => 5;
+    public override int RequiredCardsCount => 5;
 
     public Flush() : base() { }
 
     public Flush(PokerHand pokerHand) : this(pokerHand.GetPrimaryRank(), pokerHand.GetSuit()) { }
 
     public Flush(Rank rankPrimary, Suit suit) : base(HandType.Flush, rankPrimary, suit) { }
+
+    public override Suit[] GetSuitsForPokerHand()
+    {
+        var suitArray = new Suit[5];
+        Array.Fill(suitArray, suit);
+        return suitArray;
+    }
 
     public override string GetStringRepresentation()
     {
@@ -245,7 +287,7 @@ public class Flush : RankSuitHand
 
 public class FullHouse : DoubleRankHand
 {
-    public override int RequiredCards => 5;
+    public override int RequiredCardsCount => 5;
 
     public FullHouse() : base() { }
 
@@ -255,6 +297,11 @@ public class FullHouse : DoubleRankHand
 
     public FullHouse(Rank rankPrimary, Rank rankSecondary) : base(HandType.FullHouse, rankPrimary, rankSecondary) { }
 
+    public override Rank[] GetRanksForPokerHand()
+    {
+        return new Rank[] { rankPrimary, rankPrimary, rankPrimary, rankSecondary, rankSecondary };
+    }
+
     public override string GetStringRepresentation()
     {
         return base.GetStringRepresentation() + $" {rankPrimary} over {rankSecondary}";
@@ -263,13 +310,23 @@ public class FullHouse : DoubleRankHand
 
 public class FourOfAKind : SingleRankHand
 {
-    public override int RequiredCards => 4;
+    public override int RequiredCardsCount => 4;
 
     public FourOfAKind() : base() { }
 
     public FourOfAKind(PokerHand pokerHand) : this(pokerHand.GetPrimaryRank()) { }
 
     public FourOfAKind(Rank rankPrimary) : base(HandType.FourOfAKind, rankPrimary) { }
+
+    public override Suit[] GetSuitsForPokerHand()
+    {
+        return new Suit[] { Suit.Club, Suit.Diamond, Suit.Heart, Suit.Spade };
+    }
+
+    public override Rank[] GetRanksForPokerHand()
+    {
+        return new Rank[] { rankPrimary, rankPrimary, rankPrimary, rankPrimary };
+    }
 
     public override string GetStringRepresentation()
     {
@@ -279,7 +336,7 @@ public class FourOfAKind : SingleRankHand
 
 public class StraightFlush : RankSuitHand
 {
-    public override int RequiredCards => 5;
+    public override int RequiredCardsCount => 5;
 
     public static Rank s_LowestStraightFlush = Rank.Five;
 
@@ -289,6 +346,18 @@ public class StraightFlush : RankSuitHand
 
     public StraightFlush(Rank rankPrimary, Suit suit) : base(HandType.StraightFlush, rankPrimary, suit) { }
 
+    public override Suit[] GetSuitsForPokerHand()
+    {
+        var suitArray = new Suit[5];
+        Array.Fill(suitArray, suit);
+        return suitArray;
+    }
+
+    public override Rank[] GetRanksForPokerHand()
+    {
+        return new Rank[] { rankPrimary, rankPrimary - 1, rankPrimary - 2, rankPrimary - 3, rankPrimary - 4 };
+    }
+
     public override string GetStringRepresentation()
     {
         return base.GetStringRepresentation() + $" {suit} to {rankPrimary}";
@@ -297,13 +366,25 @@ public class StraightFlush : RankSuitHand
 
 public class RoyalFlush : SuitHand
 {
-    public override int RequiredCards => 5;
+    public override int RequiredCardsCount => 5;
 
     public RoyalFlush() : base() { }
 
     public RoyalFlush(PokerHand pokerHand) : this(pokerHand.GetSuit()) { }
 
     public RoyalFlush(Suit suit) : base(HandType.RoyalFlush, suit) { }
+
+    public override Suit[] GetSuitsForPokerHand()
+    {
+        var suitArray = new Suit[5];
+        Array.Fill(suitArray, suit);
+        return suitArray;
+    }
+
+    public override Rank[] GetRanksForPokerHand()
+    {
+        return new Rank[] { Rank.Ace, Rank.King, Rank.Queen, Rank.Jack, Rank.Ten };
+    }
 
     public override string GetStringRepresentation()
     {
