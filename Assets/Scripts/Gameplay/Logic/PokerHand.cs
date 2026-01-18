@@ -1,9 +1,9 @@
 using CardTraitExtensions;
 using System;
-using Unity.Netcode;
+using System.Linq;
 
 [Serializable]
-public abstract class PokerHand : INetworkSerializable, IComparable<PokerHand> // UIMainScene.IUIInfoContent
+public abstract class PokerHand : IComparable<PokerHand> // UIMainScene.IUIInfoContent
 {
     protected HandType handType;
     protected Rank rankPrimary;
@@ -44,14 +44,6 @@ public abstract class PokerHand : INetworkSerializable, IComparable<PokerHand> /
     public virtual Rank[] GetRanksForPokerHand()
     {
         return new Rank[0];
-    }
-
-    public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
-    {
-        serializer.SerializeValue(ref handType);
-        serializer.SerializeValue(ref rankPrimary);
-        serializer.SerializeValue(ref rankSecondary);
-        serializer.SerializeValue(ref suit);
     }
 
     public override string ToString()
@@ -106,6 +98,17 @@ public abstract class PokerHand : INetworkSerializable, IComparable<PokerHand> /
             return left.rankPrimary > right.rankPrimary;
         }
         return left.handType > right.handType;
+    }
+
+    public PokerHandData ToNetworkData()
+    {
+        return new()
+        {
+            handType = handType,
+            rankPrimary = rankPrimary,
+            rankSecondary = rankSecondary,
+            suit = suit,
+        };
     }
 }
 
@@ -251,7 +254,7 @@ public class Straight : SingleRankHand
 
     public override Rank[] GetRanksForPokerHand()
     {
-        return new Rank[] { rankPrimary, rankPrimary - 1, rankPrimary - 2, rankPrimary - 3, rankPrimary - 4 };
+        return rankPrimary.GetStraight().OrderByDescending(r => r).ToArray();
     }
 
     public override string GetStringRepresentation()
@@ -355,7 +358,7 @@ public class StraightFlush : RankSuitHand
 
     public override Rank[] GetRanksForPokerHand()
     {
-        return new Rank[] { rankPrimary, rankPrimary - 1, rankPrimary - 2, rankPrimary - 3, rankPrimary - 4 };
+        return rankPrimary.GetStraight().OrderByDescending(r => r).ToArray();
     }
 
     public override string GetStringRepresentation()
