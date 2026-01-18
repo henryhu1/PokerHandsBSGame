@@ -288,6 +288,8 @@ MonoBehaviour:
   logText: {fileID: 8643791736417360893}
   correctIcon: {fileID: 317863037899370581}
   wrongIcon: {fileID: 4672294199727285500}
+  OnPreviewPokerHand: {fileID: 11400000, guid: 306011a9e094e8e48bdbb278bf9d6287, type: 2}
+  OnStopPreview: {fileID: 11400000, guid: 296533393f6c33b44843c1abc2873334, type: 2}
 --- !u!1 &4672294199727285500
 GameObject:
   m_ObjectHideFlags: 0
