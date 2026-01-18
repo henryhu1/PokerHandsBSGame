@@ -36,20 +36,20 @@ public static class PokerHandFactory
         }
     }
 
-    public static PokerHand InferPokerHandType(PokerHand pokerHand)
+    public static PokerHand InferPokerHandType(PokerHandData pokerHand)
     {
-        return pokerHand.GetHandType() switch
+        return pokerHand.handType switch
         {
-            HandType.HighCard => new HighCard(pokerHand),
-            HandType.Pair => new Pair(pokerHand),
-            HandType.TwoPair => new TwoPair(pokerHand),
-            HandType.ThreeOfAKind => new ThreeOfAKind(pokerHand),
-            HandType.Straight => new Straight(pokerHand),
-            HandType.Flush => new Flush(pokerHand),
-            HandType.FullHouse => new FullHouse(pokerHand),
-            HandType.FourOfAKind => new FourOfAKind(pokerHand),
-            HandType.StraightFlush => new StraightFlush(pokerHand),
-            HandType.RoyalFlush => new RoyalFlush(pokerHand),
+            HandType.HighCard => new HighCard(pokerHand.rankPrimary),
+            HandType.Pair => new Pair(pokerHand.rankPrimary),
+            HandType.TwoPair => new TwoPair(pokerHand.rankPrimary, pokerHand.rankSecondary),
+            HandType.ThreeOfAKind => new ThreeOfAKind(pokerHand.rankPrimary),
+            HandType.Straight => new Straight(pokerHand.rankPrimary),
+            HandType.Flush => new Flush(pokerHand.rankPrimary, pokerHand.suit),
+            HandType.FullHouse => new FullHouse(pokerHand.rankPrimary, pokerHand.rankSecondary),
+            HandType.FourOfAKind => new FourOfAKind(pokerHand.rankPrimary),
+            HandType.StraightFlush => new StraightFlush(pokerHand.rankPrimary, pokerHand.suit),
+            HandType.RoyalFlush => new RoyalFlush(pokerHand.suit),
             _ => null,
         };
     }

@@ -290,7 +290,7 @@ public class GameManager : NetworkBehaviour
                     //   another to end the round
                     AdvanceGameState();
                     lastRoundLosingClientId = clientId;
-                    PlayerLeftClientRpc(playerData.GetName(), CardManager.Instance.GetAllHandsInPlay().ToArray());
+                    PlayerLeftClientRpc(playerData.GetName(), CardManager.Instance.GetAllHandsInPlay().Select(pokerHand => pokerHand.ToNetworkData()).ToArray());
                     CardManager.Instance.RevealAllCards();
                 }
             }
@@ -333,13 +333,13 @@ public class GameManager : NetworkBehaviour
         {
             Send = new() { TargetClientIds = timedOutClientArray }
         };
-        ClientRanOutOfTimeClientRpc(CardManager.Instance.GetAllHandsInPlay().ToArray(), timedOutClientRpcParams);
+        ClientRanOutOfTimeClientRpc(CardManager.Instance.GetAllHandsInPlay().Select(pokerHand => pokerHand.ToNetworkData()).ToArray(), timedOutClientRpcParams);
 
         ClientRpcParams otherClientRpcParams = new()
         {
             Send = new() { TargetClientIds = allPlayerData.Keys.Except(timedOutClientArray).ToArray() }
         };
-        OtherClientRanOutOfTimeClientRpc(timedOutPlayerData.GetName(), CardManager.Instance.GetAllHandsInPlay().ToArray(), otherClientRpcParams);
+        OtherClientRanOutOfTimeClientRpc(timedOutPlayerData.GetName(), CardManager.Instance.GetAllHandsInPlay().Select(pokerHand => pokerHand.ToNetworkData()).ToArray(), otherClientRpcParams);
 
         CardManager.Instance.RevealAllCards();
     }
@@ -396,7 +396,7 @@ public class GameManager : NetworkBehaviour
     }
 
     [ServerRpc(RequireOwnership = false)]
-    public void TryPlayingHandServerRpc(PokerHand playedHand, ServerRpcParams serverRpcParams = default)
+    public void TryPlayingHandServerRpc(PokerHandData playedHand, ServerRpcParams serverRpcParams = default)
     {
         if (gameState != GameState.ROUNDS) return;
 
@@ -420,7 +420,7 @@ public class GameManager : NetworkBehaviour
         else
         {
             PlayerData playingPlayer = allPlayerData[senderClientId];
-            PlayedHandClientRpc(senderClientId, playingPlayer.GetName(), hand);
+            PlayedHandClientRpc(senderClientId, playingPlayer.GetName(), hand.ToNetworkData());
             TurnManager.Instance.AdvanceTurn();
         }
     }
@@ -432,7 +432,7 @@ public class GameManager : NetworkBehaviour
     }
 
     [ClientRpc]
-    public void PlayedHandClientRpc(ulong playedHandClientId, string playerName, PokerHand playedHand)
+    public void PlayedHandClientRpc(ulong playedHandClientId, string playerName, PokerHandData playedHand)
     {
         PokerHand hand = PokerHandFactory.InferPokerHandType(playedHand);
 #if UNITY_EDITOR
@@ -446,7 +446,7 @@ public class GameManager : NetworkBehaviour
     }
 
     [ClientRpc]
-    public void ClientRanOutOfTimeClientRpc(PokerHand[] allHandsInPlay, ClientRpcParams clientRpcParams = default)
+    public void ClientRanOutOfTimeClientRpc(PokerHandData[] allHandsInPlay, ClientRpcParams clientRpcParams = default)
     {
         List<PokerHand> pokerHandsInPlay = allHandsInPlay.Select(i => PokerHandFactory.InferPokerHandType(i)).ToList();
         List<bool> playedHandsPresent = playedHandLog.Select(logItem => pokerHandsInPlay.Exists(hand => logItem.m_playedHand == hand)).ToList();
@@ -457,7 +457,7 @@ public class GameManager : NetworkBehaviour
     }
 
     [ClientRpc]
-    public void OtherClientRanOutOfTimeClientRpc(string playerRanOutOfTimeName, PokerHand[] allHandsInPlay, ClientRpcParams clientRpcParams = default)
+    public void OtherClientRanOutOfTimeClientRpc(string playerRanOutOfTimeName, PokerHandData[] allHandsInPlay, ClientRpcParams clientRpcParams = default)
     {
         List<PokerHand> pokerHandsInPlay = allHandsInPlay.Select(i => PokerHandFactory.InferPokerHandType(i)).ToList();
         List<bool> playedHandsPresent = playedHandLog.Select(logItem => pokerHandsInPlay.Exists(hand => logItem.m_playedHand == hand)).ToList();
@@ -468,7 +468,7 @@ public class GameManager : NetworkBehaviour
     }
 
     [ClientRpc]
-    public void PlayerLeftClientRpc(string playerLeftName, PokerHand[] allHandsInPlay)
+    public void PlayerLeftClientRpc(string playerLeftName, PokerHandData[] allHandsInPlay)
     {
         List<PokerHand> pokerHandsInPlay = allHandsInPlay.Select(i => PokerHandFactory.InferPokerHandType(i)).ToList();
         List<bool> playedHandsPresent = playedHandLog.Select(logItem => pokerHandsInPlay.Exists(hand => logItem.m_playedHand == hand)).ToList();
@@ -523,12 +523,12 @@ public class GameManager : NetworkBehaviour
         }
 
         AdvanceGameState();
-        EndOfRoundClientRpc(CardManager.Instance.GetAllHandsInPlay().ToArray());
+        EndOfRoundClientRpc(CardManager.Instance.GetAllHandsInPlay().Select(pokerHand => pokerHand.ToNetworkData()).ToArray());
         CardManager.Instance.RevealAllCards();
     }
 
     [ClientRpc]
-    public void EndOfRoundClientRpc(PokerHand[] allHandsInPlay)
+    public void EndOfRoundClientRpc(PokerHandData[] allHandsInPlay)
     {
         List<PokerHand> pokerHandsInPlay = allHandsInPlay.Select(i => PokerHandFactory.InferPokerHandType(i)).ToList();
         List<bool> playedHandsPresent = playedHandLog.Select(logItem => pokerHandsInPlay.Exists(hand => logItem.m_playedHand.Equals(hand))).ToList();

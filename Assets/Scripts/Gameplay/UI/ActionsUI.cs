@@ -45,7 +45,7 @@ public class ActionsUI : MonoBehaviour
             else
             {
                 OnSendPokerHandToPlay.RaiseEvent(playingPokerHand);
-                GameManager.Instance.TryPlayingHandServerRpc(playingPokerHand);
+                GameManager.Instance.TryPlayingHandServerRpc(playingPokerHand.ToNetworkData());
             }
         });
 
