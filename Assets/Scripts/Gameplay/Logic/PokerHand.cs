@@ -244,7 +244,7 @@ public class Straight : SingleRankHand
 {
     public static Rank s_LowestStraight = Rank.Five;
 
-    public override int RequiredCardsCount => 3;
+    public override int RequiredCardsCount => 5;
 
     public Straight() : base() { }
 
