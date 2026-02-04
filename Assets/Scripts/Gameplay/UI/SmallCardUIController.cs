@@ -19,9 +19,8 @@ public class SmallCardUIController : MonoBehaviour
 
     private void Reset()
     {
-        SetColor(whiteColor);
         rankText.text = "";
-        suitText.text = "";
+        ResetSuit();
     }
 
     public void DisplayRank(Rank rank)
@@ -50,6 +49,12 @@ public class SmallCardUIController : MonoBehaviour
                 SetColor(blackColor);
                 break;
         }
+    }
+
+    public void ResetSuit()
+    {
+        SetColor(whiteColor);
+        suitText.text = "";
     }
 
     private void SetColor(Color color)

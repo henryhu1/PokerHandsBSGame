@@ -70,6 +70,10 @@ public class HandPreviewUIController : MonoBehaviour
         {
             smallCards[i].DisplaySuit(suits[i]);
         }
+        for (int i = suits.Length; i < smallCards.Length; i++)
+        {
+            smallCards[i].ResetSuit();
+        }
     }
 
     private void DelayHidePreview()
