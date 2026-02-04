@@ -275,6 +275,11 @@ public class Flush : RankSuitHand
 
     public Flush(Rank rankPrimary, Suit suit) : base(HandType.Flush, rankPrimary, suit) { }
 
+    public override Rank[] GetRanksForPokerHand()
+    {
+        return new Rank[] { rankPrimary };
+    }
+
     public override Suit[] GetSuitsForPokerHand()
     {
         var suitArray = new Suit[5];
