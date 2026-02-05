@@ -62,6 +62,10 @@ public class HandPreviewUIController : MonoBehaviour
         {
             smallCards[i].DisplayRank(ranks[i]);
         }
+        for (int i = ranks.Length; i < smallCards.Length; i++)
+        {
+            smallCards[i].ResetRank();
+        }
     }
 
     private void DisplayCardPreviewSuits(Suit[] suits)
