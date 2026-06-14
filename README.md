@@ -1,6 +1,10 @@
 # :spades: :hearts: PokerHandsBSGame :diamonds: :clubs:
 My first 3D Unity game :beginner:
 
+Available to download on Steam: https://store.steampowered.com/app/4295570/Poker_Hands_Bullshit
+
+Or play in your browser: https://www.henryhu.dev/PokerBSGame
+
 ![display](Repo/PokerHandsBSGame.png)
 
 Multiplayer and networking :globe_with_meridians: made possible with 
